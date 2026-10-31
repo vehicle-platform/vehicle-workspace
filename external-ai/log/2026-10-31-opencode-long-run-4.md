@@ -6,7 +6,7 @@ repos: [vehicle-ml, vehicle-workspace]
 branches: [vehicle-ml:ext/opencode-ml-attribution, vehicle-workspace:ext/opencode-long-run-4-log]
 prs: [vehicle-ml#14, vehicle-workspace#133]
 zone: green
-review: pending
+review: done 2026-10-31 (no zone breach, no blocker; ML-23..ML-26 conform; Claude fixed 3 MAJOR edge cases (all-unscored seed counted as a miss, uncalibratable baseline aborting the run, silent IMU drop from the baselines) and 2 MINOR; vehicle-ml#15 supersedes #14, workspace#134 supersedes #132/#133)
 ---
 
 # DeepSeek long run 4 — attribution normalisation and sessions without IMU
@@ -64,4 +64,8 @@ seeds and document it.
   their test split, including `no alarm` and `not evaluated` seeds.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+- **Zones:** green (vehicle-ml src/tests/README, this log). Every commit carries the `AI-Agent:` trailer; each task was committed and pushed separately, as the task file asked. Local checks: 152 passed, ruff clean.
+- **Reviews:** architecture-guard (sonnet). No hand-written signal, unit or constant; no val/test leakage: the scaler, the baselines and the ML-23 training means use complete healthy train windows only (the scaler used to include faulty train sessions, so this is also an improvement); `_threshold` already drops non-finite scores.
+- **Fixed by Claude (vehicle-ml#15, commits 23a6ab9, c23bd3b, sonnet subagent, reviewed here):** (1) MAJOR: `_seed_metrics` wrote a 0.0 detection / expected-modality rate for a seed whose fault sessions were all unscored, which averaged in like a miss; the keys are now omitted (also the false-alarm rate of a model without scored healthy hours). (2) MAJOR: when every healthy val window of a baseline was unscored, `_threshold` raised and aborted the whole run, physics included; the baseline is now `not calibrated` (threshold null, its windows unscored). (3) MAJOR: features with no training value were dropped silently, so a train split without IMU made the baselines CAN-only without a word; now `baseline_excluded_features` / `_modalities` in the JSON and the report. (4) MINOR: false-alarm episodes merged across an unscored gap and hours included the gap. (5) MINOR: an alarm without an attributable modality showed an empty label; now `unattributed`. Plus label constants, `IDENTITY_COLUMNS`, a vectorised `_baseline_unscored`, a `Counter` in `aggregate_attribution`, and README caveats (the PCA ratio is relative to the in-sample training mean, not a calibrated score; the first-alarm modality covers detected sessions only). 158 tests.
+- **Answers to *For Claude*:** ML-23 summed-residual mean: accepted (it is the quantity the ratio divides). Replacing the raw-sum function: accepted. ML-24 partial coverage (some windows unscored, the scored ones silent → `missed`): accepted for now; the coverage table shows the unscored windows. ML-25 `mixed` and the all-seeds denominator: accepted; the table shows the raw counts.
+- **Merge order:** free. Merging vehicle-ml#15 closes #14; this workspace PR closes #132 (task file) and #133 (this log).
