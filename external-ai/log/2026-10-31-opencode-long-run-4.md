@@ -19,13 +19,14 @@ seeds and document it.
 ## Changes
 - `vehicle-ml/src/vehicle_ml/evaluate.py`: PCA alarms now use the per-modality residual ratio (window sum / healthy-training mean) instead of the raw sum; the training means are computed from complete healthy train windows and stored in `evaluation.json`; the baseline scaler is fitted on complete train windows only. `vehicle-ml/tests/test_evaluate.py` covers the ratio case, skipped means, and train-only means.
 - `vehicle-ml/tests/physics_synthetic.py`: added `PhysicsSessionSpec.has_imu`; an IMU-less session writes no `imu.parquet` and the index records `has_imu=0`. `vehicle-ml/src/vehicle_ml/evaluate.py`: baseline fit and scaler use complete train windows only; unscored windows are listed per split in `baseline_unscored` and the report; baseline scores are NaN for those windows; fault entries distinguish `not_evaluated` from `missed`; false-alarm hours count scored windows only. Tests cover the mixed data dir, the IMU-less fault session, the dataset card, and a baseline fit with a missing feature.
+- `vehicle-ml/src/vehicle_ml/evaluate.py`: `aggregate_attribution` stores, per model × fault kind, the seeds with that fault kind, the first-alarm modality per seed (`no alarm`, `not evaluated` or `mixed` where needed), the match count and fraction; the aggregate markdown has an attribution-stability table. `_seed_metrics` now excludes `not_evaluated` sessions from the detection denominator and reports `not_evaluated_rate`. Tests cover the two-seed aggregate, the all-unscored seed, and the CLI path.
 
 ## Result
 | Task | Code | Tests | Status |
 |---|---|---|---|
 | ML-23 | `vehicle-ml/src/vehicle_ml/evaluate.py` (`pca_training_means`, `pca_alarm_modality`, `_fit_baseline`) | `tests/test_evaluate.py::test_pca_ratio_removes_the_feature_count_advantage`, `::test_pca_attribution_skips_zero_and_non_finite_training_means`, `::test_pca_training_means_read_only_the_training_sessions` | done `77c3514` |
 | ML-24 | `vehicle-ml/src/vehicle_ml/evaluate.py` (`_fit_baseline`, `_baseline_unscored`, `_fault_results`), `tests/physics_synthetic.py` (`has_imu`) | `tests/test_evaluate.py::test_sessions_without_imu_are_unscored_but_physics_scores`, `tests/test_physics_synthetic.py::test_session_without_imu_writes_no_imu_file`, `tests/test_baseline.py::test_fit_ignores_a_window_with_a_missing_feature` | done `c5a6286` |
-| ML-25 | todo | todo | todo |
+| ML-25 | `vehicle-ml/src/vehicle_ml/evaluate.py` (`aggregate_attribution`, `_seed_first_alarm_modality`, `_seed_metrics`) | `tests/test_evaluate.py::test_aggregate_attribution_treats_no_alarm_as_not_a_match`, `::test_aggregate_attribution_reports_all_unscored_seeds`, `::test_seeds_write_per_seed_entries_and_an_aggregate` | done `d1457b1` |
 | ML-26 | todo | todo | todo |
 
 ## Checks
@@ -42,6 +43,10 @@ seeds and document it.
 - ML-24 ambiguity: a fault session with only some windows unscored is counted as
   `missed` when its scored windows do not alarm; only an all-unscored session is
   `not_evaluated`. Say if you want partial coverage reported separately.
+- ML-25 ambiguity: a fault kind can have several test sessions in one seed. I collapse
+  their first-alarm modalities to one seed value; if they disagree the seed is `mixed`,
+  which is not a match. The fraction denominator is all seeds that had the fault kind in
+  their test split, including `no alarm` and `not evaluated` seeds.
 
 ## Claude review
 (Filled by Claude's /external-review: findings, fixes, PRs.)
