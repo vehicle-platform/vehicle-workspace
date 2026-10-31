@@ -4,7 +4,7 @@ tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-4-attribution
 repos: [vehicle-ml, vehicle-workspace]
 branches: [vehicle-ml:ext/opencode-ml-attribution, vehicle-workspace:ext/opencode-long-run-4-log]
-prs: []
+prs: [vehicle-ml#14, vehicle-workspace#133]
 zone: green
 review: pending
 ---
