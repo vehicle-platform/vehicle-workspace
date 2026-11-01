@@ -4,7 +4,7 @@ tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-5-relative-track
 repos: [vehicle-server, vehicle-analyzer, vehicle-workspace]
 branches: [vehicle-server:ext/opencode-server-track, vehicle-analyzer:ext/opencode-analyzer-track, vehicle-workspace:ext/opencode-long-run-5-log]
-prs: [vehicle-server#42, vehicle-analyzer#37]
+prs: [vehicle-server#42, vehicle-analyzer#37, vehicle-workspace#136]
 zone: yellow
 review: pending
 ---
