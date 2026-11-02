@@ -99,6 +99,8 @@ derived value is `0.0055783 km` and the track is `0.00559665 km`; the difference
 - `cd vehicle-analyzer && npm run test:ui`: `14 passed` (Playwright Chromium).
 - `python3 scripts/check_zones.py vehicle-analyzer --base origin/main`: GREEN for every changed
   analyzer path.
+- `python3 scripts/check_zones.py . --base origin/main --path external-ai/log/2026-10-31-opencode-long-run-5.md`:
+  GREEN. The untracked task file is reported RED by the whole-repo check and is not committed.
 
 ## Unsure about
 - The `/track` window currently windows only `sensor.gps_ground_speed`; heading and fix type
