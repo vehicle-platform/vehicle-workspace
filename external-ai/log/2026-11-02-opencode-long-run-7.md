@@ -28,7 +28,7 @@ Add read-only ride history and ride summary views to vehicle-mobile, using the e
 |---|---|---|
 | MR-1 Models + strict parsing | done | `vehicle-mobile/lib/models/ride_summary.dart`; `test/ride_summary_model_test.dart`; commit `67202a6` |
 | MR-2 Read client | done | `vehicle-mobile/lib/services/ride_client.dart`, `lib/services/http_message.dart`; `test/ride_client_test.dart`; commit `4e111bd` |
-| MR-3 Formatting helpers | todo | |
+| MR-3 Formatting helpers | done | `vehicle-mobile/lib/ui/rides/ride_format.dart`; `test/ride_format_test.dart`; commit `9781f7c` |
 | MR-4 Ride history screen | todo | |
 | MR-5 Ride summary screen | todo | |
 | MR-6 Record link + docs | todo | |
