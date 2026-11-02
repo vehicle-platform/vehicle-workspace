@@ -21,6 +21,9 @@ Expose the stored D-070 class-B ride summaries through read-only server APIs and
 - `vehicle-server/README.md`: read-API rows, examples, error cases, UTC date rules and the E-26 (1) fix-type note (RS-3).
 - `vehicle-analyzer/src/services/sessionClient.ts`: typed `/summary` and `/rides` responses, strict parsers, request builders and `fetchRideSummary`/`fetchRides` plus `SessionClient` methods; the token stays in the Authorization header (RS-4).
 - `vehicle-analyzer/tests/rideSummaryClient.test.ts`: 12 tests for summary/rides parsing, malformed payloads, request building, the no-summary 404 state and error details.
+- `vehicle-analyzer/src/components/RideSummary.tsx`: the Recorded sessions card with no-server/loading/no-summary/error/loaded states, scalar table, one-axis bars, two-axis heat grid, `defs_mismatch` warning and collapsed non-computed list (RS-5).
+- `vehicle-analyzer/src/services/rideSummaryLayout.ts`: pure range precision, value formatting, bar scaling, cell lookup and heat opacity helpers; `tests/rideSummaryLayout.test.ts` covers them.
+- `vehicle-analyzer/tests/components/RideSummary.test.tsx` and the SessionPanel integration test cover every state and the no-refetch-per-keystroke rule.
 
 ## Result
 
@@ -30,7 +33,7 @@ Expose the stored D-070 class-B ride summaries through read-only server APIs and
 | RS-2 `GET /rides` | done | `vehicle-server/src/vehicle_server/ride_summary.py:236` (`select_scalar_names`), `:265` (`parse_utc_bound`), `:302` (`build_rides`); route `src/vehicle_server/api.py:248`; tests `tests/test_ride_summary.py:345-448` |
 | RS-3 Server docs | done | `vehicle-server/README.md` `/summary` and `/rides` table rows, examples and E-26 (1) sentence |
 | RS-4 Analyzer clients | done | `vehicle-analyzer/src/services/sessionClient.ts` `fetchRideSummary`/`fetchRides`; `tests/rideSummaryClient.test.ts` (12 tests); commit `92a542e` |
-| RS-5 Ride summary card (`E`) | todo | |
+| RS-5 Ride summary card (`E`) | done | `vehicle-analyzer/src/components/RideSummary.tsx`, `src/services/rideSummaryLayout.ts`, `tests/components/RideSummary.test.tsx`; commit `40cd616` |
 | RS-6 Compare summary table (`A`) | todo | |
 | RS-7 Ride history view | todo | |
 | RS-8 UI smoke + docs | todo | |
@@ -47,6 +50,9 @@ Expose the stored D-070 class-B ride summaries through read-only server APIs and
 - `cd vehicle-analyzer && npm test`: pass, 228 tests.
 - `cd vehicle-analyzer && npm run build`: pass (Vite chunk-size warning only).
 - `python3 scripts/check_zones.py vehicle-analyzer --base origin/main --path src/services/sessionClient.ts tests/rideSummaryClient.test.ts`: GREEN.
+- `cd vehicle-analyzer && npm test`: pass, 239 tests (after RS-5).
+- `cd vehicle-analyzer && npm run build`: pass (after RS-5; Vite chunk-size warning only).
+- `python3 scripts/check_zones.py vehicle-analyzer --base origin/main --path src/components/RideSummary.tsx src/components/SessionPanel.tsx src/services/rideSummaryLayout.ts tests/rideSummaryLayout.test.ts tests/components/RideSummary.test.tsx tests/components/SessionPanel.test.tsx`: GREEN.
 
 ## Unsure about
 - `/rides` `from`/`to` parsing is ours (there was no existing session-list date parser): date-only means the whole UTC day, timestamps without an offset are UTC, offsets are converted. An inverted range is not an error; it returns no rows after the normal filter.
@@ -55,6 +61,7 @@ Expose the stored D-070 class-B ride summaries through read-only server APIs and
 - Scalar values/flags are returned from the report block; a test ingests `v4_session` and asserts they agree with the parquet scalar rows.
 - `/summary` emits signals in global defs order, not the record-grouped order of the report's `records` object.
 - The analyzer parsers are strict: an unknown summary status, a binned cell whose axes do not match the axis list, or a rides cell without a column value is rejected with a `Malformed ...` error instead of being drawn. A 404 with the exact detail `session has no ride summary` becomes `NoRideSummaryError`, a state the UI can show.
+- RS-5 formats values with decimals derived from the signal range (`4 - floor(log10(span))`, capped 0..6). Binned charts use the response axes/edges; the collapsed list includes status plus reason/message/pending/missing.
 
 ## For Claude
 - `vehicle-server/CLAUDE.md` still lists only the older read routes; please add `/summary` and `/rides` there if the wording is useful (red/synced file, not edited).
