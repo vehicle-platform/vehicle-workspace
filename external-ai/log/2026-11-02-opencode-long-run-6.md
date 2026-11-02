@@ -1,0 +1,91 @@
+---
+date: 2026-11-02
+tool: opencode/deepseek-v4.1-flash-free
+topic: long-run-6-ride-summary
+repos: [vehicle-server, vehicle-analyzer, vehicle-workspace]
+branches: [vehicle-server:ext/opencode-server-ride-summary, vehicle-analyzer:ext/opencode-analyzer-ride-summary, vehicle-workspace:ext/opencode-long-run-6-log]
+prs: [vehicle-server#46, vehicle-analyzer#39, vehicle-workspace#139]
+zone: green
+review: done 2026-11-02 (no zone breach, no BLOCKER/MAJOR; Claude finished RS-8 and fixed /rides skipped counting; server#46 (supersedes #45), analyzer#39, workspace#139)
+---
+
+# long-run-6 ride summaries
+
+## Goal
+Expose the stored D-070 class-B ride summaries through read-only server APIs and render them in the analyzer: `GET /sessions/{id}/summary`, `GET /rides`, a ride-summary card in Recorded sessions, a Compare A-vs-B table, and a ride-history view. No new summaries, formulas or signals.
+
+## Changes
+- `vehicle-server/src/vehicle_server/ride_summary.py`: added the pure read-side builder for the stored `derived_summary` report block and `derived_summary.parquet` (RS-1), the class-B scalar selector and UTC date parsing, and the `/rides` table builder (RS-2). No formula, signal or write path changed.
+- `vehicle-server/src/vehicle_server/api.py`: added authenticated `GET /sessions/{id}/summary` (RS-1) and `GET /rides` (RS-2), mapping missing/error summaries to 404 and invalid `/rides` names to 422.
+- `vehicle-server/tests/test_ride_summary.py`: 19 tests for both routes, including defs order, scalar/parquet agreement, one- and two-axis cells, stored-edge mismatch, skipped sessions, null/status values and date bounds.
+- `vehicle-server/README.md`: read-API rows, examples, error cases, UTC date rules and the E-26 (1) fix-type note (RS-3).
+- `vehicle-analyzer/src/services/sessionClient.ts`: typed `/summary` and `/rides` responses, strict parsers, request builders and `fetchRideSummary`/`fetchRides` plus `SessionClient` methods; the token stays in the Authorization header (RS-4).
+- `vehicle-analyzer/tests/rideSummaryClient.test.ts`: 12 tests for summary/rides parsing, malformed payloads, request building, the no-summary 404 state and error details.
+- `vehicle-analyzer/src/components/RideSummary.tsx`: the Recorded sessions card with no-server/loading/no-summary/error/loaded states, scalar table, one-axis bars, two-axis heat grid, `defs_mismatch` warning and collapsed non-computed list (RS-5).
+- `vehicle-analyzer/src/services/rideSummaryLayout.ts`: pure range precision, value formatting, bar scaling, cell lookup and heat opacity helpers; `tests/rideSummaryLayout.test.ts` covers them.
+- `vehicle-analyzer/tests/components/RideSummary.test.tsx` and the SessionPanel integration test cover every state and the no-refetch-per-keystroke rule.
+- `vehicle-analyzer/src/services/compare.ts` and `src/components/ComparePanel.tsx`: common scalar summary rows, A / B / B−A / unit table, status text for non-computed sides and a second CSV block (RS-6); tests in `tests/compare.test.ts` and `tests/components/ComparePanel.test.tsx`.
+- `vehicle-analyzer/src/services/rideHistoryLayout.ts` and `src/components/RideHistoryPanel.tsx`: the Ride history view (`N`) with a `/rides` query, optional UTC date range, up to four scalar columns from the response, order/time x-axis, gap-aware line/dot charts, hover session/value/flag details and click-to-open in Recorded sessions (RS-7); wired into `App.tsx`, `Header.tsx`, `ui/keys.ts` and `types/can.ts`, with tests in `tests/rideHistoryLayout.test.ts` and `tests/components/RideHistoryPanel.test.tsx`.
+
+## Result
+
+| Task | Status | Evidence |
+|---|---|---|
+| RS-1 `GET /sessions/{id}/summary` | done | `vehicle-server/src/vehicle_server/ride_summary.py:180` (`build_ride_summary`) and `:206` (`load_ride_summary`); route `src/vehicle_server/api.py:238`; tests `tests/test_ride_summary.py:141-343` (19 total, 10 summary cases) |
+| RS-2 `GET /rides` | done | `vehicle-server/src/vehicle_server/ride_summary.py:236` (`select_scalar_names`), `:265` (`parse_utc_bound`), `:302` (`build_rides`); route `src/vehicle_server/api.py:248`; tests `tests/test_ride_summary.py:345-448` |
+| RS-3 Server docs | done | `vehicle-server/README.md` `/summary` and `/rides` table rows, examples and E-26 (1) sentence |
+| RS-4 Analyzer clients | done | `vehicle-analyzer/src/services/sessionClient.ts` `fetchRideSummary`/`fetchRides`; `tests/rideSummaryClient.test.ts` (12 tests); commit `92a542e` |
+| RS-5 Ride summary card (`E`) | done | `vehicle-analyzer/src/components/RideSummary.tsx`, `src/services/rideSummaryLayout.ts`, `tests/components/RideSummary.test.tsx`; commit `40cd616` |
+| RS-6 Compare summary table (`A`) | done | `vehicle-analyzer/src/services/compare.ts` (`compareRideSummaries`, CSV block), `src/components/ComparePanel.tsx`; commit `1e56fba` |
+| RS-7 Ride history view (`N`) | done | `vehicle-analyzer/src/components/RideHistoryPanel.tsx`, `src/services/rideHistoryLayout.ts`, `tests/components/RideHistoryPanel.test.tsx` (7 tests), `tests/rideHistoryLayout.test.ts` (4 tests); commit `5c2614b` |
+| RS-8 UI smoke + docs | done (by Claude: the opencode session stopped before RS-8) | `vehicle-analyzer/ui-tests/ride-summary.spec.ts` (E card + no-summary state, N view + click to E, only own origins), `ui-tests/views.spec.ts` (N added), `docs/ROADMAP.md` A10 row, `README.md`; commit `eda0005` on `claude/analyzer-ride-summary` |
+
+## Checks
+- `cd vehicle-server && uv run pytest -q`: pass, `432 passed, 1 warning` (2026-11-02).
+- `cd vehicle-server && uv run ruff check .`: pass.
+- `cd vehicle-server && uv run ruff format --check .`: pass, `73 files already formatted`.
+- `python3 scripts/check_zones.py vehicle-server --base origin/main --path src/vehicle_server/ride_summary.py`: GREEN.
+- `python3 scripts/check_zones.py vehicle-server --base origin/main --path src/vehicle_server/api.py`: GREEN.
+- `python3 scripts/check_zones.py vehicle-server --base origin/main --path tests/test_ride_summary.py`: GREEN.
+- `python3 scripts/check_zones.py vehicle-server --base origin/main --path README.md`: GREEN.
+- `cd vehicle-analyzer && npx vitest run tests/rideSummaryClient.test.ts`: pass, 12 tests.
+- `cd vehicle-analyzer && npm test`: pass, 228 tests.
+- `cd vehicle-analyzer && npm run build`: pass (Vite chunk-size warning only).
+- `python3 scripts/check_zones.py vehicle-analyzer --base origin/main --path src/services/sessionClient.ts tests/rideSummaryClient.test.ts`: GREEN.
+- `cd vehicle-analyzer && npm test`: pass, 239 tests (after RS-5).
+- `cd vehicle-analyzer && npm run build`: pass (after RS-5; Vite chunk-size warning only).
+- `python3 scripts/check_zones.py vehicle-analyzer --base origin/main --path src/components/RideSummary.tsx src/components/SessionPanel.tsx src/services/rideSummaryLayout.ts tests/rideSummaryLayout.test.ts tests/components/RideSummary.test.tsx tests/components/SessionPanel.test.tsx`: GREEN.
+- `cd vehicle-analyzer && npm test`: pass, 242 tests (after RS-6).
+- `cd vehicle-analyzer && npm run build`: pass (after RS-6; Vite chunk-size warning only).
+- `python3 scripts/check_zones.py vehicle-analyzer --base origin/main --path src/services/compare.ts src/components/ComparePanel.tsx tests/compare.test.ts tests/components/ComparePanel.test.tsx`: GREEN.
+- `cd vehicle-analyzer && npm test`: pass, 253 tests (after RS-7).
+- `cd vehicle-analyzer && npm run build`: pass (after RS-7; Vite chunk-size warning only).
+- `python3 scripts/check_zones.py vehicle-analyzer --base origin/main --path src/App.tsx src/components/Header.tsx src/types/can.ts src/ui/keys.ts src/components/RideHistoryPanel.tsx src/services/rideHistoryLayout.ts tests/components/RideHistoryPanel.test.tsx tests/rideHistoryLayout.test.ts`: GREEN.
+
+- (Claude, RS-8) `cd vehicle-analyzer && npx playwright test`: pass, 17 tests; `npm test`: 253 passed; `npm run build`: pass; zone check GREEN.
+
+## Unsure about
+- `/rides` `from`/`to` parsing is ours (there was no existing session-list date parser): date-only means the whole UTC day, timestamps without an offset are UTC, offsets are converted. An inverted range is not an error; it returns no rows after the normal filter.
+- `/rides` treats a present, non-error `derived_summary` block as a computable row even when one or more values are not computed; those values are null and their status is in `flags`. A report missing the signal gives `flags: "missing"`.
+- `/summary` returns the stored `bin0`/`bin1` edges and sets `defs_mismatch` when they differ from the pinned defs. If a stored binned signal has no parquet file/rows, it is a 404 (`session has no ride summary`) rather than a 500.
+- Scalar values/flags are returned from the report block; a test ingests `v4_session` and asserts they agree with the parquet scalar rows.
+- `/summary` emits signals in global defs order, not the record-grouped order of the report's `records` object.
+- The analyzer parsers are strict: an unknown summary status, a binned cell whose axes do not match the axis list, or a rides cell without a column value is rejected with a `Malformed ...` error instead of being drawn. A 404 with the exact detail `session has no ride summary` becomes `NoRideSummaryError`, a state the UI can show.
+- RS-5 formats values with decimals derived from the signal range (`4 - floor(log10(span))`, capped 0..6). Binned charts use the response axes/edges; the collapsed list includes status plus reason/message/pending/missing.
+- RS-6 loads both summaries in parallel with the series; a missing/malformed summary is a note, not a failed Compare. The table lists same-name signals from A, skips computed binned signals, and uses the status text where a side is not computed. The CSV second block reuses the same `#` comment style.
+- RS-7 reuses the `/rides` response order and only offers its columns; null values are gaps in the chart and never interpolated. The x-axis is either the response order or the session `created_utc`; the picker is capped at four columns and persisted with the other panel layouts. `N` was free and is now a global key.
+
+## For Claude
+- `vehicle-server/CLAUDE.md` still lists only the older read routes; please add `/summary` and `/rides` there if the wording is useful (red/synced file, not edited).
+- E-26 (1) is deliberately untouched: `ride_distance_gps` integrates GNSS speed without a fix-type gate. `/summary` shows the stored value as computed; README notes the open decision.
+- Confirm the `/rides` date-bound choice (date-only whole UTC day; offsetless timestamps UTC; inverted range empty) and whether `skipped` should count only missing/error blocks, as implemented.
+- `/summary` sets `defs_mismatch` only from stored cell edges; the parquet schema has two fixed edge pairs (`bin0`, `bin1`), so a future defs change to more than two axes would need a storage change.
+
+## Claude review
+- Zones: both branches GREEN. architecture-guard (sonnet): no BLOCKER/MAJOR; scope, invariant 2 (names/units/edges from defs or the response), no position, no new dependency, no forbidden edits, auth on both routes. vss-schema-guardian not run: no CAN/UDS/VSS/BLE literal in production code.
+- The opencode session stopped after RS-7 (everything committed and pushed); Claude did RS-8 on `claude/analyzer-ride-summary` (Playwright `ui-tests/ride-summary.spec.ts`, N in the views smoke test, ROADMAP A10, README).
+- Fixed (server, `claude/server-ride-summary`, d7473e6): `/rides` counted sessions without a summary block even outside `from`/`to` (now only in range, test added); the report / summary-block checks written three times are shared (`_read_report`, `_summary_block`); redundant name condition removed; `select_scalar_names` docstring said defs order while it keeps query order (README right). `vehicle-server/CLAUDE.md` Read API lists `/summary` and `/rides` (the *For Claude* request).
+- Accepted as is: key `N` (`R` is the panels' Refresh); the `from`/`to` rules (date-only = whole UTC day, offsetless = UTC, inverted range = empty); `skipped` counts missing/error blocks only; the analyzer Compare summary load is button-driven and busy-guarded, the card cancels on session change.
+- Left (MINOR, no ISSUES row): `/rides` opens every `report.json` instead of using the index `has_derived` flag (fine at prototype scale); the RideSummary card formats `total_s`/`outside_s` with a fixed presentation range; with a defs change in bin *count* the stored cell indices are mapped through the new defs layout, so `defs_mismatch` is set but the returned edges can mix stored and defs values. The parquet stores at most two bin axes (`bin0`, `bin1`).
+- Open requests: a vehicle-mcp ride-summary tool was not proposed in the log; the mcp tool list needs the user's approval anyway. E-26 (1) unchanged.
+- Merge order: vehicle-server#46, then vehicle-analyzer#39, then vehicle-workspace#139.
