@@ -29,10 +29,11 @@ Track view (key `G`) to the analyzer, without storing or exposing absolute posit
   map to 404.
 - `vehicle-server/README.md`: `/track` row with the contract, the colour staleness rule and the
   privacy caveat.
-- `vehicle-server/tests/test_gps_track.py`: 18 pure cases (straight, circle, heading wrap, gaps,
-  no-fix/stale fix, defs enum lookup, low-speed heading hold, no segment before a trusted
-  heading, RDP bounds, too many segments, colour staleness, single sample, all no-fix,
-  non-finite input, short session, non-finite `min_heading_speed_mps`).
+- `vehicle-server/tests/test_gps_track.py`: 20 pure cases (straight, circle, heading wrap, gaps,
+  no-fix/stale fix, defs enum lookup by name with shifted values, low-speed heading hold, no
+  segment before a trusted heading, heading trust restarting after a gap, RDP bounds, too many
+  segments, colour staleness, single sample, all no-fix, non-finite input, short session,
+  non-finite `min_heading_speed_mps`).
 - `vehicle-server/tests/test_track_api.py`: 16 API cases (auth, unknown/malformed session, no
   GPS, t0 equality with `/series`, max_points, defs colour unit and staleness, position/unknown
   colour refusal, window before integration, 422 bounds, single sample, all no-fix, empty and
@@ -56,7 +57,7 @@ Track view (key `G`) to the analyzer, without storing or exposing absolute posit
   global `G`; `src/types/can.ts`: the `track` view id.
 - `vehicle-analyzer/src/components/ComparePanel.tsx` (line 77): stretch TR-7 `Tracks` toggle
   draws both relative tracks on one canvas with two colours, each from its own origin.
-- `vehicle-analyzer/tests/trackGeometry.test.ts` (12), `tests/trackClient.test.ts` (9),
+- `vehicle-analyzer/tests/trackGeometry.test.ts` (12), `tests/trackClient.test.ts` (10),
   `tests/components/TrackPanel.test.tsx` (7), `tests/components/ComparePanel.test.tsx` (2).
 - `vehicle-analyzer/ui-tests/track.spec.ts`: records every request, loads the track, zooms,
   changes colour and asserts only the app and configured server origins; `ui-tests/views.spec.ts`
@@ -66,17 +67,18 @@ Track view (key `G`) to the analyzer, without storing or exposing absolute posit
 ## Result
 | Task | Code | Tests | Status |
 |---|---|---|---|
-| TR-1 | `vehicle-server/src/vehicle_server/gps_track.py:327` (`build_track`), `:140` (`_usable_samples`), `:231` (`_build_segments_with_positions`), `:282` (`simplify_segments`) | `tests/test_gps_track.py` (18) | done |
+| TR-1 | `vehicle-server/src/vehicle_server/gps_track.py:335` (`build_track`), `:140` (`_usable_samples`), `:239` (`_build_segments_with_positions`), `:290` (`simplify_segments`) | `tests/test_gps_track.py` (20) | done |
 | TR-2 | `vehicle-server/src/vehicle_server/api.py:152` (`get_session_track`), `vehicle-server/README.md` | `tests/test_track_api.py` (16) | done |
 | TR-3 | `vehicle-server/tests/test_track_crosscheck.py:36` and `:53` | 2 cases | done |
-| TR-4 | `vehicle-analyzer/src/services/trackGeometry.ts:94`, `trackClient.ts:65`/`:174` | `tests/trackGeometry.test.ts` (12), `tests/trackClient.test.ts` (9) | done |
+| TR-4 | `vehicle-analyzer/src/services/trackGeometry.ts:94`, `trackClient.ts:65`/`:179` | `tests/trackGeometry.test.ts` (12), `tests/trackClient.test.ts` (10) | done |
 | TR-5 | `vehicle-analyzer/src/components/TrackPanel.tsx:178`, `src/App.tsx:477`, `src/components/Header.tsx:47` | `tests/components/TrackPanel.test.tsx` (7), `ui-tests/views.spec.ts` | done |
 | TR-6 | `vehicle-analyzer/ui-tests/track.spec.ts` | Playwright request-origin test | done |
 | TR-7 | `vehicle-analyzer/src/components/ComparePanel.tsx:77` | `tests/components/ComparePanel.test.tsx:48` | done (stretch) |
 | TR-8 | `vehicle-analyzer/README.md`, `docs/ROADMAP.md` | docs only | done |
 
-Commits: server `18d2107`, `8ac9b60`, `60d5935`, `ae30cb5`; analyzer `fc1dacd`, `654d9dc`,
-`bbb339e`, `c7f03fd`, `4b192ec`, `a5bbc0b`; log branch starts at `c519d60`.
+Commits: server `18d2107`, `8ac9b60`, `60d5935`, `ae30cb5`, `9f60fff`; analyzer `fc1dacd`,
+`654d9dc`, `bbb339e`, `c7f03fd`, `4b192ec`, `a5bbc0b`, `83dc737`; log branch starts at
+`c519d60`.
 
 ### TR-3 finding
 `derived.ride_distance_gps` is implemented, but its `_integral` only integrates the speed
@@ -88,10 +90,10 @@ derived value is `0.0055783 km` and the track is `0.00559665 km`; the difference
 ## Checks
 - `cd vehicle-server && uv run ruff check .`: pass.
 - `cd vehicle-server && uv run ruff format --check .`: pass (71 files already formatted).
-- `cd vehicle-server && uv run pytest -q`: `404 passed, 1 warning in 12.54s`.
+- `cd vehicle-server && uv run pytest -q`: `406 passed, 1 warning in 13.63s`.
 - `python3 scripts/check_zones.py vehicle-server --base origin/main`: YELLOW for
   `src/vehicle_server/gps_track.py` and `tests/test_gps_track.py`; the other changed files GREEN.
-- `cd vehicle-analyzer && npm test`: `202 passed` (30 files).
+- `cd vehicle-analyzer && npm test`: `203 passed` (30 files).
 - `cd vehicle-analyzer && npm run build`: pass (`tsc -b && vite build`; only the existing
   chunk-size warning).
 - `cd vehicle-analyzer && npm run test:ui`: `14 passed` (Playwright Chromium).
@@ -112,6 +114,12 @@ derived value is `0.0055783 km` and the track is `0.00559665 km`; the difference
 - `sensor.lean_angle` is deliberately not stored by real sessions, although defs has it. The
   API colour test monkeypatches `series.load_all`; a real `color=sensor.lean_angle` request
   returns 404. The test now takes the unit from `vehicle_derived.SENSORS`.
+- Heading trust is reset at a segment boundary (gap or excluded sample): a new segment must
+  start with a trustworthy heading rather than holding the previous segment's heading. This
+  follows the "first trusted heading of a segment" wording, but it is a behavioural choice
+  worth confirming.
+- A colour series may have a `null` unit; `TrackClient` now accepts it and the legend shows
+  `-` instead of inventing `m/s`. The server currently returns strings for the defs units.
 - `G` was already used by local shortcuts: Sessions/Compare refresh used `g` and Sync used
   `g`. I rebound them to `r` (Refresh, buttons show `R`) and `i` (log, button shows `I`) so
   global `G` is unambiguous. This changes existing muscle memory and should be reviewed.
@@ -137,6 +145,9 @@ derived value is `0.0055783 km` and the track is `0.00559665 km`; the difference
   belongs in Claude's red-zone edit; I did not touch those files.
 - Review the local shortcut rebinds (`g` -> `r`/`i`) and the `Compare` Tracks toggle for UI
   consistency.
+- Confirm that resetting the held heading at every segment boundary is what the safety/telemetry
+  contract wants; if the heading should be held across a gap, revert
+  `_usable_samples` to a run-global `last_heading`.
 - Consider whether `sensor.lean_angle` should be stored for colouring; currently real sessions
   cannot offer it and the test injects it.
 
