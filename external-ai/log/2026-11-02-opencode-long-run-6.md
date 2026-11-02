@@ -24,6 +24,7 @@ Expose the stored D-070 class-B ride summaries through read-only server APIs and
 - `vehicle-analyzer/src/components/RideSummary.tsx`: the Recorded sessions card with no-server/loading/no-summary/error/loaded states, scalar table, one-axis bars, two-axis heat grid, `defs_mismatch` warning and collapsed non-computed list (RS-5).
 - `vehicle-analyzer/src/services/rideSummaryLayout.ts`: pure range precision, value formatting, bar scaling, cell lookup and heat opacity helpers; `tests/rideSummaryLayout.test.ts` covers them.
 - `vehicle-analyzer/tests/components/RideSummary.test.tsx` and the SessionPanel integration test cover every state and the no-refetch-per-keystroke rule.
+- `vehicle-analyzer/src/services/compare.ts` and `src/components/ComparePanel.tsx`: common scalar summary rows, A / B / B−A / unit table, status text for non-computed sides and a second CSV block (RS-6); tests in `tests/compare.test.ts` and `tests/components/ComparePanel.test.tsx`.
 
 ## Result
 
@@ -34,7 +35,7 @@ Expose the stored D-070 class-B ride summaries through read-only server APIs and
 | RS-3 Server docs | done | `vehicle-server/README.md` `/summary` and `/rides` table rows, examples and E-26 (1) sentence |
 | RS-4 Analyzer clients | done | `vehicle-analyzer/src/services/sessionClient.ts` `fetchRideSummary`/`fetchRides`; `tests/rideSummaryClient.test.ts` (12 tests); commit `92a542e` |
 | RS-5 Ride summary card (`E`) | done | `vehicle-analyzer/src/components/RideSummary.tsx`, `src/services/rideSummaryLayout.ts`, `tests/components/RideSummary.test.tsx`; commit `40cd616` |
-| RS-6 Compare summary table (`A`) | todo | |
+| RS-6 Compare summary table (`A`) | done | `vehicle-analyzer/src/services/compare.ts` (`compareRideSummaries`, CSV block), `src/components/ComparePanel.tsx`; commit `1e56fba` |
 | RS-7 Ride history view | todo | |
 | RS-8 UI smoke + docs | todo | |
 
@@ -53,6 +54,9 @@ Expose the stored D-070 class-B ride summaries through read-only server APIs and
 - `cd vehicle-analyzer && npm test`: pass, 239 tests (after RS-5).
 - `cd vehicle-analyzer && npm run build`: pass (after RS-5; Vite chunk-size warning only).
 - `python3 scripts/check_zones.py vehicle-analyzer --base origin/main --path src/components/RideSummary.tsx src/components/SessionPanel.tsx src/services/rideSummaryLayout.ts tests/rideSummaryLayout.test.ts tests/components/RideSummary.test.tsx tests/components/SessionPanel.test.tsx`: GREEN.
+- `cd vehicle-analyzer && npm test`: pass, 242 tests (after RS-6).
+- `cd vehicle-analyzer && npm run build`: pass (after RS-6; Vite chunk-size warning only).
+- `python3 scripts/check_zones.py vehicle-analyzer --base origin/main --path src/services/compare.ts src/components/ComparePanel.tsx tests/compare.test.ts tests/components/ComparePanel.test.tsx`: GREEN.
 
 ## Unsure about
 - `/rides` `from`/`to` parsing is ours (there was no existing session-list date parser): date-only means the whole UTC day, timestamps without an offset are UTC, offsets are converted. An inverted range is not an error; it returns no rows after the normal filter.
@@ -62,6 +66,7 @@ Expose the stored D-070 class-B ride summaries through read-only server APIs and
 - `/summary` emits signals in global defs order, not the record-grouped order of the report's `records` object.
 - The analyzer parsers are strict: an unknown summary status, a binned cell whose axes do not match the axis list, or a rides cell without a column value is rejected with a `Malformed ...` error instead of being drawn. A 404 with the exact detail `session has no ride summary` becomes `NoRideSummaryError`, a state the UI can show.
 - RS-5 formats values with decimals derived from the signal range (`4 - floor(log10(span))`, capped 0..6). Binned charts use the response axes/edges; the collapsed list includes status plus reason/message/pending/missing.
+- RS-6 loads both summaries in parallel with the series; a missing/malformed summary is a note, not a failed Compare. The table lists same-name signals from A, skips computed binned signals, and uses the status text where a side is not computed. The CSV second block reuses the same `#` comment style.
 
 ## For Claude
 - `vehicle-server/CLAUDE.md` still lists only the older read routes; please add `/summary` and `/rides` there if the wording is useful (red/synced file, not edited).
