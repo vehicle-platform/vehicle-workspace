@@ -4,9 +4,9 @@ tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-6-ride-summary
 repos: [vehicle-server, vehicle-analyzer, vehicle-workspace]
 branches: [vehicle-server:ext/opencode-server-ride-summary, vehicle-analyzer:ext/opencode-analyzer-ride-summary, vehicle-workspace:ext/opencode-long-run-6-log]
-prs: []
+prs: [vehicle-server#46, vehicle-analyzer#39, vehicle-workspace#139]
 zone: green
-review: pending
+review: done 2026-11-02 (no zone breach, no BLOCKER/MAJOR; Claude finished RS-8 and fixed /rides skipped counting; server#46 (supersedes #45), analyzer#39, workspace#139)
 ---
 
 # long-run-6 ride summaries
@@ -82,4 +82,10 @@ Expose the stored D-070 class-B ride summaries through read-only server APIs and
 - `/summary` sets `defs_mismatch` only from stored cell edges; the parquet schema has two fixed edge pairs (`bin0`, `bin1`), so a future defs change to more than two axes would need a storage change.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+- Zones: both branches GREEN. architecture-guard (sonnet): no BLOCKER/MAJOR; scope, invariant 2 (names/units/edges from defs or the response), no position, no new dependency, no forbidden edits, auth on both routes. vss-schema-guardian not run: no CAN/UDS/VSS/BLE literal in production code.
+- The opencode session stopped after RS-7 (everything committed and pushed); Claude did RS-8 on `claude/analyzer-ride-summary` (Playwright `ui-tests/ride-summary.spec.ts`, N in the views smoke test, ROADMAP A10, README).
+- Fixed (server, `claude/server-ride-summary`, d7473e6): `/rides` counted sessions without a summary block even outside `from`/`to` (now only in range, test added); the report / summary-block checks written three times are shared (`_read_report`, `_summary_block`); redundant name condition removed; `select_scalar_names` docstring said defs order while it keeps query order (README right). `vehicle-server/CLAUDE.md` Read API lists `/summary` and `/rides` (the *For Claude* request).
+- Accepted as is: key `N` (`R` is the panels' Refresh); the `from`/`to` rules (date-only = whole UTC day, offsetless = UTC, inverted range = empty); `skipped` counts missing/error blocks only; the analyzer Compare summary load is button-driven and busy-guarded, the card cancels on session change.
+- Left (MINOR, no ISSUES row): `/rides` opens every `report.json` instead of using the index `has_derived` flag (fine at prototype scale); the RideSummary card formats `total_s`/`outside_s` with a fixed presentation range; with a defs change in bin *count* the stored cell indices are mapped through the new defs layout, so `defs_mismatch` is set but the returned edges can mix stored and defs values. The parquet stores at most two bin axes (`bin0`, `bin1`).
+- Open requests: a vehicle-mcp ride-summary tool was not proposed in the log; the mcp tool list needs the user's approval anyway. E-26 (1) unchanged.
+- Merge order: vehicle-server#46, then vehicle-analyzer#39, then vehicle-workspace#139.
