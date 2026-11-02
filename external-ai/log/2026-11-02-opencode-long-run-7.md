@@ -21,6 +21,7 @@ Add read-only ride history and ride summary views to vehicle-mobile, using the e
 - `vehicle-mobile/lib/ui/rides/ride_history_screen.dart`: cross-session ride history (MR-4).
 - `vehicle-mobile/lib/ui/rides/ride_summary_screen.dart`: one-session ride summary (MR-5).
 - `vehicle-mobile/lib/ui/record_screen.dart`, `README.md`: Record-screen link and docs (MR-6).
+- MR-6 verified that `vehicle-server/src/vehicle_server/ingest.py` stores the `session_id` from `meta.json`, and `session_recorder.dart` writes the same generated id into the session directory name and `meta.json`; an uploaded local session therefore uses the server's stored id.
 
 ## Result
 
@@ -31,10 +32,11 @@ Add read-only ride history and ride summary views to vehicle-mobile, using the e
 | MR-3 Formatting helpers | done | `vehicle-mobile/lib/ui/rides/ride_format.dart`; `test/ride_format_test.dart`; commit `9781f7c` |
 | MR-4 Ride history screen | done | `vehicle-mobile/lib/ui/rides/ride_history_screen.dart`, `ride_widgets.dart`; `test/ride_history_screen_test.dart`; commit `8cb9645` |
 | MR-5 Ride summary screen | done | `vehicle-mobile/lib/ui/rides/ride_summary_screen.dart`; `test/ride_summary_screen_test.dart`; commit `310787d` |
-| MR-6 Record link + docs | todo | |
+| MR-6 Record link + docs | done | `vehicle-mobile/lib/ui/record_screen.dart`, `README.md`; `test/record_ride_actions_test.dart`; commit `4eb401e` |
 
 ## Checks
-- Local Flutter found at `~/development/flutter/bin/flutter` (3.44.8, Dart 3.12.2): `flutter analyze` clean and `flutter test` 284 passing after MR-4. `pubspec.lock` was restored after each run (no lock rewrite committed).
+- Local Flutter found at `~/development/flutter/bin/flutter` (3.44.8, Dart 3.12.2): `flutter analyze` clean and `flutter test` 293 passing after MR-6. `pubspec.lock` was restored after each run (no lock rewrite committed).
+- Zone check: `GREEN` for every changed path.
 
 ## Unsure about
 - `GET /rides` `skipped` is an `int` count of sessions inside the requested range whose `derived_summary` block is missing or errored, not a list. MR-1 models it as `int`.
