@@ -38,7 +38,7 @@ Expose the stored D-070 class-B ride summaries through read-only server APIs and
 | RS-5 Ride summary card (`E`) | done | `vehicle-analyzer/src/components/RideSummary.tsx`, `src/services/rideSummaryLayout.ts`, `tests/components/RideSummary.test.tsx`; commit `40cd616` |
 | RS-6 Compare summary table (`A`) | done | `vehicle-analyzer/src/services/compare.ts` (`compareRideSummaries`, CSV block), `src/components/ComparePanel.tsx`; commit `1e56fba` |
 | RS-7 Ride history view (`N`) | done | `vehicle-analyzer/src/components/RideHistoryPanel.tsx`, `src/services/rideHistoryLayout.ts`, `tests/components/RideHistoryPanel.test.tsx` (7 tests), `tests/rideHistoryLayout.test.ts` (4 tests); commit `5c2614b` |
-| RS-8 UI smoke + docs | todo | |
+| RS-8 UI smoke + docs | done (by Claude: the opencode session stopped before RS-8) | `vehicle-analyzer/ui-tests/ride-summary.spec.ts` (E card + no-summary state, N view + click to E, only own origins), `ui-tests/views.spec.ts` (N added), `docs/ROADMAP.md` A10 row, `README.md`; commit `eda0005` on `claude/analyzer-ride-summary` |
 
 ## Checks
 - `cd vehicle-server && uv run pytest -q`: pass, `432 passed, 1 warning` (2026-11-02).
@@ -61,6 +61,8 @@ Expose the stored D-070 class-B ride summaries through read-only server APIs and
 - `cd vehicle-analyzer && npm test`: pass, 253 tests (after RS-7).
 - `cd vehicle-analyzer && npm run build`: pass (after RS-7; Vite chunk-size warning only).
 - `python3 scripts/check_zones.py vehicle-analyzer --base origin/main --path src/App.tsx src/components/Header.tsx src/types/can.ts src/ui/keys.ts src/components/RideHistoryPanel.tsx src/services/rideHistoryLayout.ts tests/components/RideHistoryPanel.test.tsx tests/rideHistoryLayout.test.ts`: GREEN.
+
+- (Claude, RS-8) `cd vehicle-analyzer && npx playwright test`: pass, 17 tests; `npm test`: 253 passed; `npm run build`: pass; zone check GREEN.
 
 ## Unsure about
 - `/rides` `from`/`to` parsing is ours (there was no existing session-list date parser): date-only means the whole UTC day, timestamps without an offset are UTC, offsets are converted. An inverted range is not an error; it returns no rows after the normal filter.
