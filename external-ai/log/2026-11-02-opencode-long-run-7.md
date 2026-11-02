@@ -4,9 +4,9 @@ tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-7-mobile-ride-history
 repos: [vehicle-mobile, vehicle-workspace]
 branches: [vehicle-mobile:ext/opencode-mobile-ride-history, vehicle-workspace:ext/opencode-long-run-7-log]
-prs: []
+prs: [vehicle-mobile#26]
 zone: green
-review: pending
+review: done 2026-11-02 (no zone breach, no BLOCKER; Claude fixed a copied helper, strict-parse failures, heat-grid orientation, 10^n precision; vehicle-mobile#26)
 ---
 
 # long-run-7 mobile ride history
@@ -49,4 +49,8 @@ Add read-only ride history and ride summary views to vehicle-mobile, using the e
 - No red-zone or yellow-zone change. `pubspec.yaml` unchanged.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+- Zones: every path green; `pubspec.yaml`/`pubspec.lock`, `external/`, `.github/`, BLE code and the upload behaviour untouched. Every commit has the `AI-Agent:` trailer. No PR was opened by the tool; Claude opened vehicle-mobile#26 from `claude/mobile-ride-history` (the seven external commits + one Claude commit).
+- Checks (local, Flutter 3.44.8): `flutter analyze` no issues, `flutter test` 293 passed, before and after the fixes.
+- architecture-guard (sonnet): no BLOCKER. Fixed by Claude: (1) MAJOR `http_message.dart` was not shared, `UploadClient` kept a copy (now uses it); (2) a stored entry with `status: null` (served as such by `ride_summary.py` `_signal_entry`) failed the whole summary, as did an unknown computed `kind`: both are now one unavailable row; (3) heat grid now rows = `axes[0]`, columns = `axes[1]` like the analyzer and the server's row-major cells (the task text had it the other way; Claude's spec error, the tool followed it correctly); > 2 axes shows a note instead of an empty grid; (4) `precisionForRange` was one decimal off at spans of exactly 10^n (Dart `log/ln10` vs JS `Math.log10`), tests added; (5) deduplicated loading/warning/date helpers, range label says "UTC days", `–` placeholder like the analyzer.
+- Answers to *Unsure about*: `skipped` as an int is right; observed min/max for `/rides` precision matches the analyzer's history panel (kept).
+- Follow-up: ISSUES **E-27** (axis edges formatted with the signal's range, analyzer and mobile alike). No mcp ride-summary tool requested.
