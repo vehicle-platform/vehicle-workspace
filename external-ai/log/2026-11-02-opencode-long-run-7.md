@@ -29,19 +29,21 @@ Add read-only ride history and ride summary views to vehicle-mobile, using the e
 | MR-1 Models + strict parsing | done | `vehicle-mobile/lib/models/ride_summary.dart`; `test/ride_summary_model_test.dart`; commit `67202a6` |
 | MR-2 Read client | done | `vehicle-mobile/lib/services/ride_client.dart`, `lib/services/http_message.dart`; `test/ride_client_test.dart`; commit `4e111bd` |
 | MR-3 Formatting helpers | done | `vehicle-mobile/lib/ui/rides/ride_format.dart`; `test/ride_format_test.dart`; commit `9781f7c` |
-| MR-4 Ride history screen | todo | |
+| MR-4 Ride history screen | done | `vehicle-mobile/lib/ui/rides/ride_history_screen.dart`, `ride_widgets.dart`; `test/ride_history_screen_test.dart`; commit `8cb9645` |
 | MR-5 Ride summary screen | todo | |
 | MR-6 Record link + docs | todo | |
 
 ## Checks
-- Local Flutter toolchain: not installed in this session (`flutter` not found); CI runs `flutter analyze` and `flutter test`.
+- Local Flutter found at `~/development/flutter/bin/flutter` (3.44.8, Dart 3.12.2): `flutter analyze` clean and `flutter test` 284 passing after MR-4. `pubspec.lock` was restored after each run (no lock rewrite committed).
 
 ## Unsure about
 - `GET /rides` `skipped` is an `int` count of sessions inside the requested range whose `derived_summary` block is missing or errored, not a list. MR-1 models it as `int`.
 - The server rejects names that are not class-B scalars; the app renders only the response columns.
+- `GET /rides` columns carry no per-signal range, so history rows use the observed min/max of that column in the current response for the MR-3 precision rule; the summary screen uses the response range.
+- MR-1 strict-field tests expected labels that were not in the model's field-path messages; commit `5ebbed4` aligns the expectations with `axes[0].unit`, `cells[0].axes`, `signals[3].name`/`status`.
 
 ## For Claude
-- Flutter is not installed locally; only CI can run analyze/tests for this run.
+- No red-zone or yellow-zone change. `pubspec.yaml` unchanged.
 
 ## Claude review
 (Filled by Claude's /external-review: findings, fixes, PRs.)
