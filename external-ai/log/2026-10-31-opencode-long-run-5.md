@@ -4,9 +4,9 @@ tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-5-relative-track
 repos: [vehicle-server, vehicle-analyzer, vehicle-workspace]
 branches: [vehicle-server:ext/opencode-server-track, vehicle-analyzer:ext/opencode-analyzer-track, vehicle-workspace:ext/opencode-long-run-5-log]
-prs: [vehicle-server#42, vehicle-analyzer#37, vehicle-workspace#136]
+prs: [vehicle-server#42, vehicle-analyzer#37, vehicle-workspace#136; review: vehicle-server#43, vehicle-analyzer#38]
 zone: yellow
-review: pending
+review: done 2026-11-02 (no zone breach, no blocker; TR-1..TR-8 conform; Claude fixed RDP cost (60+ full RDP passes -> one significance pass, exact), a candidate-DID colour KeyError (500), per-keystroke refetches, a Compare stale-response race and aspect, lost zoom on refetch/resize, seek into another session's replay, passive wheel, CI-flaky seek test; server#43 supersedes #42, analyzer#38 supersedes #37, both merged, server CLAUDE.md #44; follow-ups ISSUES E-26)
 ---
 
 # DeepSeek long run 5 — relative ride track
@@ -154,4 +154,14 @@ derived value is `0.0055783 km` and the track is `0.00559665 km`; the difference
   cannot offer it and the test injects it.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+Reviewed 2026-11-02 by Claude (architecture-guard + a sonnet correctness review of the analyzer + Claude on the yellow `gps_track.py`). Zones: no red path; `gps_track.py` and its test yellow, the rest green. No BLOCKER: no absolute position anywhere, `position.py` reused, fix types by defs enum name, staleness from defs, synthetic data only, no new dependency, no third-party request (the Playwright origin test does fail on one).
+
+Fixed by Claude (DeepSeek's commits kept, Claude's on top):
+- MAJOR server: the `max_points` search reran RDP over every point at each of 60+ bisection steps (2.65 s for one hour at 10 Hz). Now one RDP pass gives each point its significance (smallest squared distance on its split chain); keeping the points above the (max_points + 1)-th value is exactly RDP at that tolerance (test against a textbook RDP at five tolerances); 0.14 s, with a timing test.
+- MAJOR server: `color=did.<candidate>` raised KeyError (HTTP 500): candidate catalog DIDs have no poll-plan `stale_after_ms`; now held, documented.
+- MAJOR analyzer: every URL/token keystroke fetched `/series` + `/track` (partial URLs, view wiped); now on session/colour change and Refresh only, in Track and Compare.
+- MAJOR analyzer: Compare overlay had no stale-response guard and a fixed 900x220 bitmap stretched by CSS (aspect broken); now guarded, CSS size x DPR, drawn through the shared `src/ui/trackDraw.ts`.
+- MAJOR analyzer: zoom/pan was lost on a colour refetch and on resize; now kept (`resizeView`), refit only on a new session or Fit.
+- MINOR analyzer: click-to-seek used whatever replay was loaded (another session or an .asc/.csv log); now only when the replay is the same recorded session, with a hint otherwise. Native non-passive wheel listener, pan with the primary button only, redraw on DPR change, `fitView` padding clamp, `isRecord`/`FetchLike`/`getJson` reused from `sessionClient.ts`. A seek test clicked before the view was fitted and failed on CI; it now retries.
+
+Answers to *For Claude*: empty/inverted window 200 with no segments is accepted (same as `/series` windowing); `points_total` semantics accepted; the heading-trust reset at a segment boundary is right (a held heading must not cross unknown movement); the `g` -> `r`/`i` rebinds are accepted. `ride_distance_gps` ignoring its `gps_fix_type` input, `lean_angle` not stored in phase-0 sessions and A7b are ISSUES E-26. CLAUDE.md: server `/track` line added by Claude (vehicle-server#44); the analyzer CLAUDE.md lists no views, so nothing was added there.
