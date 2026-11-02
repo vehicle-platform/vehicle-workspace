@@ -26,7 +26,7 @@ Add read-only ride history and ride summary views to vehicle-mobile, using the e
 
 | Task | Status | Evidence |
 |---|---|---|
-| MR-1 Models + strict parsing | todo | |
+| MR-1 Models + strict parsing | done | `vehicle-mobile/lib/models/ride_summary.dart`; `test/ride_summary_model_test.dart`; commit `67202a6` |
 | MR-2 Read client | todo | |
 | MR-3 Formatting helpers | todo | |
 | MR-4 Ride history screen | todo | |
@@ -37,7 +37,7 @@ Add read-only ride history and ride summary views to vehicle-mobile, using the e
 - Local Flutter toolchain: not installed in this session (`flutter` not found); CI runs `flutter analyze` and `flutter test`.
 
 ## Unsure about
-- The exact type of `skipped`: read from `vehicle-server/src/vehicle_server/ride_summary.py` (to confirm while implementing MR-1).
+- `GET /rides` `skipped` is an `int` count of sessions inside the requested range whose `derived_summary` block is missing or errored, not a list. MR-1 models it as `int`.
 - The server rejects names that are not class-B scalars; the app renders only the response columns.
 
 ## For Claude
