@@ -30,7 +30,7 @@ Add read-only ride history and ride summary views to vehicle-mobile, using the e
 | MR-2 Read client | done | `vehicle-mobile/lib/services/ride_client.dart`, `lib/services/http_message.dart`; `test/ride_client_test.dart`; commit `4e111bd` |
 | MR-3 Formatting helpers | done | `vehicle-mobile/lib/ui/rides/ride_format.dart`; `test/ride_format_test.dart`; commit `9781f7c` |
 | MR-4 Ride history screen | done | `vehicle-mobile/lib/ui/rides/ride_history_screen.dart`, `ride_widgets.dart`; `test/ride_history_screen_test.dart`; commit `8cb9645` |
-| MR-5 Ride summary screen | todo | |
+| MR-5 Ride summary screen | done | `vehicle-mobile/lib/ui/rides/ride_summary_screen.dart`; `test/ride_summary_screen_test.dart`; commit `310787d` |
 | MR-6 Record link + docs | todo | |
 
 ## Checks
@@ -41,6 +41,7 @@ Add read-only ride history and ride summary views to vehicle-mobile, using the e
 - The server rejects names that are not class-B scalars; the app renders only the response columns.
 - `GET /rides` columns carry no per-signal range, so history rows use the observed min/max of that column in the current response for the MR-3 precision rule; the summary screen uses the response range.
 - MR-1 strict-field tests expected labels that were not in the model's field-path messages; commit `5ebbed4` aligns the expectations with `axes[0].unit`, `cells[0].axes`, `signals[3].name`/`status`.
+- MR-5 orientation follows the task text literally (rows = `axes[1]`, columns = `axes[0]`), so the cell lookup is `[column, row]`; the analyzer `RideSummary.tsx` currently draws `axes[0]` as rows. The task text was treated as authoritative.
 
 ## For Claude
 - No red-zone or yellow-zone change. `pubspec.yaml` unchanged.
