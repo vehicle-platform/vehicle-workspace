@@ -233,8 +233,11 @@ uds/vehicle_cl250_uds.yaml` -> no matches; a direct half-tie check
   - `vehicle-analyzer`: **GREEN**.
   - `vehicle-mobile`: **GREEN**.
   - `vehicle-defs`: **GREEN**.
-  - workspace log path: **GREEN**.
-- Worst zone: **YELLOW**; no red-zone edit attempted.
+  - workspace: `external-ai/log/...` **GREEN**, `ISSUES.md` **YELLOW** (issue table).
+- Worst zone among the committed changes: **YELLOW**; no red-zone edit attempted. The full
+  worktree check also reports **RED** for the untracked task file
+  `external-ai/tasks/2026-11-02-deepseek-long-run-8.md`; that file was provided by Claude, was
+  not edited, and is intentionally not committed.
 
 ## Unsure about
 - The task table lists vehicle-server as green, but the actual path rule makes `gps_fix.py` and
