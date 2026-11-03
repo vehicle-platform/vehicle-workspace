@@ -4,9 +4,9 @@ tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-8-summary-gating-axis-precision
 repos: [vehicle-server, vehicle-rt-core, vehicle-analyzer, vehicle-mobile, vehicle-defs, vehicle-workspace]
 branches: [vehicle-server:ext/opencode-summary-input-gating, vehicle-rt-core:ext/opencode-golden-b-regen, vehicle-analyzer:ext/opencode-ride-axis-precision, vehicle-mobile:ext/opencode-ride-axis-precision, vehicle-defs:ext/opencode-ride-did-layout-review, vehicle-workspace:ext/opencode-long-run-8-log]
-prs: []
+prs: [vehicle-server#47, vehicle-rt-core#59, vehicle-analyzer#40, vehicle-mobile#27, vehicle-defs#116]
 zone: yellow
-review: pending
+review: done 2026-11-03 (no zone breach, no BLOCKER/MAJOR; Claude refactored the server gating, server#47, rt-core#59, analyzer#40, mobile#27, defs#116)
 ---
 
 # long-run-8: E-26 input gating, E-27 axis precision, C3 part 2b layout review
@@ -276,4 +276,12 @@ uds/vehicle_cl250_uds.yaml` -> no matches; a direct half-tie check
 - No signal, UDS, BLE, CAN, codegen, generated or firmware code was changed; LR8-6 is docs-only.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+2026-11-03, `/external-review`. Zones: server and rt-core YELLOW (as the log says), analyzer, mobile and defs GREEN; no red path. architecture-guard: no BLOCKER/MAJOR, 4 MINOR. vss-schema-guardian: no violation (`_GPS_FIX` follows the module's existing input-name constants; `USABLE_FIX_NAMES` was moved, not copied).
+
+- **vehicle-server (server#47, from `claude/review-lr8-gating` on top of the ext branch):** the gating is correct (unusable fix -> invalid sample -> `hold_segments` drops the stretch; no usable fix -> `missing_inputs`). Claude's commit: no swapping a feed inside the shared `SummaryEnv` (local two-input `Env`, both inputs still read through `env.feed` so the audit sees them), D-095 + `MissingInputs` in the module docstring, and the cross-check comment fixed. The 1.13 m increase on the fixture is not a "freshness tail": the last speed sample (9700 ms) is now held up to the fix-type breakpoint at 9800 ms, which is the class-A hold rule. pytest 455 passed, ruff clean.
+- **Log inaccuracy:** LR8-2 says a `ride_odometer_mismatch` stand-in test was added; no such test exists in any commit. It cannot exist yet (the signal is `not_ready`, 0xA6 odometer); revisit when the odometer lands.
+- **vehicle-rt-core (rt-core#59):** banner-only regeneration accepted, so the next regeneration is diff-free.
+- **vehicle-analyzer (analyzer#40), vehicle-mobile (mobile#27):** same rule and test cases; merged as written.
+- **vehicle-defs (defs#116, docs only):** checks are sound; Claude verified check 4 (`derived_ride_close()` keeps no epoch counter). Checks 3, 4 and 8 are inputs to the C3 part 2b decision (STATUS Next up 1), not resolved here.
+- New user question ISSUES E-26 (4): the shared fix rule accepts fix2d, the defs D-060 speed-check text names only fix3d/gnssDeadReckoning.
+- Merge order: any; all independent.
