@@ -10,7 +10,7 @@ repos:
 
   - name: vehicle-rt-core
     url: https://github.com/vehicle-platform/vehicle-rt-core.git
-    ref: v0.11.0          # commit babca5b (D-080 DTC freeze frames in the tester, D-086 lean sender rule (E-22), `features/derived` part 1 (28 class-A signals, D-070); pins defs v0.19.0; v0.10.0 skipped); v0.9.0 = e654120 (heartbeat 0x081 D-064, EKF lean link D-065, 0xFD03 LEAN_HEALTH D-067 + rt-core#46 follow-ups, D-068/D-069/D-075 tester rules; pins defs v0.15.0); v0.8.0 = f51b214 (D-056, ISSUES D-5: features/vehicle_republish 0x021 E2E + 0x110 at 50 ms, FDCAN2 dedicated replace-on-new TX buffers + one Tx FIFO element (M_CAN erratum); pins defs v0.5.0)
+    ref: v0.12.0          # commit a155426 (D-098 ride-summary DIDs 0xFD40-0xFD4E via services/ride_records, D-070 part 2a ride summaries, pins defs v0.22.0); v0.11.0 = babca5b (D-080 DTC freeze frames in the tester, D-086 lean sender rule (E-22), `features/derived` part 1 (28 class-A signals, D-070); pins defs v0.19.0; v0.10.0 skipped); v0.9.0 = e654120 (heartbeat 0x081 D-064, EKF lean link D-065, 0xFD03 LEAN_HEALTH D-067 + rt-core#46 follow-ups, D-068/D-069/D-075 tester rules; pins defs v0.15.0); v0.8.0 = f51b214 (D-056, ISSUES D-5: features/vehicle_republish 0x021 E2E + 0x110 at 50 ms, FDCAN2 dedicated replace-on-new TX buffers + one Tx FIFO element (M_CAN erratum); pins defs v0.5.0)
 
   - name: vehicle-connectivity-node
     url: https://github.com/vehicle-platform/vehicle-connectivity-node.git
