@@ -31,9 +31,13 @@ and no new server route is added. Task file:
     `listRides`/`getSummary` behaviour is unchanged.
   - `test/bringup_result_test.dart`, `test/ride_client_test.dart`: parser, JSON-type, URL,
     token-header, 401/404/422/503/timeout and old-server cases.
+- LR13-2 (vehicle-mobile, `3109939`): new `lib/ui/rides/bringup_screen.dart` with the default
+  V0 gate selector, verdict and pending/warning lines, one card per server check, compact
+  measured rendering, plain-language manual/unknown explanation, Settings link, retry and
+  pull-to-refresh. It uses the existing `StatusPill`/tone tokens and no new colour.
 
 ## Result
-- Task progress: LR13-0 and LR13-1 done. LR13-2, LR13-3, LR13-4, LR13-5 pending.
+- Task progress: LR13-0, LR13-1 and LR13-2 done. LR13-3, LR13-4, LR13-5 pending.
 
 ## Checks
 - LR13-0 `python3 scripts/check_zones.py . --base origin/main`: green.
