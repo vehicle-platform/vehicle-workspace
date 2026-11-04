@@ -95,6 +95,8 @@ filtering fix are pushed; PR #16 is open for Claude review.
 - `python3 scripts/check_zones.py vehicle-mcp --base origin/main`: YELLOW only
   (README, client, server, source, tools, support, test_server, test_source,
   test_tools); no red.
+- `python3 scripts/check_zones.py . --path external-ai/log/2026-11-04-opencode-long-run-9.md`:
+  GREEN.
 - Bound comparison (LR9-3): date-only, no-offset and offset bounds all equal
   between vehicle-mcp and vehicle-server.
 
