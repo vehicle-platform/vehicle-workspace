@@ -6,7 +6,7 @@ repos: [vehicle-analyzer, vehicle-workspace]
 branches: [vehicle-analyzer:ext/opencode-analyzer-conn-capture, vehicle-workspace:ext/opencode-long-run-11-log]
 prs: [vehicle-analyzer#41]
 zone: green
-review: pending
+review: done 2026-11-04 (merge through vehicle-analyzer#42: #41 unchanged + Claude fixes for FINAL-vs-later-S and per-run restart warnings)
 ---
 
 # vehicle-analyzer: open the conn listen-only capture
@@ -91,3 +91,32 @@ Commits on `ext/opencode-analyzer-conn-capture`:
 - Consider whether the quality report should persist across tab changes (currently tied to the
   Defs & logs view) and whether the warning wording/placement is acceptable.
 - PR #41 is open and must not be merged by an external tool; Claude/user reviews it.
+
+## Claude review
+- **Verdict:** merge, through vehicle-analyzer#42 (the seven commits of #41 unchanged plus
+  Claude's `95d3c3f` and `b649ad5`). Do not merge #41 separately.
+- **Zones:** every path GREEN. **architecture-guard:** no BLOCKER or MAJOR (file-only, layering,
+  bus name from `ascChannelToBus(1)`, watched flag only from the file's `W` column, no new
+  dependency). **vss-schema-guardian:** only `0x7df` (the D-040 OBD functional ID) in
+  `tests/captureQuality.test.ts`; replaced by a generic ID.
+- **Bug 1 (Unsure 4, FINAL vs later S):** `CanCaptureCore.h` keeps printing `S` blocks after
+  `FINAL`, so the last complete block of every capture longer than ~310 s is an `S` block and the
+  report said "shorter than the 300 s capture window" for exactly the good captures. The task
+  text ("prefer the last FINAL if it is the last complete one") was Claude's ambiguous wording.
+  Fix: `finalSeen` on its own; the table still shows the last (cumulative) block.
+- **Bug 2 (restarts):** the node's counters and per-ID table start again after a reset (a
+  brown-out while cranking is likely on the bike), so `lost`/`dropped`/`overflow` or a watched-ID
+  frame before the restart was hidden by the last block. Fix: `runBlocks` (last complete block per
+  node run), warnings over all runs, the table shows the last run with a note.
+- Also: a repeated banner starts a new run (a reset on a silent bus or within the first second
+  has no backward frame time), counted once with a backward jump; a block is complete only with
+  one row per tracked ID (`ids=`); `detectLogFormat` scans only the head of the file (it ran on
+  the main thread over the whole text before the worker). Tests for each; README rules.
+- **Unsure 1/2/3 and For Claude 2:** boot-noise length, interleaving and the FINAL choice are
+  now covered by synthetic tests matching `CanCaptureCore.h` (rows of one block share its start
+  time and may be interleaved with `F` lines). A real Q-001 capture still has to confirm them.
+- **For Claude 3 (report persists across tabs):** left as is, like the import status; not needed
+  for the G1 capture check.
+- **Unsure 7 (trailer typo `deepseek-v4-flash-free`):** accepted, no rewrite.
+- Checks (Claude, worktree): `npm test` 292 passed, `npm run build` ok,
+  `playwright test ui-tests/import.spec.ts` 3 passed.
