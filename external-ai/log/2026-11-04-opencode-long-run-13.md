@@ -41,9 +41,19 @@ and no new server route is added. Task file:
   - `lib/ui/rides/ride_summary_screen.dart`: an app-bar **Bring-up check** action opens the
     screen for the same session and reuses the screen's injected settings/client.
   - Tests in `test/record_ride_actions_test.dart` and `test/ride_summary_screen_test.dart`.
+- LR13-4 (vehicle-mobile, `6859c55`):
+  - `test/bringup_screen_test.dart`: 10 widget tests for the verdict, checks, gate change,
+    warnings, unknown status verbatim, old-server 404, unknown-session 404, no settings and
+    URL without a token.
+  - `README.md`: a short **Bring-up check** section (B0/V0/V1, read-only server answer,
+    `GET /sessions/{id}/bringup`, server#50).
+  - Kept formatter-only churn out of the diff: the source and test files touched by the
+    earlier commits now show only the intended changes.
+  - Added runner keys `bringup-verdict` and `bringup-check-<id>` for the widget tests.
 
 ## Result
-- Task progress: LR13-0 through LR13-3 done. LR13-4, LR13-5 pending.
+- Task progress: LR13-0 through LR13-4 done. LR13-5 pending.
+- LR13-4 mobile checks are green; the branch is pushed and the PR is still to open in LR13-5.
 
 ## Checks
 - LR13-0 `python3 scripts/check_zones.py . --base origin/main`: green.
@@ -55,6 +65,10 @@ and no new server route is added. Task file:
   all passed (record action test needed `ensureVisible` for the off-screen button).
 - LR13-3 `flutter analyze --no-pub`: clean.
 - LR13-3 `python3 scripts/check_zones.py vehicle-mobile --base origin/main`: green.
+- LR13-4 `flutter analyze --no-pub`: no issues found.
+- LR13-4 `flutter test --no-pub --reporter compact`: 320 tests passed.
+- LR13-4 `python3 scripts/check_zones.py vehicle-mobile --base origin/main`: green.
+- LR13-4 `git diff --check`: clean; `pubspec.lock` not modified.
 
 ## Unsure about
 - The task file was absent at the workspace path named in the task
@@ -65,6 +79,11 @@ and no new server route is added. Task file:
 ## For Claude
 - Please add the synced task file to `main` (or confirm the worktree copy is the intended
   source), because the workspace checkout alone does not contain it.
+- Red-zone request, `vehicle-mobile/CLAUDE.md`: add one line saying the **Bring-up check**
+  (Record session action and ride-summary app bar) renders vehicle-server's B0/V0/V1 answer
+  from `GET /sessions/{id}/bringup` and computes nothing on the phone.
+- Please confirm that requiring both a server URL and a non-empty API token before the
+  bring-up request is the intended behaviour (the summary screen only requires the URL).
 
 ## Claude review
 (Filled by Claude's /external-review.)
