@@ -47,6 +47,7 @@ Commits on `ext/opencode-analyzer-conn-capture`:
 - `016bf14` docs(analyzer): document opening a conn listen-only capture
 - `f60654f` docs(analyzer): link the conn capture PR from the roadmap
 - `94473fb` fix(analyzer): detect a conn banner after boot noise
+- `d0278e9` docs(analyzer): mention serial boot noise before the capture banner
 
 ## Result
 - PR https://github.com/vehicle-platform/vehicle-analyzer/pull/41 is open, MERGEABLE and not merged.
