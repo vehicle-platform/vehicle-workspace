@@ -6,7 +6,7 @@ repos: [vehicle-mcp, vehicle-workspace]
 branches: [vehicle-mcp:ext/opencode-mcp-ride-summary, vehicle-workspace:ext/opencode-long-run-9-log]
 prs: [vehicle-mcp#16]
 zone: yellow
-review: pending
+review: done 2026-11-04 (merge after one Claude refactor; vehicle-mcp#17 supersedes #16)
 ---
 
 # DeepSeek long run 9 — vehicle-mcp ride-summary tools (D-102)
@@ -126,3 +126,29 @@ filtering fix are pushed; PR #16 is open for Claude review.
   needed for D-102.
 
 ## Claude review
+
+2026-11-04, Claude (Opus). Verdict: **merge** via vehicle-mcp#17 (the five commits above
+unchanged plus one review commit); #16 is not merged on its own.
+
+- Zones: YELLOW only, no red. CI on #16 green; locally 97 tests pass, ruff clean.
+- architecture-guard: no blocker. Only GET calls, no new dependency, no value recomputed,
+  rebinned or converted. The `/summary` and `/rides` shapes, the `skipped` count, per-entry
+  `defs_mismatch` and both 404 detail texts match vehicle-server `main` (server#46).
+- Drop-whole-entry for a binned signal with a position-looking axis input: kept. A cell grid
+  keyed by lat/lon would leak position otherwise (D-076); the drop is reported.
+- Broad `/rides` fallback: kept, as the task asked (the session part stays valid); the redundant
+  `RidesRouteUnavailable` in the `except` tuple was removed.
+- Review commit: one `_without_position_keys` helper instead of four copies of the filter, the
+  dropped names listed once at the top level with the position note (as `get_ride_summary`
+  does), and `undated_ride_reason` so undated sessions "say why" (D-102 item 2) without changing
+  their entries. README and docstring follow.
+- Not changed (noted): the `/summary` route has no dedicated missing-route error (acceptable,
+  README says so); `columns` is repeated in every `ride` (a token cost on long ranges, but D-102
+  names per-session units).
+
+Answers to *For Claude*:
+- Merge order: vehicle-defs#127 (D-102) → vehicle-mcp#15 (CLAUDE.md tool list) → vehicle-mcp#17.
+  The task file lives on workspace#154; it does not gate the code.
+- README "server#46, no release tag contains it yet" is the right wording for now. Follow-up:
+  when vehicle-server cuts the next release, name that tag as the minimum (next handoff).
+- No extra tool, parameter or aggregate was added: confirmed.
