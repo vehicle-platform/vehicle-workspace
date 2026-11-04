@@ -6,7 +6,7 @@ repos: [vehicle-ml, vehicle-workspace]
 branches: [vehicle-ml:ext/opencode-ml-stage2, vehicle-workspace:ext/opencode-long-run-10-log]
 prs: [https://github.com/vehicle-platform/vehicle-ml/pull/16]
 zone: green
-review: pending
+review: done 2026-11-04 (merge via vehicle-ml#17 = #16 + Claude fix: cold holdout was confounded with load; zones green, architecture-guard no BLOCKER/MAJOR)
 ---
 
 # vehicle-ml D-083 stage 2 on synthetic data
@@ -194,4 +194,39 @@ dependency, no `pyproject.toml`/lock change. The vehicle-ml PR is not merged.
   open and unmerged; the workspace log commit is part of LR10-7.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+- **Verdict:** merge, through vehicle-ml#17 (it contains the seven commits of #16 unchanged
+  plus Claude's `0b21d11`). Do not merge #16 separately.
+- **Zones:** every path GREEN. **architecture-guard:** no BLOCKER or MAJOR. Scope, the
+  dependencies, validation-only tuning, `w` never 0, no leakage, proxies from recorded data
+  and the stage-1 default were all verified. vss-schema-guardian was not needed: the axes
+  map to existing roles.
+- **Expected direction / wheel_vibration via charging (For Claude 1-2):** the cause was a
+  scenario confound, not just a distribution shift. The generator raises coolant
+  temperature with load (`rpm = base + 2500 * load`). The cold sessions therefore needed
+  load 0.3-0.4 to land inside the 30-45 °C band, and their median engine speed (about
+  1950-2190 rpm) was below every training session (from about 2690 rpm). The physics
+  charging model was scored below its fitted RPM range, so every cold "detection" came
+  from the charging group. Fix: eight healthy `warm-low-*` sessions cover that load in
+  train/val/test, and a new test asserts that the holdout load proxy lies inside the train
+  range. After the fix (seed 0; train 28 / val 5 / test 5 / holdout 12), holdout false
+  alarms per hour are physics 197.1, baseline_pca 180.0, baseline_z 77.1 and hybrid 197.1
+  (w = 0.75). The physics alarms now come from the cooling group: the warm-only cooling fit
+  does not generalise to cold coolant. This is reported, not tuned; no direction assertion
+  was added.
+- **Holdout detections:** with healthy-holdout false-alarm rates of 77-197/h, "1/1
+  detected" on the holdout means little. The README now says to read `detected` next to
+  the same part's false-alarm rate.
+- **Hybrid fan_failure miss (For Claude 3):** accepted as observed. w is chosen on
+  validation only; the test is never used to rescue it.
+- **Fixture canonicalisation (For Claude 4):** accepted. Rounding to 12 significant digits
+  removes only the BLAS last-bit noise between platforms; keys, strings, integers and list
+  order stay exact. If stage-1 output changes on purpose, regenerate the fixture in the
+  same PR.
+- **Also changed by Claude:** `--seeds` names the seed when a split is refused; the README
+  section *Limitations of the synthetic stage 2* (proxy confounding, cooling faults move
+  the proxy, the detection caveat, the observed physics result); a comment that the
+  hand-picked session ids are fragile.
+- **Checks:** `uv run pytest -q` 187 passed; ruff check and format clean.
+- **Follow-up (next stage, not now):** make the physics cooling estimator cover the
+  pre-thermostat regime, or report a cold band as outside its identifiable range. This
+  needs a user decision before any further ML long run.
