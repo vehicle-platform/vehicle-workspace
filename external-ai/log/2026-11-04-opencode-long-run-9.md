@@ -3,7 +3,7 @@ date: 2026-11-04
 tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-9
 repos: [vehicle-mcp, vehicle-workspace]
-branches: [vehicle-mcp:ext/opencode-mcp-ride-summary]
+branches: [vehicle-mcp:ext/opencode-mcp-ride-summary, vehicle-workspace:ext/opencode-long-run-9-log]
 prs: [vehicle-mcp#16]
 zone: yellow
 review: pending
@@ -76,8 +76,9 @@ for a date-only bound, a timestamp without offset and a timestamp with
 - Full checks pass; see below. No code change in this task.
 
 ### LR9-6 — log and PR
-- This log; PR vehicle-mcp#16 from `ext/opencode-mcp-ride-summary` to `main`,
-  body starts `needs-claude-review`; not merged.
+- This log on `vehicle-workspace` branch `ext/opencode-long-run-9-log`; PR
+  vehicle-mcp#16 from `ext/opencode-mcp-ride-summary` to `main`, body starts
+  `needs-claude-review`; not merged.
 - `scripts/vscode_workspace.py` does not exist on workspace `main` (it is only
   on `claude/vscode-visibility`), so it was not run, as the task allows.
 
