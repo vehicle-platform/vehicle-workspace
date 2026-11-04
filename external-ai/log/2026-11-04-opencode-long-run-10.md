@@ -227,6 +227,7 @@ dependency, no `pyproject.toml`/lock change. The vehicle-ml PR is not merged.
   the proxy, the detection caveat, the observed physics result); a comment that the
   hand-picked session ids are fragile.
 - **Checks:** `uv run pytest -q` 187 passed; ruff check and format clean.
-- **Follow-up (next stage, not now):** make the physics cooling estimator cover the
-  pre-thermostat regime, or report a cold band as outside its identifiable range. This
-  needs a user decision before any further ML long run.
+- **Follow-up (only after real ride data):** vehicle-ml stays at this stage-2 machinery
+  until the Phase 0 / G1 capture gives real sessions (user, 2026-11-04: no data yet, so no
+  further ML long run now). Whether the cooling estimator must cover the pre-thermostat
+  regime is decided on real data, not on the synthetic generator.
