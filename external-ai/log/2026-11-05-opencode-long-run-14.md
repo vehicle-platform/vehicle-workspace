@@ -28,14 +28,16 @@ Task file: `external-ai/tasks/2026-11-05-deepseek-long-run-14.md`.
   `coverageToCsv`) and `tests/coverage.test.ts` plus defs assertions. The report cell reads
   `valid_ratios` for polled DIDs (not `range_checks`), the `imu`/`gps`/`can_health`/`tester_stats`
   blocks for sensors, and `derived`/`derived_summary` for A/B signals.
-- LR14-2: pending.
+- LR14-2 (vehicle-analyzer): added `CoveragePanel` (key I) with defs/session header, per-group chips,
+  sortable/filterable/scrolling table, Load session through the existing client, and CSV export of
+  the visible rows. Wired the tab, global key I, App render and help.
 - LR14-3: pending.
 - LR14-4: pending.
 - LR14-5: pending.
 - LR14-6: pending.
 
 ## Result
-- Task progress: LR14-0, LR14-1 done. LR14-2..LR14-6 pending.
+- Task progress: LR14-0, LR14-1, LR14-2 done. LR14-3..LR14-6 pending.
 
 ## Checks
 - LR14-0 `python3 scripts/check_zones.py . --base origin/main`: pending.
@@ -43,6 +45,8 @@ Task file: `external-ai/tasks/2026-11-05-deepseek-long-run-14.md`.
 - LR14-1 `npm run build`: passed (tsc -b + vite build; existing >500 kB chunk warning only).
 - LR14-1 `python3 scripts/check_zones.py vehicle-analyzer --base origin/main`: YELLOW
   `src/defs/model.ts` (allowed, PR needs Claude review); GREEN for the new coverage service and tests.
+- LR14-2 `npm test`: 41 files, 314 tests passed (before the LR14-3 view tests).
+- LR14-2 `npm run build`: passed.
 
 ## Unsure about
 - The task says `range_checks` carries `valid_percent`; the checked-in server actually puts it in
