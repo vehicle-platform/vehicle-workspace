@@ -35,15 +35,26 @@ and no new server route is added. Task file:
   V0 gate selector, verdict and pending/warning lines, one card per server check, compact
   measured rendering, plain-language manual/unknown explanation, Settings link, retry and
   pull-to-refresh. It uses the existing `StatusPill`/tone tokens and no new colour.
+- LR13-3 (vehicle-mobile, `c3f4b38`):
+  - `lib/ui/record_screen.dart`: the uploaded-session card has a **Bring-up check** action
+    (not shown for never-uploaded or failed sessions); it opens the screen with that id.
+  - `lib/ui/rides/ride_summary_screen.dart`: an app-bar **Bring-up check** action opens the
+    screen for the same session and reuses the screen's injected settings/client.
+  - Tests in `test/record_ride_actions_test.dart` and `test/ride_summary_screen_test.dart`.
 
 ## Result
-- Task progress: LR13-0, LR13-1 and LR13-2 done. LR13-3, LR13-4, LR13-5 pending.
+- Task progress: LR13-0 through LR13-3 done. LR13-4, LR13-5 pending.
 
 ## Checks
 - LR13-0 `python3 scripts/check_zones.py . --base origin/main`: green.
 - LR13-1 `flutter test test/bringup_result_test.dart test/ride_client_test.dart`: 27 passed.
   `pubspec.lock` was rewritten by `flutter pub get` and reverted; it is not committed.
 - LR13-1 `python3 scripts/check_zones.py vehicle-mobile --base origin/main`: green.
+- LR13-2 `flutter analyze --no-pub`: clean after two brace lints were fixed.
+- LR13-3 `flutter test --no-pub test/record_ride_actions_test.dart test/ride_summary_screen_test.dart`:
+  all passed (record action test needed `ensureVisible` for the off-screen button).
+- LR13-3 `flutter analyze --no-pub`: clean.
+- LR13-3 `python3 scripts/check_zones.py vehicle-mobile --base origin/main`: green.
 
 ## Unsure about
 - The task file was absent at the workspace path named in the task
