@@ -73,7 +73,8 @@ dependency and no change to stage-1 default output.
 - Checks: `uv run ruff check`/format on the files passed; `tests/test_stage2.py` →
   7 passed after the LR10-5 tests were added.
 - Zone: GREEN.
-- Default `evaluate` output: byte-identical to the fixture described under LR10-5.
+- Default `evaluate` output: identical to the stage-1 fixture after canonicalising
+  platform-dependent float last bits (LR10-5).
 
 ### LR10-5 — Synthetic scenario and tests
 - `tests/physics_synthetic.py`: `GENERALISATION_PHYSICS_SESSIONS` (42 sessions) and
@@ -86,12 +87,18 @@ dependency and no change to stage-1 default output.
   ignoring test rows/faults, `w=0.5` not-tuned fallback, and unknown-axis refusal.
 - Regression fixture choice: `tests/fixtures/evaluation_stage1_default.json` was written by
   the current `main` code on the default synthetic dataset before the stage-2 changes, then
-  committed as the frozen expected JSON. It has no timestamps, so the test compares the
-  complete `evaluation.json` bytes. This is simpler and stricter than recomputing a frozen
-  copy in each test; if stage-1 output changes intentionally, regenerate the fixture in the
-  same PR that changes the output.
-- Commit `394d6bc` (`test(ml): add the synthetic generalisation scenario`); pushed.
-- Check: `uv run pytest tests/test_stage2.py -q` → 7 passed in 29.64s.
+  committed as the frozen expected JSON. It has no timestamps. The first CI run failed only
+  because Linux/BLAS spellings of a few floats differed from macOS in the last bits
+  (`75.99032330757854` vs `75.99032330757791`, etc.); the evaluation numbers were equal.
+  The test therefore canonicalises floats to 12 significant digits before comparing the
+  serialised JSON, while keys, strings, lists and integers stay exact. This is a
+  cross-platform necessity, not a loosened metric threshold. If stage-1 output changes
+  intentionally, regenerate the fixture in the same PR that changes the output.
+- Commit `394d6bc` (`test(ml): add the synthetic generalisation scenario`); pushed. Follow-up
+  `ef95008` (`test(ml): compare the stage-1 fixture modulo float last bits`) makes the
+  fixture comparison platform-stable; pushed.
+- Check: `uv run pytest tests/test_stage2.py -q` → 7 passed in 29.64s before the canonical
+  comparison, 7 passed in 28.47s after it.
 - Zone: GREEN.
 
 Observed LR10-5 synthetic numbers (final run):
@@ -123,7 +130,7 @@ Observed LR10-5 synthetic numbers (final run):
 
 ### LR10-7 — Checks and wrap-up
 - `uv sync` → 15 packages checked.
-- `uv run pytest -q` → 186 passed in 117.82s.
+- `uv run pytest -q` → 186 passed in 144.08s after the canonical fixture comparison.
 - `uv run ruff check .` → all checks passed.
 - `uv run ruff format --check .` → 58 files already formatted.
 - `python3 scripts/check_zones.py vehicle-ml --base origin/main` → all GREEN.
@@ -132,12 +139,14 @@ Observed LR10-5 synthetic numbers (final run):
 - `scripts/vscode_workspace.py` was run from the workspace root; the generated
   `vehicle-platform.code-workspace` is untracked and is not committed.
 - One non-merged vehicle-ml PR from `ext/opencode-ml-stage2` to `main`:
-  https://github.com/vehicle-platform/vehicle-ml/pull/16
+  https://github.com/vehicle-platform/vehicle-ml/pull/16. CI check `test` passed in
+  2m32s; merge state CLEAN/MERGEABLE; not merged.
 
 ## Result
 All LR10-1..LR10-6 changes are implemented, tested and pushed on
-`vehicle-ml:ext/opencode-ml-stage2`. LR10-7 checks are green. The default stage-1 output is
-byte-identical. Stage 2 remains synthetic-only: no real ride, HIL or safety claim, no new
+`vehicle-ml:ext/opencode-ml-stage2`. LR10-7 checks are green and the PR CI check passed.
+The default stage-1 output matches the fixture after canonicalising platform-dependent
+float last bits. Stage 2 remains synthetic-only: no real ride, HIL or safety claim, no new
 dependency, no `pyproject.toml`/lock change. The vehicle-ml PR is not merged.
 
 ## Checks
@@ -145,7 +154,7 @@ dependency, no `pyproject.toml`/lock change. The vehicle-ml PR is not merged.
 - `uv run pytest tests/test_split.py -q`: 14 passed.
 - `uv run pytest tests/test_hybrid.py -q`: 11 passed.
 - `uv run pytest tests/test_stage2.py -q`: 7 passed.
-- `uv run pytest -q`: 186 passed in 117.82s.
+- `uv run pytest -q`: 186 passed in 144.08s.
 - `uv run ruff check .`: all checks passed.
 - `uv run ruff format --check .`: 58 files already formatted.
 - `python3 scripts/check_zones.py vehicle-ml --base origin/main`: all GREEN.
@@ -163,8 +172,9 @@ dependency, no `pyproject.toml`/lock change. The vehicle-ml PR is not merged.
 - The hybrid misses the single `fan_failure` test session because the baseline misses it;
   the physics model detects it. The hybrid threshold/weight are validation-selected, so
   this is reported as observed and not tuned away.
-- The regression fixture locks the complete stage-1 JSON bytes. Any intentional stage-1
-  output change must regenerate it; the test failure is the intended warning.
+- The regression fixture locks the complete stage-1 JSON except float last bits, which are
+  canonicalised to 12 significant digits for Linux/macOS stability. Any intentional
+  stage-1 output change must regenerate it; the test failure is the intended warning.
 - The holdout list is sorted in `split_by_band` to keep reports stable across seeds. This
   does not change membership or the stable train/val/test hash split.
 
@@ -175,6 +185,9 @@ dependency, no `pyproject.toml`/lock change. The vehicle-ml PR is not merged.
 - Please check the cold-holdout `wheel_vibration` attribution: physics/hybrid report a
   detection via `charging`, despite no CAN change; I suspect distribution shift.
 - Please check the hybrid `fan_failure` test miss: baseline-only miss dominates the hybrid.
+- CI first failed on exact floating-point byte comparison, not on an evaluation result;
+  `ef95008` canonicalises only float last bits. Please confirm that this deviation from
+  literal byte equality is acceptable.
 - No red-zone edits were made; `pyproject.toml`, `CLAUDE.md`, `.github/` and other repos
   were untouched.
 - The vehicle-ml PR https://github.com/vehicle-platform/vehicle-ml/pull/16 should stay
