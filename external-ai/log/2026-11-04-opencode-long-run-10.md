@@ -4,7 +4,7 @@ tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-10
 repos: [vehicle-ml, vehicle-workspace]
 branches: [vehicle-ml:ext/opencode-ml-stage2, vehicle-workspace:ext/opencode-long-run-10-log]
-prs: []
+prs: [https://github.com/vehicle-platform/vehicle-ml/pull/16]
 zone: green
 review: pending
 ---
@@ -131,8 +131,8 @@ Observed LR10-5 synthetic numbers (final run):
   `external-ai/log/2026-11-04-opencode-long-run-10.md`.
 - `scripts/vscode_workspace.py` was run from the workspace root; the generated
   `vehicle-platform.code-workspace` is untracked and is not committed.
-- One non-merged vehicle-ml PR from `ext/opencode-ml-stage2` to `main`; URL to be added
-  after opening it.
+- One non-merged vehicle-ml PR from `ext/opencode-ml-stage2` to `main`:
+  https://github.com/vehicle-platform/vehicle-ml/pull/16
 
 ## Result
 All LR10-1..LR10-6 changes are implemented, tested and pushed on
@@ -177,8 +177,8 @@ dependency, no `pyproject.toml`/lock change. The vehicle-ml PR is not merged.
 - Please check the hybrid `fan_failure` test miss: baseline-only miss dominates the hybrid.
 - No red-zone edits were made; `pyproject.toml`, `CLAUDE.md`, `.github/` and other repos
   were untouched.
-- The vehicle-ml PR should stay open and unmerged; the workspace log commit and the PR URL
-  are part of LR10-7.
+- The vehicle-ml PR https://github.com/vehicle-platform/vehicle-ml/pull/16 should stay
+  open and unmerged; the workspace log commit is part of LR10-7.
 
 ## Claude review
 (Filled by Claude's /external-review: findings, fixes, PRs.)
