@@ -4,7 +4,7 @@ tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-13-bringup-check
 repos: [vehicle-workspace, vehicle-mobile]
 branches: [vehicle-workspace:ext/opencode-long-run-13-log, vehicle-mobile:ext/opencode-mobile-bringup]
-prs: []
+prs: [https://github.com/vehicle-platform/vehicle-mobile/pull/28]
 zone: green
 review: pending
 ---
@@ -50,10 +50,16 @@ and no new server route is added. Task file:
   - Kept formatter-only churn out of the diff: the source and test files touched by the
     earlier commits now show only the intended changes.
   - Added runner keys `bringup-verdict` and `bringup-check-<id>` for the widget tests.
+  - Opened one PR from `ext/opencode-mobile-bringup` to `main`:
+    https://github.com/vehicle-platform/vehicle-mobile/pull/28 (not merged).
+- LR13-5 (vehicle-workspace, `ext/opencode-long-run-13-log`, this commit): closed the log with the
+  task list, commits, checks, PR link, doubts and requests. No workspace PR was opened, per the
+  task.
 
 ## Result
-- Task progress: LR13-0 through LR13-4 done. LR13-5 pending.
-- LR13-4 mobile checks are green; the branch is pushed and the PR is still to open in LR13-5.
+- Task progress: LR13-0 through LR13-5 done.
+- Mobile PR: https://github.com/vehicle-platform/vehicle-mobile/pull/28 (open, not merged).
+- The phone renders the server answer only; no compute, no BLE, no POST, no new server route.
 
 ## Checks
 - LR13-0 `python3 scripts/check_zones.py . --base origin/main`: green.
@@ -75,6 +81,18 @@ and no new server route is added. Task file:
   (`external-ai/tasks/2026-11-04-deepseek-long-run-13.md`). It exists only in the read-only
   worktree `.claude/worktrees/lr13-task/...` on branch `claude/lr13-task` (commit `867037e`).
   I read that copy; I did not edit `.claude/*`.
+- Older-server 404 detection follows the analyzer precedent: the detail must trim/lowercase to
+  exactly `Not Found`; every other 404 remains `notFound` with the server detail. A proxy that
+  returns that exact detail for another missing route could be mistaken for an old server.
+- `measured` rendering is intentionally lossless: a top-level map becomes one `key: value` line per
+  entry, nested maps stay inline, lists are joined with `, `, `null` becomes `—`, and nothing is
+  rounded. Very large nested values may still be long, but they wrap and the screen scrolls.
+- The Record action sits in the same per-session action row as ride summary/upload/share, visible
+  only when the upload state is `uploaded`. The summary app-bar action does not depend on upload
+  state. The bring-up request additionally requires a non-empty API token; the summary screen only
+  requires the URL, so this is deliberately stricter and is queried under *For Claude*.
+- The full test suite was run with `--no-pub` to avoid rewriting `pubspec.lock`; Flutter itself was
+  3.47.5 as CI expects.
 
 ## For Claude
 - Please add the synced task file to `main` (or confirm the worktree copy is the intended
