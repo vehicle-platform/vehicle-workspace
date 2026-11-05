@@ -4,7 +4,7 @@ tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-18-d079-window-instances
 repos: [vehicle-workspace, vehicle-server, vehicle-analyzer]
 branches: [vehicle-workspace:ext/opencode-long-run-18-log, vehicle-server:ext/opencode-server-window-instances, vehicle-analyzer:ext/opencode-analyzer-health-windows]
-prs: [vehicle-server#55]
+prs: [vehicle-server#55, vehicle-analyzer#48]
 zone: green
 review: pending
 ---
@@ -48,9 +48,16 @@ reading only the report and bundled defs.
     otherwise the timeline uses the last instance end. No new npm package. Commit `be60dc7`.
   - `tests/components/HealthWindows.test.tsx`: missing/malformed/loaded states, band count,
     first-qualifying mark, unknown key, not-evaluated row, fallback span.
+  - `ui-tests/health-windows.spec.ts`: mocked report shows the card and bands, only the app and
+    configured server are requested. Commit `0b90a11`.
+  - `docs/ROADMAP.md`: A15 done (long run 18), analyzer#48. Commit `64b33da`.
+  - `HealthWindows.tsx`: plain loading message before the report arrives (no false "older
+    server" flash). Commit `d276c85`.
+  - PR: https://github.com/vehicle-platform/vehicle-analyzer/pull/48 (not merged; needs
+    vehicle-server#55 first).
 
 ## Result
-In progress. Task list:
+Complete. Task list:
 
 - [x] LR18-0 — log first
 - [x] LR18-1 — server: keep `WindowResult`s in `SummaryEvaluation`
@@ -58,8 +65,8 @@ In progress. Task list:
 - [x] LR18-3 — server: README, checks, PR
 - [x] LR18-4 — analyzer: pure health-windows parser + Vitest
 - [x] LR18-5 — analyzer: Health windows card in view E + component tests
-- [ ] LR18-6 — analyzer: Playwright, ROADMAP, checks, PR
-- [ ] LR18-7 — close the log
+- [x] LR18-6 — analyzer: Playwright, ROADMAP, checks, PR
+- [x] LR18-7 — close the log
 
 ## Checks
 - `python3 scripts/check_zones.py . --base origin/main` (workspace): green.
@@ -74,15 +81,29 @@ In progress. Task list:
 - `python3 ../scripts/check_zones.py vehicle-analyzer --base origin/main`: green.
 - `npm test -- --run`: 44 files, 341 passed.
 - `npm run build`: pass (Vite chunk-size warning only).
+- `npx playwright test`: 21 passed.
+- PR #48: https://github.com/vehicle-platform/vehicle-analyzer/pull/48 (not merged).
+- `uv.lock` unchanged; `package-lock.json` unchanged; `src/defs/*` untouched.
 
 ## Unsure about
 - `health_windows` t0 reuses `series.load_all`, so it matches `/series` exactly; `load_all`
   also reads `derived.parquet`, which `store_all` writes before the summary.
 - The block is only added on a successful summary evaluation; a failed evaluation still writes
   the existing `{"error": ...}` block and no `health_windows`.
+- `HealthWindows` fetches `/summary` independently from `RideSummary`, so view E makes two
+  summary requests for one selected session. The card needs the computed signals and the task
+  only forbade a second report request; sharing the fetch would be a small follow-up refactor.
+- The timeline uses the loaded replay end only when the selected session is the loaded one;
+  otherwise it falls back to the last instance end, because the report has no session span.
+- The text report window line has two leading spaces (`  W3_WARM_IDLE: ...`) to sit under the
+  existing derived-summary indentation; the task example omits them.
 
 ## For Claude
-- (nothing yet)
+- vehicle-server `CLAUDE.md` §Derived signals line 17: append to the Part 3 sentence
+  "→ `derived_summary.parquet` + the `derived_summary` report block" the words
+  "including the D-079 `health_windows` instances on the `/series` t0 axis".
+- No rule-2 surprise: golden A/B pass, `derived_summary` records/values are unchanged; only the
+  new `health_windows` key is added.
 
 ## Claude review
 (Filled by Claude's /external-review: findings, fixes, PRs.)
