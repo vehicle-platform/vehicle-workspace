@@ -39,6 +39,8 @@ provisional reference rules. Grid-connect via the existing class-B machinery onl
 - `vehicle-server/tests/test_health_windows_ingest.py`: a synthetic session (10 DIDs, 0-91 s)
   through the real ingest; asserts W1/W3/W5 scalars in `report.json`, `/sessions/{id}/summary`
   and `/rides`, then reruns `vehicle-server derive <id>` through the CLI.
+- `vehicle-server/README.md`: provisional D-079 rules, the 17 computed and the remaining
+  window signals, the golden exclusion and the updated class-B count (57 of 75).
 
 ## Result
 In progress. Task list:
@@ -47,8 +49,7 @@ In progress. Task list:
 - [x] LR17-1 — pure state machine `derived/health_windows.py` + unit tests
 - [x] LR17-2 — window signals in `derived/health_window_summaries.py`, golden skip, tests
 - [x] LR17-3 — synthetic ingest plus report/API/CLI end-to-end test
-- [ ] LR17-3 — synthetic ingest + API/CLI end to end
-- [ ] LR17-4 — README "D-079 health windows" subsection
+- [x] LR17-4 — README "D-079 health windows" subsection
 - [ ] LR17-5 — full checks, zone check, open one server PR (do not merge)
 - [ ] LR17-6 — close the log
 
@@ -68,8 +69,17 @@ In progress. Task list:
 ## For Claude
 - Task-file location conflict: `external-ai/tasks/2026-11-05-deepseek-long-run-17.md` is absent
   from `main`; the run uses the `claude/lr17-task` copy.
-- Will list the two W4 cruise residuals and the proposed `CLAUDE.md` line here when LR17-4/6 are
-  done.
+- The two W4 cruise residuals stay `not_implemented`:
+  - `window_cruise_final_drive_residual`: its declared inputs have no `const.gear_ratio_<n>`,
+    so the measured final drive cannot be separated from the gearbox ratio (compare
+    `ride_final_drive_ratio`, which declares them).
+  - `window_cruise_ve_residual`: defs has no expected-VE model at that gear and speed.
+- Proposed `CLAUDE.md` line (red, not edited): in the D-070 item 2 paragraph, replace
+  "`data_quality_mask`, `ride_tester_nrc78_count`, the coast-down pair and the D-079 windows
+  stay `not_implemented` with a reason" with "`data_quality_mask`, `ride_tester_nrc78_count`,
+  the coast-down pair and the two D-079 cruise residuals stay `not_implemented` with a reason;
+  17 D-079 window signals are computed in `health_windows.py`/`health_window_summaries.py`
+  and golden B excludes them until rt-core implements the windows".
 
 ## Claude review
 (Filled by Claude's /external-review: findings, fixes, PRs.)
