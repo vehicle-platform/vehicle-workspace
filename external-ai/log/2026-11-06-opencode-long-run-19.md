@@ -25,13 +25,22 @@ rule, formula, dependency or real data changes.
   input or all-stale inputs never qualify. The series are piecewise-constant runs around the
   window's own condition/stable thresholds with random gaps around each input's stale limit;
   `health_windows.py` was not changed.
+- `vehicle-mobile/lib/models/health_windows.dart`: pure defensive parser for
+  `report.derived_summary.health_windows`; keeps response order and rejects a missing/invalid
+  field, `end_ms < start_ms`, a wrong `duration_ms` and more than one `first_qualifying`.
+- `vehicle-mobile/lib/services/ride_client.dart`: `getReport()` GETs
+  `/sessions/{id}/report` with the bearer token through the existing `RideResult` handling.
+- `vehicle-mobile/lib/models/ride_summary.dart`: keeps an optional response `window` field as
+  `signalWindowKeys` (no name guessing); the current server sends no such field.
+- `vehicle-mobile/test/health_windows_model_test.dart` and `test/ride_client_test.dart`: parser
+  cases (valid, missing, every malformed field, order) and report GET/401/404/timeout cases.
 
 ## Result
 In progress. Task list:
 
 - [x] LR19-0 — log first
 - [x] LR19-1 — server: property tests for the window state machine
-- [ ] LR19-2 — mobile: read the block
+- [x] LR19-2 — mobile: read the block
 - [ ] LR19-3 — mobile: health windows on the ride summary screen
 - [ ] LR19-4 — server: a synthetic demo session
 - [ ] LR19-5 — server: test, README, PR
@@ -43,6 +52,10 @@ In progress. Task list:
 - `uv run pytest -q`: pass, 703 passed, 1 existing Starlette deprecation warning.
 - `uv run ruff check .` and `uv run ruff format --check .`: pass.
 - `python3 scripts/check_zones.py vehicle-server --base origin/main`: GREEN.
+- `~/development/flutter/bin/flutter analyze`: pass, no issues.
+- `~/development/flutter/bin/flutter test test/ride_client_test.dart test/health_windows_model_test.dart`:
+  pass, 30 tests.
+- `python3 scripts/check_zones.py vehicle-mobile --base origin/main`: GREEN.
 
 ## For Claude
 - vehicle-server#56 (LR19-1) is open; no property failed, so there is no xfail.
