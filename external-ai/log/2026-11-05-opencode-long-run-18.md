@@ -6,7 +6,7 @@ repos: [vehicle-workspace, vehicle-server, vehicle-analyzer]
 branches: [vehicle-workspace:ext/opencode-long-run-18-log, vehicle-server:ext/opencode-server-window-instances, vehicle-analyzer:ext/opencode-analyzer-health-windows]
 prs: [vehicle-server#55, vehicle-analyzer#48]
 zone: green
-review: pending
+review: done 2026-11-06 (zones green, no BLOCKER; Claude fixes vehicle-server#57 (contains #55), vehicle-analyzer#49 (contains #48))
 ---
 
 # DeepSeek long run 18 — D-079 window instances
@@ -106,4 +106,23 @@ Complete. Task list:
   new `health_windows` key is added.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+
+2026-11-06, Claude (Opus). Zones: every changed path green in both repos. architecture-guard
+(analyzer) no BLOCKER; CI green on #55 and #48. vss-schema-guardian not needed: window keys appear
+as literals only in tests, the UI takes them from defs / the response.
+
+- **vehicle-server#55 → #57 (merge #57 instead, close #55):** MAJOR, the t0 lookup
+  (`series.load_all`) ran inside `summarize_session`, so any failure there turned the **whole**
+  `derived_summary` block into `{"error"}` and lost every class-B scalar (against rule 2). Now only
+  `health_windows` becomes `{"error": ...}`, printed by the text report. The ingest ride has t0 = 0,
+  so a test with a non-zero `/series` t0 was added, plus one for the isolated failure. Text line
+  without "(first no qualifying)". The *For Claude* `CLAUDE.md` line is in #57. 686 tests.
+- **vehicle-analyzer#48 → #49 (merge #49 instead, close #48):** MAJOR, view E fetched `/summary`
+  twice (known, *Unsure about*); one `useRideSummary` hook in `SessionPanel` now feeds both cards
+  (vitest + Playwright assert one request). The parser also rejects `duration_ms != end - start` and
+  more than one `first_qualifying` (as the phone does); a window without computed signals shows a
+  line instead of an empty table. Timeline axis checked: replay times are the `/series` t0 in s, and
+  the axis is max(replay end, last instance end), so a band never overflows during a partial
+  replay. 345 vitest, 21 Playwright.
+- Merge order: server#57 first (the report block), then analyzer#49.
+
