@@ -34,6 +34,14 @@ rule, formula, dependency or real data changes.
   `signalWindowKeys` (no name guessing); the current server sends no such field.
 - `vehicle-mobile/test/health_windows_model_test.dart` and `test/ride_client_test.dart`: parser
   cases (valid, missing, every malformed field, order) and report GET/401/404/timeout cases.
+- `vehicle-mobile/lib/ui/rides/health_windows_section.dart`: provisional rule chip, one window card
+  in response order with counts, a `CustomPaint` timeline on a 0..last-end axis (qualifying filled,
+  first qualifying marked), a compact instance table, and no invented signal rows.
+- `vehicle-mobile/lib/ui/rides/ride_summary_screen.dart`: loads `/sessions/{id}/report` after the
+  summary (one request), keeps the summary on a report failure, and renders the section below it.
+- `vehicle-mobile/test/ride_summary_screen_test.dart`: valid section (request order, segment count,
+  marker, table, matching signal row), missing block, malformed block, failed report with a working
+  summary; the retry test now expects the extra report request.
 
 ## Result
 In progress. Task list:
@@ -41,7 +49,7 @@ In progress. Task list:
 - [x] LR19-0 — log first
 - [x] LR19-1 — server: property tests for the window state machine
 - [x] LR19-2 — mobile: read the block
-- [ ] LR19-3 — mobile: health windows on the ride summary screen
+- [x] LR19-3 — mobile: health windows on the ride summary screen
 - [ ] LR19-4 — server: a synthetic demo session
 - [ ] LR19-5 — server: test, README, PR
 - [ ] LR19-6 — close the log
@@ -55,18 +63,22 @@ In progress. Task list:
 - `~/development/flutter/bin/flutter analyze`: pass, no issues.
 - `~/development/flutter/bin/flutter test test/ride_client_test.dart test/health_windows_model_test.dart`:
   pass, 30 tests.
+- `~/development/flutter/bin/flutter test test/ride_summary_screen_test.dart`: pass, 8 tests.
+- `~/development/flutter/bin/flutter test`: pass, 340 tests.
+- `~/development/flutter/bin/flutter analyze`: pass, no issues.
 - `python3 scripts/check_zones.py vehicle-mobile --base origin/main`: GREEN.
 
 ## For Claude
-- vehicle-server#56 (LR19-1) is open; no property failed, so there is no xfail.
+- PRs: vehicle-server#56 (LR19-1, no property failed, no xfail), vehicle-mobile#31 (LR19-2/3).
+- The phone cannot map `window_*` signals to a window yet: the current `/summary` entries carry no
+  `window` field and the mobile defs pin is old (D-089 item 3). The screen shows no signal rows and
+  only uses an optional `window` field if a future server sends it; a newer defs/server field is
+  needed before signal rows can appear.
 
 ## Unsure about
 The seeded series do not reach `CLOSE_ENGINE_ZERO`; that branch remains covered only by code
 reading, not by these properties. The generator is deterministic and its coverage check only
 requires at least one instance and one qualifying instance per window, not every close reason.
-
-## For Claude
-Red-zone requests (path + wanted change), signals or decisions that would be needed, suspected conflicts with PLATFORM-RULES or DECISIONS.md, refactors you would suggest.
 
 ## Claude review
 (Filled by Claude's /external-review: findings, fixes, PRs.)
