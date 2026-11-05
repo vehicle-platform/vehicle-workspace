@@ -43,7 +43,7 @@ provisional reference rules. Grid-connect via the existing class-B machinery onl
   window signals, the golden exclusion and the updated class-B count (57 of 75).
 
 ## Result
-In progress. Task list:
+Done. Task list:
 
 - [x] LR17-0 — log first
 - [x] LR17-1 — pure state machine `derived/health_windows.py` + unit tests
@@ -51,9 +51,16 @@ In progress. Task list:
 - [x] LR17-3 — synthetic ingest plus report/API/CLI end-to-end test
 - [x] LR17-4 — README "D-079 health windows" subsection
 - [x] LR17-5 — full checks, zone check, open one server PR (not merged)
-- [ ] LR17-6 — close the log
+- [x] LR17-6 — close the log
 
-Server PR: https://github.com/vehicle-platform/vehicle-server/pull/53 (left unmerged).
+Server PR: https://github.com/vehicle-platform/vehicle-server/pull/53 (open, CI pass, left
+unmerged).
+
+Commits:
+- `vehicle-server`: `f65954c` state machine, `376a289` window summaries, `0d3db62` end-to-end
+  test, `c14bd31` README.
+- `vehicle-workspace`: `a5665aa` LR17-0, `43c51c7` LR17-1, `dcdf9ea` LR17-2, `9634c90` LR17-3,
+  `b7248a7` LR17-4, `2aff7f8` LR17-5, this closing commit for LR17-6.
 
 ## Checks
 - `uv run pytest tests/test_health_windows.py -q`: pass (11 tests).
@@ -68,12 +75,23 @@ Server PR: https://github.com/vehicle-platform/vehicle-server/pull/53 (left unme
   skipped with `SKIP_HEALTH_WINDOW`.
 - `python3 scripts/check_zones.py vehicle-server --base origin/main`: green (all changed files).
 - `uv.lock` unchanged.
+- PR CI (`gh pr checks 53`): pass (33 s, run 42032178412).
 
 ## Unsure about
 - The task file was requested from `main`, but it is not on `origin/main`; it exists only on
   `claude/lr17-task` (`5fd4083`) and in `.claude/worktrees/lr17-task/`. I read it from the
   worktree and did not edit it.
 - The full pre-start reading (section 0) was completed before code.
+- The README said "19 of the 46 class-B signals", but the pinned defs now has 75 class-B
+  signals and 57 implemented (19 base + D-103 + 17 D-079). I wrote the current 57/75; if the
+  task meant only the pre-D-103 base, that line needs rewording.
+- The end-to-end test goes through the real catalog encoding, so the integer DIDs quantize:
+  STFT mean is 5.078125 (raw 133/136, factor 25/32) and tau is 298.88 s, not 300. The pure
+  summary test asserts the exact 300 s; the e2e test allows 1 %.
+- `summary._window_input` now treats a DID absent from a caller-supplied restricted
+  `did_limits` as an empty input instead of raising; `_feeds_of` still records `ERROR` for such
+  a summary. Normal `evaluate` calls pass the full limits, so this only affects the restricted
+  test path.
 
 ## For Claude
 - Task-file location conflict: `external-ai/tasks/2026-11-05-deepseek-long-run-17.md` is absent
@@ -89,6 +107,9 @@ Server PR: https://github.com/vehicle-platform/vehicle-server/pull/53 (left unme
   the coast-down pair and the two D-079 cruise residuals stay `not_implemented` with a reason;
   17 D-079 window signals are computed in `health_windows.py`/`health_window_summaries.py`
   and golden B excludes them until rt-core implements the windows".
+- Optional hardening: make `summary._feeds_of` use `did_limits.get(key)` like `_window_input`
+  so a restricted caller reports missing inputs instead of an `ERROR` entry. No production
+  caller is affected today.
 
 ## Claude review
 (Filled by Claude's /external-review: findings, fixes, PRs.)
