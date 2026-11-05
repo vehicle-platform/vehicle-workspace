@@ -27,7 +27,7 @@
 
 ## Open PRs
 
-- **Open:** none. Merged 2026-11-05 (user: "her şeyi merge et"): defs#129-#133 (v0.23.0, v0.24.0 released), rt-core#64, server#51/#52, analyzer#44/#45, mobile#29 (#28 shows merged through it), workspace#163-#170. v0.24.0 release needed the user's explicit OK (permission classifier).
+- **Open:** none; all Claude worktrees pruned 2026-11-05. Merged 2026-11-05 (user: "her şeyi merge et"): defs#129-#133 (v0.23.0, v0.24.0 released), rt-core#64, server#51/#52, analyzer#44/#45, mobile#29 (#28 shows merged through it), workspace#163-#170. v0.24.0 release needed the user's explicit OK (permission classifier).
 - Mains pin the rename-only, off-main tags `v0.19.1` (conn) and `v0.14.1` (mobile); they stay (D-089 item 3). server/analyzer main pin v0.24.0, rt-core main v0.23.0. server (#33 ... #52) and analyzer main are unreleased.
 
 ## Roadmap (parallel tracks; G = gate)
@@ -38,7 +38,7 @@
 
 ## Next up (in order)
 
-1. **DeepSeek long run 16 running** (task `external-ai/tasks/2026-11-05-deepseek-long-run-16.md`: render `per_gear` summaries in analyzer card/Compare and the phone). Then `/external-review` (check `claude/*` review PRs first). LR15 is done by Claude (do not run).
+1. **DeepSeek long run 16 running** (started 2026-11-05: `ext/opencode-long-run-16-log` pushed, no PR yet; it has the workspace root checked out on that branch) (task `external-ai/tasks/2026-11-05-deepseek-long-run-16.md`: render `per_gear` summaries in analyzer card/Compare and the phone). Then `/external-review` (check `claude/*` review PRs first). LR15 is done by Claude (do not run).
 2. **Needs the user:** E-29 (9) D-101 item 2 wording vs code; E-28 (5) drop an HSEM-deferred M7->M4 frame older than its cycle?; E-25 (4) conn TWAI 0 ms wait (Claude recommends; red zone, safety-reviewer); D-082 item 6 (latching relay bypass); IMU box (Q-034); fault-catalog deep research (`ideas/physics-informed-anomaly.md` §3); D-103 value research (`ideas/derived-thresholds-research.md`).
 3. Claude (no hardware): S2 CubeMX pin plan for the NUCLEO-H745ZI-Q (`docs-researcher` for hardware facts); rt-core defs bump to v0.24.0 + C3 part 3 (port the D-103 class-A signals, resync golden vectors, E-30 (5)); defs cleanup E-30 (8) unused inputs; vehicle-mcp v0.2.0 + a server release (D-036) when the user wants.
 4. User: Q-034 measurements; Wave 1 order; H1 Phase 0 ESP32 build → G1 listen-only capture (Q-001) → V0/V1 with `vehicle-server bringup <id> --gate V0` (also on the phone); open the capture in analyzer D and watch coverage view I.
