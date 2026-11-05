@@ -1,5 +1,7 @@
 # DeepSeek long run 15 — 2026-11-05 (vehicle-server: the D-103 derived signals)
 
+> **Do not run: done by Claude** (vehicle-server#52, merged 2026-11-05, on defs v0.24.0). Kept as the record of the spec.
+
 Written by Claude for opencode/DeepSeek. Work through the tasks **in order**, without asking
 between tasks. **Commit after every task** (Conventional Commits, `AI-Agent: opencode/<model>`
 trailer) and push the branch after every commit, so nothing is lost if your time runs out. If a
