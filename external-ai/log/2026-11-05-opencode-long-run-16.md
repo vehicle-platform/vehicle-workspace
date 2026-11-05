@@ -6,7 +6,7 @@ repos: [vehicle-workspace, vehicle-analyzer, vehicle-mobile]
 branches: [vehicle-workspace:ext/opencode-long-run-16-log, vehicle-analyzer:ext/opencode-analyzer-per-gear, vehicle-mobile:ext/opencode-mobile-per-gear]
 prs: [vehicle-analyzer#46, vehicle-mobile#30]
 zone: green
-review: pending
+review: done 2026-11-05 (merge as is: mobile#30; analyzer#46 + Claude refactor analyzer#47, merge #46 then #47)
 ---
 
 # Per-gear ride summaries in the analyzer and the phone
@@ -70,4 +70,19 @@ Task file: `external-ai/tasks/2026-11-05-deepseek-long-run-16.md`.
 - None: all changed paths are green, no red/yellow request, no decision conflict found.
 
 ## Claude review
-(Filled by Claude's /external-review.)
+- Zones: all paths green (analyzer, mobile, this log). No unlogged `AI-Agent:` commits or `ext/` PRs.
+- architecture-guard: no BLOCKER/MAJOR. Both clients match the server contract
+  (`vehicle_server/ride_summary.py` `_per_gear_entry`: gear = cell + 1, sorted, value/flag nullable);
+  no computation beyond Compare's B - A, unit/range/precision from the response (E-27 helpers).
+  vss-schema-guardian not needed (no CAN/UDS/VSS literal; the signal name appears only in synthetic test fixtures).
+- CI green on both PRs (mobile `flutter` + `build-apk` on Flutter 3.47.5, which settles the "Unsure about" SDK note).
+- vehicle-mobile#30: merge as is.
+- vehicle-analyzer#46 + Claude commit 123a203 (analyzer#47): the per_gear parser returned an error
+  object through the value/flag ternaries and caught it with `typeof === 'object'` checks; now one
+  `parsePerGearList()` returns rows or the reason, and gear < 1 or a repeated gear is rejected (a repeat
+  was overwritten silently in Compare). `compare.ts` per-gear rows moved into `perGearRows()` with shared
+  range/unit helpers (the inner `a`/`b` shadowed the parameters). View E shows "No gear stored for this
+  ride." for an empty list (the phone already had an empty state). ROADMAP: DeepSeek relinked A13 to #46;
+  A13 is analyzer#44 again, A14 = analyzer#46. Local: tsc clean, vitest 334, build, Playwright ride-summary 2/2.
+- Left as is (minor): the analyzer marks a malformed entry `status: 'error'` with a `malformed per_gear:`
+  message, the phone uses status `malformed per_gear`; each follows its client's existing unavailable row.
