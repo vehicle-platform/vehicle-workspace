@@ -18,13 +18,25 @@ reading only the report and bundled defs.
 
 ## Changes
 - `vehicle-workspace/external-ai/log/2026-11-05-opencode-long-run-18.md`: this session log.
+- `vehicle-server` branch `ext/opencode-server-window-instances`:
+  - `src/vehicle_server/derived/summary.py`: `SummaryEvaluation.windows` keeps the
+    `WindowResult`s that already feed the 17 class-B scalars; `evaluate` fills it from
+    `_window_results`. Commit `fd92b2b`.
+  - `src/vehicle_server/derived/__init__.py`: `derived_summary.health_windows` block with
+    all evaluated instances (start/end/duration on the `/series` t0 axis, close reason,
+    qualifies, first-qualifying flag), per-window counts, `t0_device_ms` and the provisional
+    D-079 rule label. Commit `9a9d0b5`.
+  - `src/vehicle_server/report.py`: one text line per window after the ride-summary line.
+  - `tests/test_health_window_summaries.py`: checks the kept W3 result is the one the scalars
+    use. `tests/test_health_windows_ingest.py`: end-to-end block/API/CLI/text checks, t0
+    equality with `/series`, and unchanged `derived_summary` keys. Commit `9a9d0b5`.
 
 ## Result
 In progress. Task list:
 
 - [x] LR18-0 — log first
-- [ ] LR18-1 — server: keep `WindowResult`s in `SummaryEvaluation`
-- [ ] LR18-2 — server: `health_windows` report block + text report + tests
+- [x] LR18-1 — server: keep `WindowResult`s in `SummaryEvaluation`
+- [x] LR18-2 — server: `health_windows` report block + text report + tests
 - [ ] LR18-3 — server: README, checks, PR
 - [ ] LR18-4 — analyzer: pure health-windows parser + Vitest
 - [ ] LR18-5 — analyzer: Health windows card in view E + component tests
@@ -32,13 +44,21 @@ In progress. Task list:
 - [ ] LR18-7 — close the log
 
 ## Checks
-- `python3 scripts/check_zones.py`: green so far (log only).
+- `python3 scripts/check_zones.py . --base origin/main` (workspace): green.
+- `python3 ../scripts/check_zones.py vehicle-server --base origin/main`: green.
+- `uv run ruff check .`: pass.
+- `uv run ruff format --check .`: 94 files already formatted.
+- `uv run pytest -q`: 684 passed, 1 third-party warning.
+- `git push` to `origin/ext/opencode-server-window-instances`: commit `9a9d0b5`.
 
 ## Unsure about
-- Starting point read: LR18 task and section 0.
+- `health_windows` t0 reuses `series.load_all`, so it matches `/series` exactly; `load_all`
+  also reads `derived.parquet`, which `store_all` writes before the summary.
+- The block is only added on a successful summary evaluation; a failed evaluation still writes
+  the existing `{"error": ...}` block and no `health_windows`.
 
 ## For Claude
-- (to be filled)
+- (nothing yet)
 
 ## Claude review
 (Filled by Claude's /external-review: findings, fixes, PRs.)
