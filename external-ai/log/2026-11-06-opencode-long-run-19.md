@@ -44,6 +44,9 @@ In progress. Task list:
 - `uv run ruff check .` and `uv run ruff format --check .`: pass.
 - `python3 scripts/check_zones.py vehicle-server --base origin/main`: GREEN.
 
+## For Claude
+- vehicle-server#56 (LR19-1) is open; no property failed, so there is no xfail.
+
 ## Unsure about
 The seeded series do not reach `CLOSE_ENGINE_ZERO`; that branch remains covered only by code
 reading, not by these properties. The generator is deterministic and its coverage check only
