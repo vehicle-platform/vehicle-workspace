@@ -4,7 +4,7 @@ tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-18-d079-window-instances
 repos: [vehicle-workspace, vehicle-server, vehicle-analyzer]
 branches: [vehicle-workspace:ext/opencode-long-run-18-log, vehicle-server:ext/opencode-server-window-instances, vehicle-analyzer:ext/opencode-analyzer-health-windows]
-prs: []
+prs: [vehicle-server#55]
 zone: green
 review: pending
 ---
@@ -30,6 +30,9 @@ reading only the report and bundled defs.
   - `tests/test_health_window_summaries.py`: checks the kept W3 result is the one the scalars
     use. `tests/test_health_windows_ingest.py`: end-to-end block/API/CLI/text checks, t0
     equality with `/series`, and unchanged `derived_summary` keys. Commit `9a9d0b5`.
+  - `README.md`: block shape, `/series` t0 axis, one entry per evaluated window, empty instance
+    arrays, exactly one `first_qualifying`, and analyzer-never-recomputes. Commit `2891eb7`.
+  - PR: https://github.com/vehicle-platform/vehicle-server/pull/55 (not merged).
 
 ## Result
 In progress. Task list:
@@ -37,7 +40,7 @@ In progress. Task list:
 - [x] LR18-0 — log first
 - [x] LR18-1 — server: keep `WindowResult`s in `SummaryEvaluation`
 - [x] LR18-2 — server: `health_windows` report block + text report + tests
-- [ ] LR18-3 — server: README, checks, PR
+- [x] LR18-3 — server: README, checks, PR
 - [ ] LR18-4 — analyzer: pure health-windows parser + Vitest
 - [ ] LR18-5 — analyzer: Health windows card in view E + component tests
 - [ ] LR18-6 — analyzer: Playwright, ROADMAP, checks, PR
@@ -49,7 +52,9 @@ In progress. Task list:
 - `uv run ruff check .`: pass.
 - `uv run ruff format --check .`: 94 files already formatted.
 - `uv run pytest -q`: 684 passed, 1 third-party warning.
-- `git push` to `origin/ext/opencode-server-window-instances`: commit `9a9d0b5`.
+- `uv run pytest tests/test_golden.py tests/test_golden_b.py -q`: 21 passed.
+- `git push` to `origin/ext/opencode-server-window-instances`: commits `9a9d0b5`, `2891eb7`.
+- PR #55: https://github.com/vehicle-platform/vehicle-server/pull/55 (not merged).
 
 ## Unsure about
 - `health_windows` t0 reuses `series.load_all`, so it matches `/series` exactly; `load_all`
