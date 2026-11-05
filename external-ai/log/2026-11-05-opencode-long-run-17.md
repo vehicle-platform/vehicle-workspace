@@ -4,7 +4,7 @@ tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-17-d079-health-windows
 repos: [vehicle-workspace, vehicle-server]
 branches: [vehicle-workspace:ext/opencode-long-run-17-log, vehicle-server:ext/opencode-server-health-windows]
-prs: []
+prs: [vehicle-server#53]
 zone: green
 review: pending
 ---
@@ -50,15 +50,24 @@ In progress. Task list:
 - [x] LR17-2 — window signals in `derived/health_window_summaries.py`, golden skip, tests
 - [x] LR17-3 — synthetic ingest plus report/API/CLI end-to-end test
 - [x] LR17-4 — README "D-079 health windows" subsection
-- [ ] LR17-5 — full checks, zone check, open one server PR (do not merge)
+- [x] LR17-5 — full checks, zone check, open one server PR (not merged)
 - [ ] LR17-6 — close the log
+
+Server PR: https://github.com/vehicle-platform/vehicle-server/pull/53 (left unmerged).
 
 ## Checks
 - `uv run pytest tests/test_health_windows.py -q`: pass (11 tests).
-- `uv run pytest -q`: pass (681 tests).
+- `uv run pytest tests/test_health_window_summaries.py -q`: pass (5 tests).
+- `uv run pytest tests/test_health_windows_ingest.py -q`: pass (1 test).
+- `uv run pytest tests/test_golden.py tests/test_golden_b.py -q`: pass (21 tests).
+- `uv run pytest -q`: pass (681 tests, 1 third-party deprecation warning).
 - `uv run ruff check .`: pass.
-- `uv run ruff format --check .`: pass.
+- `uv run ruff format --check .`: pass (94 files).
+- `uv run vehicle-server golden --out <tmp> --manifest <tmp>/MANIFEST.sha256`: manifest is
+  byte-identical to `tests/golden/MANIFEST.sha256` (defs v0.24.0); all 29 `window:` signals are
+  skipped with `SKIP_HEALTH_WINDOW`.
 - `python3 scripts/check_zones.py vehicle-server --base origin/main`: green (all changed files).
+- `uv.lock` unchanged.
 
 ## Unsure about
 - The task file was requested from `main`, but it is not on `origin/main`; it exists only on
