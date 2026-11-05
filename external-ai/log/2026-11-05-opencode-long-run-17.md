@@ -36,6 +36,9 @@ provisional reference rules. Grid-connect via the existing class-B machinery onl
   window-signal classification.
 - `vehicle-server/tests/test_summary_inputs.py` / `test_golden_b.py`: window-input audit and
   never-selected assertion.
+- `vehicle-server/tests/test_health_windows_ingest.py`: a synthetic session (10 DIDs, 0-91 s)
+  through the real ingest; asserts W1/W3/W5 scalars in `report.json`, `/sessions/{id}/summary`
+  and `/rides`, then reruns `vehicle-server derive <id>` through the CLI.
 
 ## Result
 In progress. Task list:
@@ -43,6 +46,7 @@ In progress. Task list:
 - [x] LR17-0 — log first
 - [x] LR17-1 — pure state machine `derived/health_windows.py` + unit tests
 - [x] LR17-2 — window signals in `derived/health_window_summaries.py`, golden skip, tests
+- [x] LR17-3 — synthetic ingest plus report/API/CLI end-to-end test
 - [ ] LR17-3 — synthetic ingest + API/CLI end to end
 - [ ] LR17-4 — README "D-079 health windows" subsection
 - [ ] LR17-5 — full checks, zone check, open one server PR (do not merge)
@@ -50,7 +54,7 @@ In progress. Task list:
 
 ## Checks
 - `uv run pytest tests/test_health_windows.py -q`: pass (11 tests).
-- `uv run pytest -q`: pass (680 tests).
+- `uv run pytest -q`: pass (681 tests).
 - `uv run ruff check .`: pass.
 - `uv run ruff format --check .`: pass.
 - `python3 scripts/check_zones.py vehicle-server --base origin/main`: green (all changed files).
