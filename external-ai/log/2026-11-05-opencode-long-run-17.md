@@ -6,7 +6,7 @@ repos: [vehicle-workspace, vehicle-server]
 branches: [vehicle-workspace:ext/opencode-long-run-17-log, vehicle-server:ext/opencode-server-health-windows]
 prs: [vehicle-server#53]
 zone: green
-review: pending
+review: done 2026-11-05 (merge server#53 then server#54; Claude fixed the stale-gap duration, the guessed trigger and the window-key literals)
 ---
 
 # DeepSeek long run 17 — D-079 health windows in the vehicle-server reference
@@ -112,4 +112,30 @@ Commits:
   caller is affected today.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+- Zones: all paths green (vehicle-server, this log). No unlogged `AI-Agent:` commits or `ext/` PRs;
+  no earlier Claude review of this run.
+- architecture-guard: no BLOCKER. Scope, purity of `health_windows.py`, `@_summary` registration,
+  golden skip, no route/dependency/lock change all fine; formulas (n-1 std, time-midpoint drift,
+  least-squares tau) correct. vss-schema-guardian: DID / const names follow the
+  `d103_summaries.py` pattern and are declared inputs; window keys were hand-written; defs pin
+  unchanged. Golden manifest reproduced byte for byte by Claude.
+- vehicle-server#53: merge as is, then **#54** (Claude, `da2eca4` + `702772d`):
+  - **Fix:** the state machine evaluated only at sample times, so a stale input was noticed at the
+    next sample of another input and the gap counted toward `min_duration_ms` (a 1 s-sampled
+    engine speed with a shorter stale limit still gave a qualifying 2 s key-on window; the
+    out-of-range test only passed that way). The timeline now adds each sample's stale instant;
+    a `max_duration_ms` close ends at open + max; `max_duration_ms` read as optional.
+  - The `engine_start` / `engine_stop` trigger is the D-069 engine-speed DID, checked against
+    defs at import, instead of a guess from conditions / signal inputs (a failed guess raised and
+    aborted every class-B summary).
+  - `SummaryEnv.window()` takes the key from the signal's defs `window` entry (no `"W1_KEY_ON"`
+    literals); the cruise-residual reasons moved into `NOT_IMPLEMENTED_REASONS`, the obsolete
+    `_WINDOW_REASON` block and the import-time mutation removed.
+  - `CLAUDE.md` (red): the D-070 item 2 sentence now names the 17 computed window signals and the
+    golden skip (DeepSeek's proposed line, reworded).
+  - Local: pytest 683, ruff check/format clean, golden manifest identical.
+- For Claude requests: task-file location → workspace#175 (merge it; the run used that copy).
+  Cruise residuals → ISSUES E-30 item (4) rewritten as a defs question. The optional
+  `_feeds_of` / `_window_input` restricted-`did_limits` hardening left as is (test-only path).
+- Unsure-about answers: 57/75 class-B count is right; the e2e 1 % tau tolerance from DID
+  quantisation is fine.
