@@ -40,6 +40,14 @@ reading only the report and bundled defs.
     defs with `unknownInDefs: true`. No recomputation. Commit `22d6c82`.
   - `tests/healthWindows.test.ts`: valid block, missing block, malformed instance/time/type,
     unknown key, order kept.
+  - `src/components/HealthWindows.tsx` + `SessionPanel.tsx` + `App.tsx`: view E stores the full
+    report it already fetched, renders the Health windows card below ride summary, the rule
+    badge, per-defs-window SVG timeline bands (qualifying filled, others outlined, first
+    qualifying marked), instance tables, computed `/summary` signals and the unknown/not
+    evaluated states. `App` passes the loaded replay end on the same t0 axis when E has it;
+    otherwise the timeline uses the last instance end. No new npm package. Commit `be60dc7`.
+  - `tests/components/HealthWindows.test.tsx`: missing/malformed/loaded states, band count,
+    first-qualifying mark, unknown key, not-evaluated row, fallback span.
 
 ## Result
 In progress. Task list:
@@ -49,7 +57,7 @@ In progress. Task list:
 - [x] LR18-2 — server: `health_windows` report block + text report + tests
 - [x] LR18-3 — server: README, checks, PR
 - [x] LR18-4 — analyzer: pure health-windows parser + Vitest
-- [ ] LR18-5 — analyzer: Health windows card in view E + component tests
+- [x] LR18-5 — analyzer: Health windows card in view E + component tests
 - [ ] LR18-6 — analyzer: Playwright, ROADMAP, checks, PR
 - [ ] LR18-7 — close the log
 
@@ -64,6 +72,8 @@ In progress. Task list:
 - PR #55: https://github.com/vehicle-platform/vehicle-server/pull/55 (not merged).
 - `npm test -- --run tests/healthWindows.test.ts`: 3 passed.
 - `python3 ../scripts/check_zones.py vehicle-analyzer --base origin/main`: green.
+- `npm test -- --run`: 44 files, 341 passed.
+- `npm run build`: pass (Vite chunk-size warning only).
 
 ## Unsure about
 - `health_windows` t0 reuses `series.load_all`, so it matches `/series` exactly; `load_all`
