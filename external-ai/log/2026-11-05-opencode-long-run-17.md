@@ -25,13 +25,24 @@ provisional reference rules. Grid-connect via the existing class-B machinery onl
 - `vehicle-server/tests/test_health_windows.py`: synthetic tests for every `opens_on` kind,
   flicker re-arm, stable break, max-duration close/re-arm, stale input, session end, min
   duration boundary, engine-start consecutive samples, unknown trigger and a patched threshold.
+- `vehicle-server/src/vehicle_server/derived/health_window_summaries.py`: 17 ready window
+  summaries (W1 five values, W2/W3/W4/W5 counts and W3/W5 values); two cruise residuals keep
+  specific `definition:` reasons.
+- `vehicle-server/src/vehicle_server/derived/summary.py`: `SummaryEnv.window()` and a single
+  window precompute in `evaluate`; computed window signals leave `NOT_IMPLEMENTED_REASONS`.
+- `vehicle-server/src/vehicle_server/derived/golden_b.py`: explicit `SKIP_HEALTH_WINDOW`.
+- `vehicle-server/tests/test_health_window_summaries.py`: all 17 values on a synthetic ride
+  (including an exact exponential tau), `no_window`, `out_of_range`, cold-soak patch and the
+  window-signal classification.
+- `vehicle-server/tests/test_summary_inputs.py` / `test_golden_b.py`: window-input audit and
+  never-selected assertion.
 
 ## Result
 In progress. Task list:
 
 - [x] LR17-0 — log first
 - [x] LR17-1 — pure state machine `derived/health_windows.py` + unit tests
-- [ ] LR17-2 — window signals in `derived/health_window_summaries.py`, golden skip, tests
+- [x] LR17-2 — window signals in `derived/health_window_summaries.py`, golden skip, tests
 - [ ] LR17-3 — synthetic ingest + API/CLI end to end
 - [ ] LR17-4 — README "D-079 health windows" subsection
 - [ ] LR17-5 — full checks, zone check, open one server PR (do not merge)
@@ -39,9 +50,10 @@ In progress. Task list:
 
 ## Checks
 - `uv run pytest tests/test_health_windows.py -q`: pass (11 tests).
-- `uv run ruff check src/vehicle_server/derived/health_windows.py tests/test_health_windows.py`:
-  pass.
-- `python3 scripts/check_zones.py vehicle-server --base origin/main`: green (two files).
+- `uv run pytest -q`: pass (680 tests).
+- `uv run ruff check .`: pass.
+- `uv run ruff format --check .`: pass.
+- `python3 scripts/check_zones.py vehicle-server --base origin/main`: green (all changed files).
 
 ## Unsure about
 - The task file was requested from `main`, but it is not on `origin/main`; it exists only on
