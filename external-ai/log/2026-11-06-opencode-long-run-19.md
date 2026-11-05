@@ -4,9 +4,9 @@ tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-19-window-invariants-mobile-demo
 repos: [vehicle-workspace, vehicle-server, vehicle-mobile]
 branches: [vehicle-workspace:ext/opencode-long-run-19-log, vehicle-server:ext/opencode-server-window-invariants, vehicle-mobile:ext/opencode-mobile-health-windows, vehicle-server:ext/opencode-server-demo-session]
-prs: []
+prs: [vehicle-server#56, vehicle-mobile#31]
 zone: green
-review: pending
+review: done 2026-11-06 (LR19-1..3 green, no BLOCKER; Claude vehicle-server#58 (contains #56), vehicle-mobile#32 (contains #31); DeepSeek stopped in LR19-4, demo session unfinished)
 ---
 
 # DeepSeek long run 19 — window invariants, phone card, synthetic demo
@@ -81,4 +81,22 @@ reading, not by these properties. The generator is deterministic and its coverag
 requires at least one instance and one qualifying instance per window, not every close reason.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+
+2026-11-06, Claude (Opus). DeepSeek stopped during LR19-4 (user): LR19-4/5/6 not done. Zones green
+for every changed path; architecture-guard (mobile) no BLOCKER; CI green.
+
+- **vehicle-server#56 → #58 (merged instead, #56 closed by it):** the property tests are good (no
+  property failed, no xfail, 20 tests ~8 s). Fix: the transition trigger was the literal
+  `did.ENGINE_SPEED`; it now comes from `summary._window_trigger` (D-069 item 3), the production
+  source. Open: the seeded series never reach `CLOSE_ENGINE_ZERO`.
+- **vehicle-mobile#31 → #32 (merged instead):** MAJOR, `_signalWindowKeys` ran inside
+  `RideSummary.fromJson`, so a malformed `window` field (e.g. a number) threw and dropped the whole
+  ride summary; now ignored per signal. `_asInt` rejects `5.0`; the instance table marks the first
+  qualifying row; a test counts the painted segments. 341 tests.
+- **LR19-4 leftover:** `vehicle-server/scripts/make_demo_session.py` (274 lines) is untracked in
+  the vehicle-server main clone on branch `ext/opencode-server-demo-session` (no commit, never run
+  through a test). Not reviewed; kept there for the next run.
+- **For Claude → work:** the phone shows no window signal rows because `/summary` entries carry no
+  `window` field: add it in vehicle-server from `vehicle_derived.SIGNALS[name]["window"]`
+  (additive), then the phone (#32 already reads an optional `window`) shows them (STATUS Next up).
+
