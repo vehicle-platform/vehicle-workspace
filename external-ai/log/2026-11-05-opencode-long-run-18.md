@@ -33,6 +33,13 @@ reading only the report and bundled defs.
   - `README.md`: block shape, `/series` t0 axis, one entry per evaluated window, empty instance
     arrays, exactly one `first_qualifying`, and analyzer-never-recomputes. Commit `2891eb7`.
   - PR: https://github.com/vehicle-platform/vehicle-server/pull/55 (not merged).
+- `vehicle-analyzer` branch `ext/opencode-analyzer-health-windows`:
+  - New `src/services/healthWindows.ts`: pure defensive parser of
+    `report.derived_summary.health_windows`; rejects missing key as `not in report`, malformed
+    fields as `malformed: <what>`, keeps report order and marks keys absent from the bundled
+    defs with `unknownInDefs: true`. No recomputation. Commit `22d6c82`.
+  - `tests/healthWindows.test.ts`: valid block, missing block, malformed instance/time/type,
+    unknown key, order kept.
 
 ## Result
 In progress. Task list:
@@ -41,7 +48,7 @@ In progress. Task list:
 - [x] LR18-1 — server: keep `WindowResult`s in `SummaryEvaluation`
 - [x] LR18-2 — server: `health_windows` report block + text report + tests
 - [x] LR18-3 — server: README, checks, PR
-- [ ] LR18-4 — analyzer: pure health-windows parser + Vitest
+- [x] LR18-4 — analyzer: pure health-windows parser + Vitest
 - [ ] LR18-5 — analyzer: Health windows card in view E + component tests
 - [ ] LR18-6 — analyzer: Playwright, ROADMAP, checks, PR
 - [ ] LR18-7 — close the log
@@ -55,6 +62,8 @@ In progress. Task list:
 - `uv run pytest tests/test_golden.py tests/test_golden_b.py -q`: 21 passed.
 - `git push` to `origin/ext/opencode-server-window-instances`: commits `9a9d0b5`, `2891eb7`.
 - PR #55: https://github.com/vehicle-platform/vehicle-server/pull/55 (not merged).
+- `npm test -- --run tests/healthWindows.test.ts`: 3 passed.
+- `python3 ../scripts/check_zones.py vehicle-analyzer --base origin/main`: green.
 
 ## Unsure about
 - `health_windows` t0 reuses `series.load_all`, so it matches `/series` exactly; `load_all`
