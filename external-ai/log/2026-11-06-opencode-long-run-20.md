@@ -4,7 +4,7 @@ tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-20
 repos: [vehicle-workspace, vehicle-server]
 branches: [vehicle-workspace:ext/opencode-long-run-20-log, vehicle-server:ext/opencode-server-demo-session, vehicle-server:ext/opencode-server-summary-window, vehicle-server:ext/opencode-server-window-engine-zero]
-prs: [vehicle-server#59]
+prs: [vehicle-server#59, vehicle-server#60]
 zone: green
 review: pending
 ---
@@ -33,6 +33,13 @@ Task list (from `external-ai/tasks/2026-11-06-deepseek-long-run-20.md`, workspac
   windows, per-gear rows, stops, position-free data and run-to-run determinism.
 - `vehicle-server/README.md`: "Synthetic demo session" paragraph (command, import, analyzer E,
   phone Server rides, synthetic/no GPS).
+- `vehicle-server/src/vehicle_server/ride_summary.py`: every `/summary` signal entry with a
+  defs `window` key now carries it in every status; non-window entries are unchanged
+  (`7a0dc39`).
+- `vehicle-server/tests/test_ride_summary.py`: API and function-level coverage for computed,
+  `not_implemented` and non-window entries; every returned window is checked against
+  `vehicle_derived.WINDOWS`.
+- `vehicle-server/README.md`: one sentence on the optional `/summary` `window` key.
 
 ## Result
 The demo session (20 min, `synthetic-demo-20260101`, session id `20260101-090000-5e55`) opens
@@ -43,6 +50,10 @@ include `engine_zero` and `unknown`; per-gear has 3 valid gears; `ride_stop_coun
 derived or derived-summary error. Two folder generations and two zip generations are
 byte-identical. PR: vehicle-server#59.
 
+LR20-4 adds the defs window key to `/summary` entries: computed window scalars and
+`not_implemented` window signals both carry it, non-window signals gain no key, and the key
+comes from `vehicle_derived.SIGNALS`. PR: vehicle-server#60.
+
 ## Checks
 - `uv run pytest -q`: 707 passed, 1 warning (Starlette httpx deprecation), 23.8 s.
 - `uv run pytest -q tests/test_demo_session.py`: 1 passed, 4.27 s.
@@ -50,7 +61,9 @@ byte-identical. PR: vehicle-server#59.
 - `uv run ruff format --check .`: 97 files already formatted.
 - `uv run pytest -q tests/test_golden.py tests/test_golden_b.py`: included in the full suite; pass.
 - `python3 scripts/check_zones.py vehicle-server --base origin/main`: GREEN (README,
-  scripts/make_demo_session.py, tests/test_demo_session.py).
+  scripts/make_demo_session.py, tests/test_demo_session.py; README,
+  src/vehicle_server/ride_summary.py, tests/test_ride_summary.py).
+- LR20-4: `uv run pytest -q`: 708 passed; ruff check and format: pass; zone GREEN.
 
 ## Unsure about
 - LR20-2 item 2 says an engine stop while a W3 warm idle is open should close an instance with
