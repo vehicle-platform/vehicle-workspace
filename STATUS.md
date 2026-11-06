@@ -3,7 +3,7 @@
 > Keep it short (≤60 lines). Updated by the `/handoff` skill. "Recent sessions" keeps at most 5 one-line entries; drop the oldest.
 
 **Phase:** 0 hardware build (user, ESP32-only data-collection prototype; enclosure placement Q-034) · 1 data pipeline done in code; D-068/D-069 + D-075 stop epoch and **D-080 freeze frames in conn and rt-core** · D-070 derived: defs + server reference + **rt-core `features/derived` part 1 (28 class-A signals, rt-core#51)** · analyzer A3-A5 + A7a + A8 + A10-A13 done (recorded sessions, comparison, freeze frames, ride track, quality, ride summaries, conn capture, bring-up check) · 2 rt-core without hardware: republisher, heartbeat, FC check, EKF lean, 0xFD03 `LEAN_HEALTH` (D-067, D-086) · defs **v0.24.0** (D-103 provisional derived thresholds + wiring, D-093 amendment 3 mailbox DTCs) pinned by server and analyzer main, rt-core main on v0.23.0 (last rt-core release v0.12.0) · **D-103: server computes 21 more class-A + ~20 class-B signals (server#52)** · **D-079: server reference computes 17 health-window signals (server#53/#54, provisional rules)** · analyzer A13 signal coverage (key I) + A14 per-gear summaries · mobile bring-up check + per-gear summaries; conn still on v0.19.1 · **D-098 done** (defs codegen, server encoder + golden records, rt-core serves 0xFD40-0xFD4E, rt-core#60) · **C3 mailbox M7 side done (rt-core#62, D-093 amendments defs#120 + defs#125: write only into a matching peer, rt-core#63)** · **C2 done: safety-node skeleton + M4 mailbox (safety-node#9, D-100) and Layer 1 cornering + super loop (safety-node#10, D-101)** · **board: NUCLEO-H745ZI-Q bought (D-094)** · mobile ride history (mobile#26) · roadmap: three parallel tracks (S schematics/CAD, C code, H hardware) below
-**Last updated:** 2026-11-06 (LR18 + LR19 review: D-079 window instances in server report, analyzer E card, phone section, window property tests; all merged)
+**Last updated:** 2026-11-06 (LR20 written + reviewed: synthetic demo session, `/summary` window key, engine_zero properties; PRs open)
 
 ## Where we are
 
@@ -27,7 +27,7 @@
 
 ## Open PRs
 
-- **Open:** none. Merged 2026-11-06: server#57 (contains #55), server#58 (contains #56), analyzer#49 (contains #48), mobile#32 (contains #31), workspace#177/#178; DeepSeek PRs closed through them.
+- **Open (2026-11-06, LR20):** server#60, #63, #64; workspace#179. Superseded, close after merge: server#59, #62. Earlier merged 2026-11-06: server#57 (contains #55), server#58 (contains #56), analyzer#49 (contains #48), mobile#32 (contains #31), workspace#177/#178; DeepSeek PRs closed through them.
 - Mains pin the rename-only, off-main tags `v0.19.1` (conn) and `v0.14.1` (mobile); they stay (D-089 item 3). server/analyzer main pin v0.24.0, rt-core main v0.23.0. server (#33 ... #52) and analyzer main are unreleased.
 
 ## Roadmap (parallel tracks; G = gate)
@@ -38,7 +38,7 @@
 
 ## Next up (in order)
 
-1. **DeepSeek long run 20** (`external-ai/tasks/2026-11-06-deepseek-long-run-20.md`, workspace PR): rescue + finish the LR19-4/5 demo session (untracked `vehicle-server/scripts/make_demo_session.py` on `ext/opencode-server-demo-session`), `window` key in `/summary` entries (phone mobile#32 already reads it), property tests reaching `engine_zero`. Then `/external-review`.
+1. **Merge (user):** vehicle-server #60, #63 (contains #59), #64 (contains #62), workspace #179; close #59/#62 after. Then: phone check of the window rows against #60 with the demo session (`python -m tests.make_demo_session`), rt-core defs bump / C3 part 3.
 2. **Needs the user:** E-29 (9) D-101 item 2 wording vs code; E-28 (5) drop an HSEM-deferred M7->M4 frame older than its cycle?; E-25 (4) conn TWAI 0 ms wait (Claude recommends; red zone, safety-reviewer); D-082 item 6 (latching relay bypass); IMU box (Q-034); fault-catalog deep research (`ideas/physics-informed-anomaly.md` §3); D-103 value research (`ideas/derived-thresholds-research.md`).
 3. Claude (no hardware): S2 CubeMX pin plan for the NUCLEO-H745ZI-Q (`docs-researcher` for hardware facts); rt-core defs bump to v0.24.0 + C3 part 3 (port the D-103 class-A signals, resync golden vectors, E-30 (5)); defs cleanup E-30 (8) unused inputs; vehicle-mcp v0.2.0 + a server release (D-036) when the user wants.
 4. User: Q-034 measurements; Wave 1 order; H1 Phase 0 ESP32 build → G1 listen-only capture (Q-001) → V0/V1 with `vehicle-server bringup <id> --gate V0` (also on the phone); open the capture in analyzer D and watch coverage view I.
@@ -53,8 +53,8 @@
 
 ## Recent sessions
 
+- 2026-11-06 (local, LR20): wrote the DeepSeek LR20 task (finish LR19-4/5, `/summary` window key, engine_zero properties); /external-review: zones green, no BLOCKER; #60 as is; Claude server#63 (demo generator into `tests/`, no sys.path/noqa, shared `vsig_row_cells`) and server#64 (random series reach engine_zero, directed cases added not substituted); task W3→W2 wording fixed.
 - 2026-11-06 (local, LR18 + LR19 review): wrote the overnight LR19 task (workspace#177); /external-review: zones green, architecture-guard no BLOCKER; Claude fixes server#57 (a t0 failure no longer wipes the whole class-B block, non-zero t0 test, CLAUDE.md line), server#58 (production window trigger in the property tests), analyzer#49 (one `/summary` fetch, stricter parser), mobile#32 (a bad `window` field no longer drops the ride summary, `5.0` rejected); DeepSeek stopped in LR19-4 (demo session left untracked); all merged on the user's request (GitHub merge API returned 500 for a while, retried).
 - 2026-11-05 (local, LR17 review): /external-review of DeepSeek long run 17 (D-079 health windows, server#53): zones green, architecture-guard no BLOCKER, vss-schema-guardian: window-key literals; Claude server#54 (a stale input closed the window only at the next sample so the gap counted as window time, guessed transition trigger replaced by the D-069 DID, keys from defs, CLAUDE.md line; 683 tests, golden identical); log closed (workspace#176); all merged on the user's request; LR18 task written.
 - 2026-11-05 (local, LR16 review): /external-review of DeepSeek long run 16 (per-gear summaries): zones green, architecture-guard no BLOCKER/MAJOR; mobile#30 as is; Claude refactor analyzer#47 (one per_gear list parser, rejects gear < 1 / repeats, `perGearRows()`, empty state, A13 link back to #44); log closed (workspace#173); all merged on the user's request.
 - 2026-11-05 (local, long run): LR13 review (mobile#29) + LR14 finished by Claude (analyzer#44, DeepSeek stopped at LR14-3); defs#129 mailbox DTCs, D-103 thresholds (defs#130) + wiring fixes (defs#132), v0.23.0/v0.24.0; rt-core#64 diagnostic-only mailbox DTCs (user decision, safety-reviewer 2 rounds); server#51/#52 D-103 signals (sonnet subagent, architecture-guard review applied); analyzer#45 pin; LR16 task; all merged.
-- 2026-11-04 (local, long run 12 review): DeepSeek long run 12 stopped after LR12-1 (ECU presence in the report, kept); user: Claude finishes. Claude wrote the server bring-up gate check (server#50, 537 tests; architecture-guard no BLOCKER, 3 should-fix applied; vss-schema-guardian clean), the analyzer card via a sonnet subagent (analyzer#43, 300 tests + Playwright), the §6/§7.2 doc pointer (defs#128) and closed the log (workspace#161); merged all four on the user's request (verified on main). Lesson: task files put the log first.

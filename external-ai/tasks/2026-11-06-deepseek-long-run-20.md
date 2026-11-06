@@ -103,7 +103,8 @@ hand-write DIDs, scales, offsets or thresholds. Then make it complete:
    key-on rest (W1) → crank and cold start (W2) → warm-up → warm idle that qualifies (W3) → a short
    warm idle that does **not** qualify → cruise in at least three gears (W4, `per_gear`) → decel to
    a stop (W5, first D-075 stop epoch) → ride again → second stop → **an engine stop (engine speed
-   0) while a W3 warm idle is open**, so one instance closes with `engine_zero` → session end.
+   0) while a W2 crank instance is open** (only `engine_start` windows close with `engine_zero`;
+   corrected after the run), so one instance closes with `engine_zero` → session end.
 3. One input gap longer than that input's `stale_after_ms` inside an open window (the instance
    must close as `unknown` at the stale instant, the D-079 rule the README describes).
 4. Every value inside the DBC / DID ranges; `synthetic: true` in the session metadata wherever the

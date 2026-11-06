@@ -6,7 +6,7 @@ repos: [vehicle-workspace, vehicle-server]
 branches: [vehicle-workspace:ext/opencode-long-run-20-log, vehicle-server:ext/opencode-server-demo-session, vehicle-server:ext/opencode-server-summary-window, vehicle-server:ext/opencode-server-window-engine-zero]
 prs: [vehicle-server#59, vehicle-server#60, vehicle-server#62]
 zone: green
-review: pending
+review: done 2026-11-06 (zones green, no BLOCKER; Claude server#63 supersedes #59, server#64 supersedes #62, #60 as is)
 ---
 
 # Long run 20 — finish LR19-4/5 + summary window key + engine_zero properties
@@ -113,4 +113,24 @@ VS Code workspace was refreshed with `python3 scripts/vscode_workspace.py`.
   rule change.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+2026-11-06, Claude (Opus). Zones green on all three branches; CI green; architecture-guard no
+BLOCKER; vss-schema-guardian: no CAN ID / VSS / scale literal, two small literals (below).
+
+- **vehicle-server#60 (window key on `/summary`):** merge as is. Additive, key from defs, every
+  status, tests against `vehicle_derived.SIGNALS`.
+- **vehicle-server#59 → #63 (merge #63 instead; it contains #59):** MAJOR, the script used a
+  `sys.path` insert + four `# noqa: E402` (AGENTS §3: no new noqa) to import `tests.make_fixtures`;
+  moved to `tests/make_demo_session.py` (`uv run python -m tests.make_demo_session`), relative
+  imports. MAJOR, signals.csv rows were a second hand-built copy of the 13 columns: now
+  `make_fixtures.vsig_row_cells` (new `table_len` argument). Minor: `ble_schema_version` from
+  `defs_ble.CURRENT_VERSION`, close reasons from `health_windows` constants, parquet files checked
+  for position columns too, README stop count matched to the generator. 707 tests.
+- **vehicle-server#62 → #64 (merge #64 instead):** the `engine_zero` coverage came only from
+  seed-keyed hand-written series that **replaced** the random series of seeds 0-3 for W2/W5. Root
+  cause: W2's `max_duration_ms` is 3 s while random trigger segments were >= 2 s with steps up to
+  5 s. Now the engine-start trigger uses short segments half the time and the random seeds reach
+  `engine_zero` on their own (own test); the directed cases run in addition to the 200 seeds. 26
+  tests, ~7.6 s.
+- *For Claude* (W3 vs W2): DeepSeek is right, only `engine_start` windows close with
+  `engine_zero`; the task text was wrong and is corrected. Handling it via a W2 crank stall was the
+  right call (rule 1 respected).
