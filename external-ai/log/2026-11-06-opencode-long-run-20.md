@@ -3,8 +3,8 @@ date: 2026-11-06
 tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-20
 repos: [vehicle-workspace, vehicle-server]
-branches: [vehicle-workspace:ext/opencode-long-run-20-log, vehicle-server:ext/opencode-server-demo-session, vehicle-server:ext/opencode-server-summary-window, vehicle-server:ext/opencode-server-window-engine-zero]
-prs: [vehicle-server#59, vehicle-server#60]
+branches: [vehicle-workspace:ext/opencode-long-run-20-log, vehicle-server:ext/opencode-server-demo-session, vehicle-server:ext/opencode-server-summary-window, vehicle-server:ext/opencode-server-window-property-coverage]
+prs: [vehicle-server#59, vehicle-server#60, vehicle-server#61]
 zone: green
 review: pending
 ---
@@ -40,6 +40,11 @@ Task list (from `external-ai/tasks/2026-11-06-deepseek-long-run-20.md`, workspac
   `not_implemented` and non-window entries; every returned window is checked against
   `vehicle_derived.WINDOWS`.
 - `vehicle-server/README.md`: one sentence on the optional `/summary` `window` key.
+- `vehicle-server/tests/test_health_windows_properties.py`: forced trigger scenarios give W2
+  an open instance followed by an exact 0 (plus W2 `session_end`/`unknown` and W5
+  `max_duration`), and the test asserts first-zero `engine_zero` timing, no trigger-0 open
+  except for `engine_stop`, and per-window close-reason coverage over all 200 seeds
+  (`9f91936`).
 
 ## Result
 The demo session (20 min, `synthetic-demo-20260101`, session id `20260101-090000-5e55`) opens
@@ -54,6 +59,11 @@ LR20-4 adds the defs window key to `/summary` entries: computed window scalars a
 `not_implemented` window signals both carry it, non-window signals gain no key, and the key
 comes from `vehicle_derived.SIGNALS`. PR: vehicle-server#60.
 
+LR20-5 reaches `engine_zero` in W2 with a forced engine-speed trigger that drops to exactly 0
+while open, then checks that close lands on that sample. The same test closes W2 at
+`session_end`/`unknown` and W5 at `max_duration`, and asserts every spec-reachable close
+reason per window over the 200 seeds. PR: vehicle-server#61.
+
 ## Checks
 - `uv run pytest -q`: 707 passed, 1 warning (Starlette httpx deprecation), 23.8 s.
 - `uv run pytest -q tests/test_demo_session.py`: 1 passed, 4.27 s.
@@ -64,6 +74,8 @@ comes from `vehicle_derived.SIGNALS`. PR: vehicle-server#60.
   scripts/make_demo_session.py, tests/test_demo_session.py; README,
   src/vehicle_server/ride_summary.py, tests/test_ride_summary.py).
 - LR20-4: `uv run pytest -q`: 708 passed; ruff check and format: pass; zone GREEN.
+- LR20-5: `uv run pytest -q`: 711 passed; `tests/test_health_windows_properties.py`:
+  25 passed in 0.94 s; ruff check and format: pass; zone GREEN.
 
 ## Unsure about
 - LR20-2 item 2 says an engine stop while a W3 warm idle is open should close an instance with
