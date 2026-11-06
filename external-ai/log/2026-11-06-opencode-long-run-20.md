@@ -3,8 +3,8 @@ date: 2026-11-06
 tool: opencode/deepseek-v4.1-flash-free
 topic: long-run-20
 repos: [vehicle-workspace, vehicle-server]
-branches: [vehicle-workspace:ext/opencode-long-run-20-log, vehicle-server:ext/opencode-server-demo-session, vehicle-server:ext/opencode-server-summary-window, vehicle-server:ext/opencode-server-window-property-coverage]
-prs: [vehicle-server#59, vehicle-server#60, vehicle-server#61]
+branches: [vehicle-workspace:ext/opencode-long-run-20-log, vehicle-server:ext/opencode-server-demo-session, vehicle-server:ext/opencode-server-summary-window, vehicle-server:ext/opencode-server-window-engine-zero]
+prs: [vehicle-server#59, vehicle-server#60, vehicle-server#62]
 zone: green
 review: pending
 ---
@@ -45,6 +45,9 @@ Task list (from `external-ai/tasks/2026-11-06-deepseek-long-run-20.md`, workspac
   `max_duration`), and the test asserts first-zero `engine_zero` timing, no trigger-0 open
   except for `engine_stop`, and per-window close-reason coverage over all 200 seeds
   (`9f91936`).
+- `vehicle-workspace/external-ai/log/2026-11-06-opencode-long-run-20.md`: this final LR20-6
+  entry (commits, checks, PR links, xfails and doubts); `vehicle-platform.code-workspace`
+  refreshed with `python3 scripts/vscode_workspace.py` (gitignored).
 
 ## Result
 The demo session (20 min, `synthetic-demo-20260101`, session id `20260101-090000-5e55`) opens
@@ -62,20 +65,39 @@ comes from `vehicle_derived.SIGNALS`. PR: vehicle-server#60.
 LR20-5 reaches `engine_zero` in W2 with a forced engine-speed trigger that drops to exactly 0
 while open, then checks that close lands on that sample. The same test closes W2 at
 `session_end`/`unknown` and W5 at `max_duration`, and asserts every spec-reachable close
-reason per window over the 200 seeds. PR: vehicle-server#61.
+reason per window over the 200 seeds. PR: vehicle-server#62. GitHub closed the first PR
+(#61) when the head branch was renamed to the task's `ext/opencode-server-window-engine-zero`;
+#62 is the live PR.
+
+LR20-6 closes the run: the log records all tasks, commits, checks, PR links and doubts, and the
+VS Code workspace was refreshed with `python3 scripts/vscode_workspace.py`.
 
 ## Checks
 - `uv run pytest -q`: 707 passed, 1 warning (Starlette httpx deprecation), 23.8 s.
 - `uv run pytest -q tests/test_demo_session.py`: 1 passed, 4.27 s.
 - `uv run ruff check .`: pass.
 - `uv run ruff format --check .`: 97 files already formatted.
-- `uv run pytest -q tests/test_golden.py tests/test_golden_b.py`: included in the full suite; pass.
+- `uv run pytest -q tests/test_golden.py tests/test_golden_b.py`: 21 passed, 5.01 s (also in
+  the full suite on every branch).
 - `python3 scripts/check_zones.py vehicle-server --base origin/main`: GREEN (README,
   scripts/make_demo_session.py, tests/test_demo_session.py; README,
   src/vehicle_server/ride_summary.py, tests/test_ride_summary.py).
 - LR20-4: `uv run pytest -q`: 708 passed; ruff check and format: pass; zone GREEN.
 - LR20-5: `uv run pytest -q`: 711 passed; `tests/test_health_windows_properties.py`:
-  25 passed in 0.94 s; ruff check and format: pass; zone GREEN.
+  25 passed in 0.94 s; golden tests: 21 passed in 5.01 s; ruff check and format: pass; zone
+  GREEN.
+- No xfail was needed: the per-window close-reason coverage assertion passes for W1-W5.
+
+## PRs
+- Demo session: https://github.com/vehicle-platform/vehicle-server/pull/59
+- Summary `window` key: https://github.com/vehicle-platform/vehicle-server/pull/60
+- Engine-zero property coverage: https://github.com/vehicle-platform/vehicle-server/pull/62
+
+## Commits
+- LR20-0: `bc52ad9` (log opened).
+- LR20-1: `bb346e8` (rescued demo generator); LR20-2/3: `d708c2e` (demo session).
+- LR20-4: `7a0dc39` (summary window key); LR20-5: `9f91936` (property coverage).
+- Log updates: `937e9cc`, `ab2b4a3`, `e6f30ce`, and this final LR20-6 commit.
 
 ## Unsure about
 - LR20-2 item 2 says an engine stop while a W3 warm idle is open should close an instance with
