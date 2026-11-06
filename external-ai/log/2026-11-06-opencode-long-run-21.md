@@ -6,7 +6,7 @@ repos: [vehicle-workspace, vehicle-rt-core]
 branches: [vehicle-workspace:ext/opencode-long-run-21-log]
 prs: []
 zone: green
-review: pending
+review: done 2026-11-07 (log only, zone green; run correctly stopped at the defs v0.24.0 precondition; rerun after rt-core#65 + workspace#179)
 ---
 
 # Long run 21 — vehicle-rt-core D-103 class-A signals
@@ -52,4 +52,17 @@ Task status:
   prompt assumes it is there.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+2026-11-07, Claude (Opus). Only this log changed (`check_zones.py`: GREEN); no code, so no
+architecture-guard / vss-schema-guardian / safety-reviewer run was needed. No unlogged `AI-Agent:`
+commits or `ext/` PRs since the LR20 review (the open server#59/#60/#62 are LR20's, already
+reviewed).
+
+- **Verdict:** merge the log (carried in workspace#179). Stopping at the precondition was exactly
+  what the task asked for: rt-core `main` still pins vehicle-defs `8d0714a` (v0.23.0); the v0.24.0
+  pin is rt-core#65 (CI green, mergeable, not merged yet). LR21 was dispatched too early, not a
+  DeepSeek error.
+- **Reading the task from `origin/claude/lr20-task`:** fine, and it did not touch the branch. The
+  task file lands on `main` with workspace#179.
+- **For Claude → work:** both requests are already `Next up` 1-2 in `STATUS.md` (merge rt-core#65
+  and workspace#179, then rerun LR21 unchanged). No rule gap: the precondition check is the
+  safeguard and it held.

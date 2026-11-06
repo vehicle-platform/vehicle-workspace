@@ -39,7 +39,7 @@
 ## Next up (in order)
 
 1. **Merge (user):** vehicle-server #60, #63 (contains #59), #64 (contains #62), **rt-core#65 (defs v0.24.0 pin, needed before LR21)**, workspace #179; close #59/#62 after.
-2. **DeepSeek long run 21** (`external-ai/tasks/2026-11-06-deepseek-long-run-21.md`): rt-core C3 part 3, the 21 D-103 class-A signals in `features/derived` + golden resync (yellow; then `/external-review` with architecture-guard, MISRA/size check, D-088 size decision by the user).
+2. **DeepSeek long run 21** (`external-ai/tasks/2026-11-06-deepseek-long-run-21.md`) (first attempt 2026-11-06 stopped at the precondition, defs still v0.23.0; rerun unchanged after item 1): rt-core C3 part 3, the 21 D-103 class-A signals in `features/derived` + golden resync (yellow; then `/external-review` with architecture-guard, MISRA/size check, D-088 size decision by the user).
 3. **Needs the user:** E-29 (9) D-101 item 2 wording vs code; E-28 (5) drop an HSEM-deferred M7->M4 frame older than its cycle?; E-25 (4) conn TWAI 0 ms wait (Claude recommends; red zone, safety-reviewer); D-082 item 6 (latching relay bypass); IMU box (Q-034); fault-catalog deep research (`ideas/physics-informed-anomaly.md` §3); D-103 value research (`ideas/derived-thresholds-research.md`).
 4. Claude (no hardware): S2 CubeMX pin plan for the NUCLEO-H745ZI-Q (`docs-researcher` for hardware facts); defs cleanup E-30 (8) unused inputs; vehicle-mcp v0.2.0 + a server release (D-036) when the user wants.
 5. User: Q-034 measurements; Wave 1 order; H1 Phase 0 ESP32 build → G1 listen-only capture (Q-001) → V0/V1 with `vehicle-server bringup <id> --gate V0` (also on the phone); open the capture in analyzer D and watch coverage view I.
