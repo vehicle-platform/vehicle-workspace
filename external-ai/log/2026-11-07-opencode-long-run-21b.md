@@ -42,7 +42,9 @@ Task list:
   `tests/host/test_derived_d103.c`.
 - `9de3f24 docs(derived): record the D-103 memory cost`.
 - `cffd22c docs(derived): describe the new class-B vector`.
-- PR: https://github.com/vehicle-platform/vehicle-rt-core/pull/66 (`needs-claude-review`).
+- PR: https://github.com/vehicle-platform/vehicle-rt-core/pull/66 (`needs-claude-review`);
+  body lists the computed set, the 15 NOT_COMPUTED summaries with their reason, the per-object
+  size delta and the v0.24.0 vector provenance.
 
 What was implemented:
 - 21 new class-A signals: the 15 point/window/state signals and the six events
@@ -82,6 +84,34 @@ What was implemented:
 - Removed untracked MISRA canary artifacts `misra/canary.c.dump` and
   `misra/canary.c.ctu-info`.
 
+### LR21-1 inventory (21 class-A signals not computed before this run)
+| Signal | Kind | Inputs | Reference |
+|---|---|---|---|
+| clutch_state | point/state | RPM, measured ratio, throttle, gear ratios, tolerance, load min | d103_states.py:32 |
+| clutch_slip_ratio | point | gear estimate, measured ratio, gear ratios | d103_states.py:60 |
+| neutral_coasting_state | point/state | speed, RPM, gear estimate, throttle, closed throttle | d103_states.py:71 |
+| engine_braking_phase | point/state | speed, throttle, RPM, fuel rate, moving/closed/idle max/fuel max | d103_states.py:92 |
+| over_rev | point | RPM, over-rev RPM min | d103_states.py:108 |
+| lugging | point | gear estimate, RPM, load, lugging RPM/load consts | d103_states.py:114 |
+| cold_engine_abuse | point | coolant, RPM, load, operating/cold-abuse consts | d103_states.py:128 |
+| idle_rpm_std | window | RPM, coolant, speed, idle band consts | d103_windows.py:81 |
+| idle_rpm_drift | window | RPM, coolant, speed, idle band consts | d103_windows.py:105 |
+| charging_plateau_voltage | window | battery voltage, RPM, plateau RPM min | d103_windows.py:139 |
+| fuel_level_filtered | window | fuel level, vehicle acceleration, accel max | d103_windows.py:157 |
+| heat_soak_delta | point | intake air temp, ambient air temp, speed, speed max | d103_windows.py:236 |
+| idle_map_residual | point | intake MAP, throttle, RPM, expected/closed/idle consts | d103_windows.py:248 |
+| volumetric_efficiency | point | MAF, MAP, intake air temp, RPM, displacement | d103_windows.py:303 |
+| intake_flow_residual | point | MAF, MAP, intake air temp, RPM, displacement, VE reference | d103_windows.py:310 |
+| shift_event | event | RPM, speed, step/window/speed-change consts | d103_events.py:28 |
+| launch_event | event | speed, measured ratio, moving/end/tolerance/gear-1 consts | d103_events.py:67 |
+| braking_event | event | vehicle acceleration, decel/duration consts | d103_events.py:108 |
+| refuel_event | event | speed, fuel level, moving/step/tank consts | d103_events.py:170 |
+| cranking_dip | event | RPM, battery voltage, idle RPM min | d103_events.py:226 |
+| battery_rest_voltage | event | RPM, battery voltage, engine-start rule | d103_events.py:264 |
+
+All are DID-only or computed-derived inputs (no sensor/GPS); the out-of-scope sensor signals
+`wheel_slip`, `pitch_event` and `road_roughness` stay uncomputed.
+
 ## LR21-2 / LR21-3 result
 - Golden replay matches the reference: 46,191 rows, 0 mismatches, 0 boundary skips;
   199,655 steps, mean 6,137 ns/step, max 145,000 ns/step, at most 46 evaluations/step,
@@ -120,9 +150,10 @@ What was implemented:
 - `host-coverage`: **54/54 passed** (36.67 s); gcovr **98.4% lines, 100.0% functions,
   92.9% branches** (floors 95/80).
 - `target-m7-debug` and `target-m7-release`: both build.
-- M7 release delta: `derived_core.c.obj` text **5,470 -> 10,636** (+5,166 B);
-  `derived.c.obj` BSS **12,388 -> 20,136** (+7,748 B); host `sizeof(derived_core_t)`
-  **20,336 B**.
+- M7 release delta per object: `derived_core.c.obj` text **5,470 -> 10,636** (+5,166 B),
+  data 0, BSS 0; `derived_ride.c.obj` text 1,172 (unchanged); `derived_gear.c.obj` text 144
+  (unchanged); `derived_inputs.c.obj` text 316 / BSS 1,493 (unchanged); `derived.c.obj`
+  BSS **12,388 -> 20,136** (+7,748 B); host `sizeof(derived_core_t)` **20,336 B**.
 - cppcheck warning/performance/portability: RC 0.
 - cppcheck style + MISRA C:2012: RC 0 after removing unused `RING_COUNT` and fixing
   MISRA 2.5/10.8/15.7 findings (nested `else` instead of `else if` chains, named duration
