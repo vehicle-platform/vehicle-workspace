@@ -160,7 +160,14 @@ All are DID-only or computed-derived inputs (no sensor/GPS); the out-of-scope se
   variables).
 - Zone check on all changed paths: **all YELLOW, no RED** (MCU firmware rule); PR marked
   `needs-claude-review`.
+- Remote CI on PR #66: `build-and-test` pass (2m0s), `thread-sanitizer` pass (27s).
 - No new dependencies, no firmware suppression, no disabled tests, no release or pin change.
+
+## LR21-6 close
+- `python3 scripts/vscode_workspace.py` run after the PR; it shows rt-core on
+  `ext/opencode-rtcore-derived-d103` and the workspace on this log branch.
+- This log branch is pushed; no PR for the log. `review: pending` kept for Claude.
+- Pre-existing `STATUS.md` edit remains untouched.
 
 ## Unsure about
 - `derived_core.c` is 2,215 lines, slightly above the task guide of ~2,000. I did not split it
