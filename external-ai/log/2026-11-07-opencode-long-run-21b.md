@@ -6,7 +6,7 @@ repos: [vehicle-workspace, vehicle-rt-core, vehicle-server]
 branches: [vehicle-workspace:ext/opencode-long-run-21b-log, vehicle-rt-core:ext/opencode-rtcore-derived-d103]
 prs: [vehicle-rt-core#66]
 zone: yellow
-review: pending
+review: done 2026-11-10 (no BLOCKER; Claude refactor on top, rt-core#67 supersedes #66; follow-ups ISSUES E-30 (10)/(11))
 ---
 
 # Long run 21b — vehicle-rt-core D-103 class-A signals (rerun)
@@ -198,4 +198,17 @@ All are DID-only or computed-derived inputs (no sensor/GPS); the out-of-scope se
 - Do not merge; the user merges. No releases, tags or submodule pins changed.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+- Zones: 25 paths, all yellow. architecture-guard: no BLOCKER; layering, no dynamic memory, D-087
+  stale limits from gen/, INVALID_INPUT vs STALE_INPUT matches the server `Ctx.value()`.
+  vss-schema-guardian: no hand-written CAN ID / DID / signal index; defs pin = v0.24.0.
+- Claude fix (rt-core#67, on top of the four DeepSeek commits; #66 closed): the clutch rules
+  duplicated the gen/ gear table and hard-coded six gears; `derived_gear` now exports
+  `derived_gear_ratio()` / `derived_gear_nearest_ratio()` over the one table (tests added).
+  Tests derive gear ratios and the VE airflow from gen/ and named constants; a note on how the
+  class-B NOT_COMPUTED list shrinks; rt-core `CLAUDE.md` derived line now says 49 signals.
+- Answers to *For Claude*: split `derived_core.c` in a follow-up (mechanical, no vector
+  change); the asserted class-B NOT_COMPUTED list is acceptable; the INVALID_INPUT semantics
+  match the reference.
+- D-088: +7.7 KB BSS accepted as measured (user's standing autonomous-mode instruction:
+  take the recommended option); cut options recorded in ISSUES E-30 (10).
+- Process: the vectors-before-implementation commit order is fine (generated headers alone).
