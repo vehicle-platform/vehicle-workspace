@@ -3,7 +3,7 @@
 > Keep it short (≤60 lines). Updated by the `/handoff` skill. "Recent sessions" keeps at most 5 one-line entries; drop the oldest.
 
 **Phase:** 0 hardware build (user, ESP32-only data-collection prototype; enclosure placement Q-034) · 1 data pipeline done in code; D-068/D-069 + D-075 stop epoch and **D-080 freeze frames in conn and rt-core** · D-070 derived: defs + server reference + **rt-core `features/derived` part 1 (28 class-A signals, rt-core#51)** · analyzer A3-A5 + A7a + A8 + A10-A13 done (recorded sessions, comparison, freeze frames, ride track, quality, ride summaries, conn capture, bring-up check) · 2 rt-core without hardware: republisher, heartbeat, FC check, EKF lean, 0xFD03 `LEAN_HEALTH` (D-067, D-086) · defs **v0.24.0** (D-103 provisional derived thresholds + wiring, D-093 amendment 3 mailbox DTCs) pinned by server, analyzer and rt-core main (rt-core#65) (last rt-core release v0.12.0) · **D-103: server computes 21 more class-A + ~20 class-B signals (server#52)** · **D-079: server reference computes 17 health-window signals (server#53/#54, provisional rules)** · analyzer A13 signal coverage (key I) + A14 per-gear summaries · mobile bring-up check + per-gear summaries; conn still on v0.19.1 · **D-098 done** (defs codegen, server encoder + golden records, rt-core serves 0xFD40-0xFD4E, rt-core#60) · **C3 mailbox M7 side done (rt-core#62, D-093 amendments defs#120 + defs#125: write only into a matching peer, rt-core#63)** · **C2 done: safety-node skeleton + M4 mailbox (safety-node#9, D-100) and Layer 1 cornering + super loop (safety-node#10, D-101)** · **board: NUCLEO-H745ZI-Q bought (D-094)** · mobile ride history (mobile#26) · roadmap: three parallel tracks (S schematics/CAD, C code, H hardware) below
-**Last updated:** 2026-11-10 (fifth autonomous run: defs#139-#143, conn#42/#43; defs v0.25.0 + v0.26.0 tags pending the user)
+**Last updated:** 2026-11-10 (fifth autonomous run: defs#139-#143, conn#42-#44; defs v0.25.0 + v0.26.0 tags pending the user)
 
 ## Where we are
 
@@ -27,7 +27,7 @@
 
 ## Open PRs
 
-- **None open from Claude** (2026-11-10). Merged today: rt-core#67-#70; server#65; defs#134-#143; conn#42, #43; workspace#180-#185 and this handoff. Pushed, no PR yet (wait for the tags): `claude/defs-0-25-0` and `claude/defs-0-26-0` in server and rt-core.
+- **None open from Claude** (2026-11-10). Merged today: rt-core#67-#70; server#65; defs#134-#143; conn#42-#44; workspace#180-#185 and this handoff. Pushed, no PR yet (wait for the tags): `claude/defs-0-25-0` and `claude/defs-0-26-0` in server and rt-core.
 - Mains pin the rename-only, off-main tags `v0.19.1` (conn) and `v0.14.1` (mobile); they stay (D-089 item 3). server/analyzer/rt-core main pin v0.24.0. server (#33 ... #65) and analyzer main are unreleased.
 
 ## Roadmap (parallel tracks; G = gate)
