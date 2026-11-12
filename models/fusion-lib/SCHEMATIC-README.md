@@ -17,6 +17,18 @@
 | **`moto-helmet`** (W3) | 1 | Helmet ESP32-S3 HUD + audio (D-073) | §5 |
 | **`moto-hil`** (W6) | 1 | HIL bench (not on the vehicle) | §6 |
 
+### Sheet → reference figures (`moto-bike`)
+
+The figures in `vehicle-defs/docs/img/hardware/` are the reference for each sheet; `vehicle-defs/docs/hardware-integration.md` §0 indexes them. Sheets are mapped by content, following the sheet definitions above (S3 is the Board B anomaly sheet, S4 holds the M4 board C1 and the M7 chassis IMU board C2).
+
+| Sheet | Reference figures | Files (`vehicle-defs/docs/img/hardware/`) |
+|---|---|---|
+| S1 Power (Board A) | Fig. 02 power chain | `02-power-chain.svg` |
+| S2 M7 (CAN, logging, GPS, park) | Fig. 04 H755 pin map, Fig. 05 CAN topology, Fig. 03 Main Box | `04-h755-pin-map.svg`, `05-can-topology.svg`, `03-main-box-layout.svg` |
+| S3 Anomaly (Board B) | Fig. 03 Main Box (Board B placement), Fig. 13 harness rules | `03-main-box-layout.svg`, `13-harness.svg` |
+| S4 M4 safety (C1) + M7 chassis IMU (C2) | Fig. 04 pin map (M4 side), Fig. 07 IMU boxes, Fig. 09 immobilizer, Fig. 10 LED ring and dead-man | `04-h755-pin-map.svg`, `07-imu-boxes.svg`, `09-immobilizer.svg`, `10-led-ring-deadman.svg` |
+| S5 Raspberry Pi 5 | Fig. 11 Pi 5 box | `11-pi5-box.svg` |
+
 **License note:** Fusion's personal/free licence has a schematic sheet limit (usually 2 sheets; check under your own licence). If you hit the limit, put the `moto-bike` design on a single sheet and draw each subsystem inside its own frame. Connections between frames are made by net labels with the same name.
 
 ---
