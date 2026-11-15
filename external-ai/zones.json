@@ -40,7 +40,7 @@
     {"repo": "vehicle-defs", "glob": "docs/*", "zone": "yellow", "why": "platform docs; facts must match DECISIONS.md"},
     {"repo": "vehicle-defs", "glob": "*", "zone": "red", "why": "single source of truth for signals, UDS, BLE, limits and codegen (invariant 2, /signal-change)"},
 
-    {"repo": "vehicle-safety-node", "glob": "*", "zone": "red", "why": "M4 safety partition: cornering, blind spot, immobilizer (invariants 3, 6, 8; D-072)"},
+    {"repo": "vehicle-safety-node", "glob": "*", "zone": "red", "why": "separate safety MCU (G474): cornering, blind spot, immobilizer (invariants 3, 6, 8; D-118)"},
     {"repo": "vehicle-io-node", "glob": "*", "zone": "red", "why": "retired by D-072; kept red until archived"},
 
     {"repo": "vehicle-rt-core", "glob": "src/features/cornering/*", "zone": "red", "why": "EKF lean and cornering (invariant 8)"},
@@ -52,10 +52,9 @@
     {"repo": "vehicle-rt-core", "glob": "src/services/alive*", "zone": "red", "why": "alive supervision / watchdog (invariant 8)"},
     {"repo": "vehicle-rt-core", "glob": "src/services/snapshot*", "zone": "red", "why": "cross-task lean exchange (D-065, D-067)"},
     {"repo": "vehicle-rt-core", "glob": "src/services/can_*", "zone": "red", "why": "CAN guard and error state machine (D-039, D-054)"},
-    {"repo": "vehicle-rt-core", "glob": "src/services/mailbox*", "zone": "red", "why": "inter-core mailbox to the M4 safety partition (D-072, invariant 8)"},
-    {"repo": "vehicle-rt-core", "glob": "src/app/*init*", "zone": "red", "why": "MPU, clock, reset and option-byte init (D-072 item 4)"},
-    {"repo": "vehicle-rt-core", "glob": "cubemx/*", "zone": "red", "why": "dual-core system init and peripheral ownership (D-072 item 4)"},
-    {"repo": "vehicle-rt-core", "glob": "*.ld", "zone": "red", "why": "linker script: bank 1 layout, mailbox region (D-072 item 4)"},
+    {"repo": "vehicle-rt-core", "glob": "src/app/*init*", "zone": "red", "why": "MPU, clock, reset and option-byte init (invariant 8, D-118)"},
+    {"repo": "vehicle-rt-core", "glob": "cubemx/*", "zone": "red", "why": "system init and peripheral ownership (invariant 8, D-118)"},
+    {"repo": "vehicle-rt-core", "glob": "*.ld", "zone": "red", "why": "linker script: flash layout, OTA banks (invariant 8, D-118)"},
     {"repo": "vehicle-rt-core", "glob": "*", "zone": "yellow", "why": "MCU firmware: static memory only, MISRA, host tests (invariant 5)"},
 
     {"repo": "vehicle-connectivity-node", "glob": "src/HondaCANModule*", "zone": "red", "why": "sole vehicle-bus tester today (invariant 1, D-023, D-068)"},
