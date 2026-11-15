@@ -6,7 +6,7 @@ This directory contains 3D reference models, orthographic photos, enclosure dime
 
 ## 1. Honda CL250 Official Engineering Dimensions
 
-Use these dimensions to calibrate Meshy.ai mesh exports (`Scale Mesh`) or 2D orthographic canvas planes in Autodesk Fusion 360:
+Use these dimensions to calibrate Meshy.ai mesh exports (`Scale Mesh`) or orthographic reference image planes in FreeCAD (Image workbench; mesh scaling with the Mesh/Part workbench):
 
 | Parameter | Official Value | Notes |
 |---|---|---|
@@ -35,5 +35,5 @@ Use these dimensions to calibrate Meshy.ai mesh exports (`Scale Mesh`) or 2D ort
 
 ## 3. Directory Layout
 
-- `reference-images/`: High-resolution studio and orthographic images of the Honda CL250 / CL500 for Meshy.ai generation and Fusion 360 canvas calibration.
-- `cad-exports/`: Exported `.OBJ`, `.STL`, and `.STEP` files generated via Meshy.ai and designed in Fusion 360.
+- `reference-images/`: High-resolution studio and orthographic images of the Honda CL250 / CL500 for Meshy.ai generation and FreeCAD image-plane calibration.
+- `cad-exports/`: Exported `.OBJ`, `.STL`, and `.STEP` files generated via Meshy.ai and designed in FreeCAD. STEP exchange with the KiCad PCB design goes through the KiCad StepUp workbench.

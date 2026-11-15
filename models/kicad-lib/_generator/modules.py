@@ -1,4 +1,4 @@
-"""Module database for moto-platform Fusion libraries.
+"""Module database for moto-platform KiCad libraries.
 
 All coordinates in mm, origin = board lower-left, board seen from TOP (component side).
 Header spec:
