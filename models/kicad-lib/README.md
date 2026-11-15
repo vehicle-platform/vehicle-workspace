@@ -1,18 +1,19 @@
-# Fusion Module Libraries — vehicle-platform
+# KiCad Module Libraries — vehicle-platform
 
-Source: `vehicle-defs/docs/hardware-procurement-list.md` v2.8 (Part 1–5, D-082 Board C1/C2). Generator script: `_generator/` (`python3 build.py <output folder>`).
+Source: `vehicle-defs/docs/hardware-procurement-list.md` v2.8 (Part 1–5, D-082 Board C1/C2). Generator script: `_generator/` (`python3 _generator/build.py [output folder]`, default = this folder; `python3 _generator/check.py` validates the result). The libraries are generated files: edit `_generator/modules.py`, not the `.kicad_sym` / `.kicad_mod` files.
 
-Every module is a **Fusion device**: a symbol with its real name and pins in the schematic, a board-sized footprint (pads + mounting holes, origin at the board centre). The 3D model (STEP) will be attached to the footprint in Fusion.
+Every module is a **KiCad symbol + footprint pair**: a symbol with its real name and pins in the schematic (its `Footprint` property is `moto-<x>:<MODULE>`), and a board-sized footprint (pads + mounting holes, origin at the board centre, board outline on `F.Fab` and `F.CrtYd`). STEP models are not referenced by the footprints; they are attached later in the footprint editor (3D Models tab).
 
-Passives (TVS, 1N5822, resistor, capacitor, Zener), DIP ICs such as 74HC14/74HC123/74AHCT125 and the single PC817 (DIP-4), and enclosures/cable glands/cables are not in this list. They come from Fusion's own library or from mechanical assembly.
+Passives (TVS, 1N5822, resistor, capacitor, Zener), DIP ICs such as 74HC14/74HC123/74AHCT125 and the single PC817 (DIP-4), and enclosures/cable glands/cables are not in this list. They come from KiCad's standard libraries (`Device`, `74xx`, `Diode`, `Connector_*`) or from mechanical assembly (FreeCAD).
 
 ## Installation
 
-1. Fusion → **File > Open > Open from my computer** → select the `.lbr` file → the library editor opens → **Save** (saves to the Library Manager).
-2. In the schematic **Place Component** → filter by library name (`moto-core` etc.).
-3. 3D attachment: right-click the footprint in the library → **Create 3D Package** / *Attach existing 3D model* → import the STEP → align it with the footprint's pads (pin 1 = **square pad**) → save → *Update library* in the schematic.
+1. In KiCad (Schematic Editor or Project Manager): **Preferences → Manage Symbol Libraries** → *Project Specific Libraries* tab → add each `moto-<x>.kicad_sym` with nickname `moto-<x>` (`moto-core`, `moto-anomaly`, `moto-safety`, `moto-hud`, `moto-edge-hil`).
+2. **Preferences → Manage Footprint Libraries** → *Project Specific Libraries* → add each `moto-<x>.pretty` folder with the same nickname `moto-<x>`. The symbols' `Footprint` fields (`moto-core:NUCLEO-H755ZI-Q` etc.) then resolve automatically.
+3. In the schematic **Add Symbol** (`A`) → pick `moto-<x>` → module. Passives and 74xx parts come from KiCad's standard libraries.
+4. 3D attachment: open the footprint in the Footprint Editor → **Footprint Properties → 3D Models** tab → add the STEP file → align it with the footprint's pads (pin 1 = **square pad**) → save. STEP exchange with FreeCAD goes through the KiCad StepUp workbench.
 
-> Large boards (Nucleo-144) are placed in the schematic as a separate **gate** per connector (CN7, CN8 …). Pins with the same name (`GND@1`, `GND@2`) appear as `GND` in the schematic.
+> Large boards (Nucleo-144) are drawn as a multi-unit symbol with **one unit per connector** (CN7, CN8 …). Pins with the same name (`GND`) appear several times with distinct pin numbers. Pad names are `<header>-<n>` (e.g. `CN11-5`), and the symbol pin number is the same string. Pin electrical types: `power_in` for supply/GND pins, `no_connect` for `NC`, `bidirectional` otherwise.
 
 ## Verification — compare the board with calipers
 
@@ -20,7 +21,7 @@ On hobby modules the pin order and header position vary by seller. Values with *
 
 Check order: (1) board outer dimensions, (2) pin 1 position and pin order (silkscreen on the board), (3) header distance to the edge, (4) mounting hole positions and diameter.
 
-## `moto-core.lbr` — Part 1 - Main controller, power chain, CAN, GPS/IMU, OBD2
+## `moto-core` (`moto-core.kicad_sym` + `moto-core.pretty`) — Part 1 - Main controller, power chain, CAN, GPS/IMU, OBD2
 
 | Module | Board (mm) | Confidence | STEP from | Note |
 |---|---|---|---|---|
@@ -34,7 +35,7 @@ Check order: (1) board outer dimensions, (2) pin 1 position and pin order (silks
 | MPU6500-MODULE | 15.0 × 25.0 | Medium | GrabCAD 'GY-6500' / 'GY-521' (same form) | — |
 | OBD2-J1962 | 40.0 × 18.0 | High | GrabCAD 'OBD2 J1962 female connector' | CL250 DLC (4/6-pin) pinout is CONFIRM in hardware-integration §1; this device is the 16-pin end of the adapter. |
 
-## `moto-anomaly.lbr` — Part 2 - Anomaly / master mechanic sensors
+## `moto-anomaly` (`moto-anomaly.kicad_sym` + `moto-anomaly.pretty`) — Part 2 - Anomaly / master mechanic sensors
 
 | Module | Board (mm) | Confidence | STEP from | Note |
 |---|---|---|---|---|
@@ -49,7 +50,7 @@ Check order: (1) board outer dimensions, (2) pin 1 position and pin order (silks
 | VL53L1X-TOF400C | 25.0 × 13.0 | Medium | GrabCAD 'VL53L1X module' | — |
 | AS5600-MODULE | 23.0 × 23.0 | Medium | GrabCAD 'AS5600 magnetic encoder module' | — |
 
-## `moto-safety.lbr` — Part 3 - Safety: radar, cornering LED, NFC immobilizer, GSM, camera
+## `moto-safety` (`moto-safety.kicad_sym` + `moto-safety.pretty`) — Part 3 - Safety: radar, cornering LED, NFC immobilizer, GSM, camera
 
 | Module | Board (mm) | Confidence | STEP from | Note |
 |---|---|---|---|---|
@@ -60,7 +61,7 @@ Check order: (1) board outer dimensions, (2) pin 1 position and pin order (silks
 | SIM800L-MODULE | 25.0 × 23.0 | Medium | GrabCAD 'SIM800L module' | — |
 | PI-CAMERA-MODULE-3 | 25.0 × 24.0 | High | raspberrypi.com Camera Module 3 STEP | — |
 
-## `moto-hud.lbr` — Part 4 - Helmet HUD and audio unit
+## `moto-hud` (`moto-hud.kicad_sym` + `moto-hud.pretty`) — Part 4 - Helmet HUD and audio unit
 
 | Module | Board (mm) | Confidence | STEP from | Note |
 |---|---|---|---|---|
@@ -71,7 +72,7 @@ Check order: (1) board outer dimensions, (2) pin 1 position and pin order (silks
 | LIPO-1S-JSTPH2 | 8.0 × 6.0 | High | Battery: 50x34x8 box model / JST-PH 2P STEP | — |
 | SPEAKER-8R-2P | 6.0 × 4.0 | High | GrabCAD '28mm speaker' | — |
 
-## `moto-edge-hil.lbr` — Part 5 - Raspberry Pi 5 edge unit and HIL bench
+## `moto-edge-hil` (`moto-edge-hil.kicad_sym` + `moto-edge-hil.pretty`) — Part 5 - Raspberry Pi 5 edge unit and HIL bench
 
 | Module | Board (mm) | Confidence | STEP from | Note |
 |---|---|---|---|---|

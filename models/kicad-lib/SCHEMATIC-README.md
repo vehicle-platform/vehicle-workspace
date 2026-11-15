@@ -1,14 +1,16 @@
-# Circuit Schematic Setup Guide — vehicle-platform (Fusion)
+# Circuit Schematic Setup Guide — vehicle-platform (KiCad)
 
-**Version:** 1.3 — 2026-10-29 (cross-check: `hardware-integration.md`, `hardware-procurement-list.md` v2.8, `fusion-lib/README.md`, `DECISIONS.md` D-044, D-072, D-073, D-075, D-076, D-082, Q-031, Q-032, Q-033, Q-034). 1.2 → 1.3: English translation, no content change. Difference from 1.1: D-082 Board C1/C2 split and circuit rules, BOM notes per v2.6–v2.8, input capacitor ≥ 50 V.
+**Version:** 1.4 — 2026-11-15 (cross-check: `hardware-integration.md`, `hardware-procurement-list.md` v2.8, `kicad-lib/README.md`, `DECISIONS.md` D-044, D-072, D-073, D-075, D-076, D-082, Q-031, Q-032, Q-033, Q-034). 1.3 → 1.4: D-117, Fusion → KiCad (tool-specific instructions only; no electrical content change). 1.2 → 1.3: English translation, no content change. Difference from 1.1: D-082 Board C1/C2 split and circuit rules, BOM notes per v2.6–v2.8, input capacitor ≥ 50 V.
 **Priority order:** `DECISIONS.md` > `ARCHITECTURE.md` > `hardware-integration.md` > this file.
-**Libraries:** the `moto-*.lbr` files in the same folder (installation: `README.md`). Parts that are not modules come from Fusion's own libraries: passives, diodes, 74HC14 / 74HC123 / 74AHCT125 (74xx library, DIP-14/16), single PC817 (DIP-4 optocoupler), MOSFETs and connectors.
+**Libraries:** the `moto-*.kicad_sym` / `moto-*.pretty` files in the same folder (installation: `README.md`). Parts that are not modules come from KiCad's standard libraries: passives (`Device`), diodes, 74HC14 / 74HC123 / 74AHCT125 (`74xx`, DIP-14/16 footprints), single PC817 (DIP-4 optocoupler), MOSFETs and connectors.
 
 > **Rule:** Pins marked **CONFIRM** or **TBD** in the documents are not drawn in the schematic on a guess; they are left as a net label only and connected once the pin is settled. Values marked **Proposal** in this file (divider resistor, driver transistor, etc.) are not a decision, only a starting value. They are checked before being put into the circuit and written into the relevant decision file.
 
 ---
 
 ## 1. Schematic files and sheet plan
+
+Use **one KiCad project per design** (`moto-bike-p0`, `moto-bike`, `moto-helmet`, `moto-hil`). `moto-bike` is built with **hierarchical sheets** S1–S5 (root sheet + one sub-sheet each); the other designs are a single sheet. Add the `moto-*` libraries once as project-specific libraries (see `README.md`).
 
 | Design | Sheets | Content | Section |
 |---|---|---|---|
@@ -29,13 +31,13 @@ The figures in `vehicle-defs/docs/img/hardware/` are the reference for each shee
 | S4 M4 safety (C1) + M7 chassis IMU (C2) | Fig. 04 pin map (M4 side), Fig. 07 IMU boxes, Fig. 09 immobilizer, Fig. 10 LED ring and dead-man | `04-h755-pin-map.svg`, `07-imu-boxes.svg`, `09-immobilizer.svg`, `10-led-ring-deadman.svg` |
 | S5 Raspberry Pi 5 | Fig. 11 Pi 5 box | `11-pi5-box.svg` |
 
-**License note:** Fusion's personal/free licence has a schematic sheet limit (usually 2 sheets; check under your own licence). If you hit the limit, put the `moto-bike` design on a single sheet and draw each subsystem inside its own frame. Connections between frames are made by net labels with the same name.
+**Sheets:** KiCad has no sheet-count limit, so each subsystem gets its own hierarchical sheet (S1–S5). Run **ERC** (Inspect → Electrical Rules Checker) on every sheet before calling it done.
 
 ---
 
 ## 2. Net naming rule
 
-Labels with the same name are merged automatically in Fusion, so the names must be written **exactly** as in the table. `UART_x_TX` is always the **MCU's TX** pin and goes to the module's RX.
+Net names must be written **exactly** as in the table. **KiCad difference:** a local label only merges within its own sheet, so every net that crosses sheets (all platform-wide nets in this section: supplies, buses, `UART_x_*`, `SPI_*`, `I2C_*`, `CAN` lines, etc.) must use a **global label**; use local labels for nets that stay inside one sheet. (Hierarchical labels + sheet pins also work but global labels are the recommended default here.) Power symbols (`+3V3`, `+5V`, `GND`, …) are global by nature. `UART_x_TX` is always the **MCU's TX** pin and goes to the module's RX.
 
 | Group | Net names | Owner / note |
 |---|---|---|
@@ -106,7 +108,7 @@ LM2596HVS OUT+ (set to 5.0 V) ─ +5V ─ ESP32-S3 5V pin            (IN-/OUT- �
 
 **Proposal:** (b). Also put a series PTC or a low-value resistor on the `+3V3` end of every sensor cable that leaves the enclosure. The current budget (number of sensors × typical current) must be calculated during the decision.
 
-**`AGND` ↔ `GND` tie:** two separate nets in Fusion. So that `AGND` does not float, it is connected to `GND` at the H755 analogue reference point with a **single** 0 Ω resistor (net-tie / star connection). It is not tied anywhere else. Whether the Nucleo board's AGND pin is already connected to GND on the board must be **CONFIRM**ed from UM2408. If it is, that is the star point and no external 0 Ω is fitted.
+**`AGND` ↔ `GND` tie:** two separate nets in KiCad. So that `AGND` does not float, it is connected to `GND` at the H755 analogue reference point with a **single** 0 Ω resistor (net-tie / star connection). It is not tied anywhere else. Whether the Nucleo board's AGND pin is already connected to GND on the board must be **CONFIRM**ed from UM2408. If it is, that is the star point and no external 0 Ω is fitted.
 
 **Harness EMI (not in the schematic, in the BOM and assembly):** clip-on ferrite cores (5–7 mm) on the CAN, SPI (ADXL345), camera and 12 V cables, just outside the PG7 cable glands of the main enclosure and the Pi enclosure. These are not schematic elements. Write a note (text) on the schematic sheet and add them to the BOM manually as mechanical items (§8).
 
@@ -138,7 +140,7 @@ LM2596HVS OUT+ (set to 5.0 V) ─ +5V ─ ESP32-S3 5V pin            (IN-/OUT- �
 | ACS758-200B | VOUT → divider → `I_BAT_SENSE` (ADC) | Divider below |
 | PC817 4 channel | IN1..3 ← 12 V taps, OUT → GPIO (`TAP_*`) | **Not connected before Q-031 (c).** 4th channel spare; not used for M4's `IND_L/R` inputs (see S4) |
 | LJ12A3 ×2 | BLK_OUT → level circuit → `WHEEL_F/R` (timer input) | Sensor powered from `+12V_PROT` |
-| Spark clip | 1N4148 + 3.3 V Zener + 74HC14 → `SPARK_IN` | 74HC14 from Fusion's 74xx library |
+| Spark clip | 1N4148 + 3.3 V Zener + 74HC14 → `SPARK_IN` | 74HC14 from KiCad's `74xx` library |
 | NTC ×3–5 | 10 kΩ 0.1% + 100 nF divider → ADC (`NTC_n`) | Twisted Signal+AGND pair |
 | I2C pull-up | 2.2–4.7 kΩ → `+3V3` | The on-board 10 kΩ resistors are not enough on a long cable |
 | *(2C, later)* VL53L1X ×2 | `I2C_M7_*` + XSHUTs on separate GPIOs | Both are 0x29 at boot; enable them one at a time with XSHUT and change the address |
@@ -208,7 +210,7 @@ D-082 split the single Board C in two. Every peripheral and GPIO port belonging 
 
 ---
 
-## 5. `moto-helmet` (W3, D-073, `moto-hud.lbr`)
+## 5. `moto-helmet` (W3, D-073, `moto-hud` library)
 
 Stages: **H0** (desk, SSD1306) and **H1** (helmet, micro-OLED + prism). Pin assignments are not documented; all **TBD**. Q-032 (PTT location, audio path, battery target) is open.
 
@@ -235,7 +237,7 @@ TP4056 OUT- ─ GND          (charging: TP4056 Type-C input)
 
 ---
 
-## 6. `moto-hil` (W6, `moto-edge-hil.lbr`)
+## 6. `moto-hil` (W6, `moto-edge-hil` library)
 
 Not on the vehicle. The bench has its own CAN bus and **120 Ω termination at both ends**. The simulator is an F446RE; the fault/supply node is an F103 Blue Pill (D-072 items 1 and 9, Q-003). There is no STM32 board on hand; both will be bought (D-082 item 5). An Arduino Nano on hand is an alternative.
 
@@ -258,9 +260,9 @@ Not on the vehicle. The bench has its own CAN bus and **120 Ω termination at bo
 ## 7. H755 pin map — open decision
 
 Which H755 pin goes to which function has not been written as a decision yet. Order:
-1. Build S1–S5 with net labels; leave the MCU side empty.
+1. Build S1–S5 with global labels; leave the MCU side empty.
 2. Produce the pin map in STM32CubeMX. **For M7:** FDCAN1/2, SDMMC (or SPI), I2C, SPI (ADXL ×2, MAX31856), UART (GPS, GSM), ADC (V_BAT, I_BAT, NTCs), timer capture (`GPS_PPS`, `SPARK_IN`, `WHEEL_F/R`), `TAP_*` GPIOs. **For M4, on separate GPIO ports:** SPI (IMU), UART ×2 (radars), ring DIN ×2 (timer/DMA), `MIRROR_LED_L/R`, `DEADMAN_KICK`, `IND_L/R`, `IMMO_SET/RESET`, PN532, PIN input.
-3. Add the map to `DECISIONS.md` as an item, then connect only the used pins on the NUCLEO-H755ZI-Q gates (CN7–CN12).
+3. Add the map to `DECISIONS.md` as an item, then connect only the used pins on the NUCLEO-H755ZI-Q units (CN7–CN12).
 
 ---
 
@@ -270,7 +272,7 @@ Every connector is placed in the schematic as a **part**. That way it enters the
 
 | Transition | In the schematic | In the BOM |
 |---|---|---|
-| Board A ↔ Board B (inside the main enclosure) | One JST-XH header part on each board (search "XH" in the Fusion library or use a 2.5 mm pin header). Same net names on the mating ends. Board B's "Scale 1B expansion port" should be a separate connector | Headers enter automatically. Female housings and terminals (JST-XH 560-piece set) are added manually |
+| Board A ↔ Board B (inside the main enclosure) | One JST-XH header part on each board (search "XH" in KiCad's `Connector_JST` library or use a 2.5 mm pin header). Same net names on the mating ends. Board B's "Scale 1B expansion port" should be a separate connector | Headers enter automatically. Female housings and terminals (JST-XH 560-piece set) are added manually |
 | Main enclosure ↔ C1-IMU and ↔ Board C2 (separate enclosures); C1-IO ↔ M4 pins inside the main enclosure through its own connector | A **separate** connector part and a separate cable for each board (D-082 item 2). Type **CONFIRM** (Deutsch DT proposed). C1's SPI cable is 6/8 core shielded | Connector kit and cable added manually |
 | NUCLEO ↔ Board A/B (2nd storey) | Long-pin (stacking) header part, CN7–CN10 signals | Automatic |
 | Chassis sensors outside the enclosure | **Deutsch DT** (2–6 pin) part on the enclosure side. If it is not in the library, use a generic connector with the same pin count as a placeholder for now and write "Deutsch DT04-xP" in the `MPN` attribute | DT kit and crimp tool added manually |
@@ -281,7 +283,7 @@ Every connector is placed in the schematic as a **part**. That way it enters the
 
 ## 9. ERC and BOM checklist
 
-- [ ] **ERC:** because all pins are of type `pass`, Fusion does not report direction errors. The real check is going through the unconnected warnings one by one.
+- [ ] **ERC:** run Inspect → Electrical Rules Checker on every sheet before it is called done. The module symbols use `bidirectional` pins (and `power_in` on supply/GND pins), so ERC will flag undriven power pins (add `PWR_FLAG` on the source net) and pin-type conflicts; resolve or deliberately waive each one. Then go through every unconnected-pin warning one by one.
 - [ ] `AGND` and `GND` are tied at **one** point only (0 Ω net-tie or Nucleo AGND). There is no second tie, `AGND` is not floating.
 - [ ] The source of `+3V3` is chosen (S1 (a)/(b)) and it comes from a single source in the schematic.
 - [ ] There is no 120 Ω anywhere on the `VCAN` line (including the resistor on the SN65HVD230 board). There are exactly two on the `PCAN` and `HCAN` lines.
@@ -294,5 +296,5 @@ Every connector is placed in the schematic as a **part**. That way it enters the
 - [ ] C1 and C2 are supplied from separate fuses + separate LDO branches; there is no M4 signal on the C2 line.
 - [ ] There are 33–100 Ω series resistors on the `SPI_M4_*` lines; there are pull-downs on the 74HC123 trigger input and on the relay drivers' gate/base; there are reverse diodes on the `IND_L/R` inputs.
 - [ ] The electrolytic on `+12V_PROT` is ≥ 50 V.
-- [ ] Export the BOM from Fusion (**Export > BOM**) and compare it with `hardware-procurement-list.md` v2.8. The previous version's BOM gaps (L1, 3.3 V LDO, `+4V0_GSM` buck, mirror LED MOSFETs, MCP2515 level shifter, helmet LDO) entered the list with v2.6; the ones whose value is still **TBD**: L1, MOSFET model and LED resistor, LDO current budget.
+- [ ] Export the BOM from KiCad (**File > Export > BOM**, or **Tools > Generate BOM**) and compare it with `hardware-procurement-list.md` v2.8. The previous version's BOM gaps (L1, 3.3 V LDO, `+4V0_GSM` buck, mirror LED MOSFETs, MCP2515 level shifter, helmet LDO) entered the list with v2.6; the ones whose value is still **TBD**: L1, MOSFET model and LED resistor, LDO current budget.
 - [ ] Enter every **CONFIRM/TBD** label in the schematic into the open-items table in `hardware-integration.md` §10 (items 10 and 11 collect the items of this guide).
