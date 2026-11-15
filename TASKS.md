@@ -25,9 +25,9 @@ Then say "tags ready" and start T1.
 | T4 | linux-node reads `Baudrate` from `platform.dbc`, drop `--platform-bitrate` note | blocked: tags (T1 linux-node) | vehicle-linux-node |
 | T5 | Hardware Integration Atlas follow-ups: Fusion S1–S4 sheets from the figures, procurement v3.0 counts from §3.5 | ready (docs); S-sheets need Fusion (user) | vehicle-defs, workspace `models/fusion-lib` |
 | T6 | H755 pin plan → decision: Claude pre-checks the v0.1 plan against the CubeMX `.ioc` the user exports; writes the D-xxx draft | blocked: user (CubeMX export) | vehicle-defs |
-| T7 | Q-016 node-health VSS paths (defs#159) → `platform.dbc` per-node names, regen rt-core/safety-node, linux-node L2 panel | blocked: user (D-004 approval) | vehicle-defs, rt-core, safety-node, linux-node |
-| T8 | L3 live source Kuksa → vehicle-server (MQTT recommended) | blocked: user (D-077 transport choice) | vehicle-linux-node, vehicle-server |
-| T9 | Fault catalog quality pass: CL250 service manual + SAE J2012 sources before more entries become displayable | blocked: user (sources) | vehicle-defs `faults/` |
+| T7 | Q-016 node-health VSS paths → defs#168 (D-108 provisional, v0.29.0); then regen rt-core + safety-node on the SAME tag, linux-node L2 panel | defs part done (defs#168); consumers blocked: tags (v0.28.0, then v0.29.0) | vehicle-defs, rt-core, safety-node, linux-node |
+| T8 | L3 live source Kuksa → vehicle-server over MQTT (D-109 provisional) | done in PRs server#70 + linux-node#16; real-broker smoke test open (ISSUES E-31 (6)) | vehicle-linux-node, vehicle-server |
+| T9 | Fault catalog quality pass: CL250 service manual + SAE J2012 sources before more entries become displayable | web pass done (defs#167, 12 low-confidence leads, 0 newly displayable); rest blocked: user (service manual, J2012) | vehicle-defs `faults/` |
 | T10 | Analyzer A6 first run on a real SLCAN adapter; A7b real live source under D-077 | blocked: hardware | vehicle-analyzer |
 | T11 | hil-bench host (Q-009 schema) + the D-020 forbidden-request silence scenario (ISSUES C-9 (3)) | blocked: user (Q-009) | vehicle-hil-bench |
 | T12 | safety-node: own-IMU estimator (Q-022/Q-023 (5)-(6)) once the C1-IMU hardware exists; D-100 Layer 1 v2 | blocked: hardware | vehicle-safety-node |
@@ -35,6 +35,9 @@ Then say "tags ready" and start T1.
 | T14 | D-083 ML stage 3 with real ride data | blocked: hardware (G1 capture) | vehicle-ml |
 | T15 | Analyzer tests: 8 loose types fixed (analyzer#58). Remaining: `tests/tsconfig.json` into CI as a non-blocking check | ready | vehicle-analyzer |
 | T16 | Q-001 listen-only capture → `/signal-change` promotion of the verified DIDs, Q-031 | blocked: hardware (G1) | conn, vehicle-defs |
+| T17 | D-111 indicator input layer (safety-node#15) → blind-spot consumer once the radar exists, with the README consumer requirements and safety-reviewer | PR open; consumer blocked: hardware (radar) | vehicle-safety-node |
+| T18 | Mailbox lockstep check: `manifest.yaml` rt-core/safety-node pins must share `mailbox.LAYOUT_ID` (ISSUES E-31 (1)) | ready (before the v0.29.0 regen) | vehicle-workspace |
+| T19 | conn parity with D-116 (one quiet window per run of withheld FFs) | ready after rt-core#75 merges | vehicle-connectivity-node |
 
 ## Card details
 
