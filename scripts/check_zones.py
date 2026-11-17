@@ -54,13 +54,32 @@ def repo_name(repo_dir: Path) -> str:
     return url.rstrip("/").removesuffix(".git").rsplit("/", 1)[-1]
 
 
+def parse_porcelain_z(out: str) -> set[str]:
+    """Paths from `git status --porcelain -z`: raw (never quoted) names; a rename or copy
+    entry is followed by its source path as the next NUL-separated field."""
+    paths: set[str] = set()
+    fields = out.split("\0")
+    i = 0
+    while i < len(fields):
+        entry = fields[i]
+        i += 1
+        if len(entry) < 4:
+            continue
+        paths.add(entry[3:])
+        if entry[0] in "RC" or entry[1] in "RC":
+            if i < len(fields) and fields[i]:
+                paths.add(fields[i])
+            i += 1
+    return paths
+
+
 def changed_paths(repo_dir: Path, base: str) -> list[str]:
+    # -z everywhere: without it git quotes names with spaces or non-ASCII bytes
+    # ("\"a b.md\""), which then never match a zone glob and fall to a weaker zone.
     paths: set[str] = set()
     merge_base = git(repo_dir, "merge-base", base, "HEAD").strip()
-    paths.update(git(repo_dir, "diff", "--name-only", merge_base).split("\n"))
-    for line in git(repo_dir, "status", "--porcelain", "--untracked-files=all").splitlines():
-        entry = line[3:]
-        paths.update(entry.split(" -> "))  # renames list both names
+    paths.update(git(repo_dir, "diff", "--name-only", "-z", merge_base).split("\0"))
+    paths.update(parse_porcelain_z(git(repo_dir, "status", "--porcelain", "-z", "--untracked-files=all")))
     return sorted(p for p in paths if p)
 
 
