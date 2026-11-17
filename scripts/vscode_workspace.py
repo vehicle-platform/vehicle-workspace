@@ -27,14 +27,11 @@ import argparse
 import json
 import os
 import re
-import subprocess
 import sys
 from pathlib import Path
 
-_HERE = Path(__file__).resolve().parent.parent
-# The main workspace checkout, also when this script runs from a workspace worktree.
-ROOT = Path(subprocess.run(["git", "-C", str(_HERE), "rev-parse", "--path-format=absolute", "--git-common-dir"],
-                           capture_output=True, text=True, check=True).stdout.strip()).parent
+from _common import ROOT, repos, worktree_list
+
 OUT = ROOT / "vehicle-platform.code-workspace"
 HOOK_PATTERN = re.compile(r"\bgit\b.*\b(worktree|checkout|switch)|worktrees\.py")
 
@@ -56,15 +53,6 @@ SETTINGS = {
 }
 
 
-def git(repo: Path, *args: str) -> str:
-    out = subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True)
-    return out.stdout.strip() if out.returncode == 0 else ""
-
-
-def repos() -> list[Path]:
-    return [ROOT] + sorted(p for p in ROOT.glob("vehicle-*") if (p / ".git").exists())
-
-
 def short(repo: Path) -> str:
     return "workspace" if repo == ROOT else repo.name.removeprefix("vehicle-")
 
@@ -80,22 +68,8 @@ def owner_mark(branch: str) -> str:
 
 
 def worktrees(repo: Path) -> list[tuple[Path, str]]:
-    """(path, branch) for every checkout of `repo`, main clone first."""
-    result: list[tuple[Path, str]] = []
-    path: Path | None = None
-    branch = ""
-    for line in git(repo, "worktree", "list", "--porcelain").splitlines() + [""]:
-        if line.startswith("worktree "):
-            path = Path(line.removeprefix("worktree "))
-        elif line.startswith("branch "):
-            branch = line.removeprefix("branch refs/heads/")
-        elif line == "detached":
-            branch = "(detached)"
-        elif not line and path is not None:
-            if path.exists():
-                result.append((path, branch))
-            path, branch = None, ""
-    return result
+    """(path, branch) for every existing checkout of `repo`, main clone first."""
+    return [(path, branch or "(detached)") for path, branch in worktree_list(repo) if path.exists()]
 
 
 def build() -> dict:
