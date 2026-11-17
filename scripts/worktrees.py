@@ -29,24 +29,14 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
-_HERE = Path(__file__).resolve().parent.parent
-# The main workspace checkout, also when this script runs from a workspace worktree.
-ROOT = Path(subprocess.run(["git", "-C", str(_HERE), "rev-parse", "--path-format=absolute", "--git-common-dir"],
-                           capture_output=True, text=True, check=True).stdout.strip()).parent
+from _common import ROOT, git as _git, repos, worktree_list
+
 REPORT = ROOT / "WORKTREES.md"
 EXCLUDE_LINE = ".claude/worktrees/"
 
 
 def git(repo: Path, *args: str, check: bool = True) -> str:
-    out = subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True)
-    if check and out.returncode != 0:
-        raise RuntimeError(f"git -C {repo} {' '.join(args)}: {out.stderr.strip()}")
-    return out.stdout.strip()
-
-
-def repos() -> list[Path]:
-    """The workspace itself plus every cloned platform repo (own .git)."""
-    return [ROOT] + sorted(p for p in ROOT.glob("vehicle-*") if (p / ".git").exists())
+    return _git(repo, *args, check=check)
 
 
 def repo_slug(repo: Path) -> str:
@@ -145,11 +135,7 @@ def collect() -> list[Worktree]:
     for repo in repos():
         ensure_excluded(repo)
         git(repo, "fetch", "--quiet", "--prune", "origin", check=False)
-        entries = git(repo, "worktree", "list", "--porcelain").split("\n\n")
-        for entry in entries[1:]:  # the first entry is the main checkout
-            fields = dict(line.split(" ", 1) if " " in line else (line, "") for line in entry.splitlines())
-            path = Path(fields["worktree"])
-            branch = fields.get("branch", "").removeprefix("refs/heads/")
+        for path, branch in worktree_list(repo, check=True)[1:]:  # the first entry is the main checkout
             found.append(inspect(repo, path, branch))
     return found
 
