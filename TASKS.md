@@ -42,8 +42,18 @@ Then say "tags ready" and start T1.
 | T21 | Hardware docs for D-118: H743 + G474 pin plans (replace `docs/h755-pin-plan.md`), atlas Fig. 01/03/04/05, procurement (NUCLEO-H743ZI2 + NUCLEO-G474RE, drop H745), KiCad modules for both boards in `models/kicad-lib/_generator/modules.py` | ready | vehicle-defs, workspace |
 | T22 | One position rule (D-076, invariant 7): move the token rule + golden test vectors into vehicle-defs (generated Python), make vehicle-server, vehicle-mcp, vehicle-ml and linux-node blackbox use or test against it (audit A-15/B-7 were drifted copies) | ready (with a defs minor) | vehicle-defs, server, mcp, ml, linux-node |
 | T23 | conn: split the 1473-line `HondaCANModule.cpp` by concern (session, DTC, scan, bookkeeping); dedupe the SF length check (:1103/:1452); red zone, behaviour-preserving, host tests first | ready | vehicle-connectivity-node |
-| T24 | CI supply chain: gitleaks step in every repo, third-party actions pinned to SHAs via a synced workflow template, `persist-credentials: false`; turn on "Require review from Code Owners" for defs (CODEOWNERS added, defs#174) | ready (template), user (branch protection) | all repos |
-| T25 | Quality research pass for every deduction in `QUALITY.md` (41 IDs, 4 groups R1–R4); results in `~/Desktop/vehicle-refs/quality/research-R*.md`; fold them into QUALITY.md and cards | in progress 2026-11-17 (may be partial: see QUALITY.md "Research pass") | vehicle-workspace |
+| T24 | CI supply chain: gitleaks step in every repo, third-party actions pinned to SHAs via a synced workflow template, `persist-credentials: false`; turn on "Require review from Code Owners" for defs (CODEOWNERS added, defs#174)  (scope widened by QUALITY CI-1..5, DEFS-2, X-2, X-3, ARCH-4: Renovate, rulesets, OSV/Scorecard, Brewfile)| ready (template), user (branch protection) | all repos |
+| T25 | Quality research pass for every deduction in `QUALITY.md` | done 2026-11-17 (R1–R4 folded into QUALITY.md, cards T26–T35) | vehicle-workspace |
+| T26 | On-target verification layer (IWDG/WWDG, MPU, stack HWM, DWT WCET) on H743 + G474, QUALITY FW-1 | blocked: hardware | rt-core, safety-node |
+| T27 | rt-core module split + lizard ratchet; vector manifest sha256 check, QUALITY FW-2/FW-3 | ready | vehicle-rt-core |
+| T28 | BLE LESC passkey + bonding, per-device AP password + token, QUALITY CONN-2/3, MOB-4 | blocked: user (pairing method) | conn, mobile, defs |
+| T29 | conn security tiers on a spare DevKit (no eFuse burns on the tester), QUALITY CONN-4 | blocked: user (spare board, IDF 5.x) | vehicle-connectivity-node |
+| T30 | Python gates: mypy, coverage ratchet, ruff C901/PLR, pip-audit, QUALITY PY-1/2/4/5 | ready | server, mcp, ml, linux-node |
+| T31 | Adversarial tests: ASVS matrix, Hypothesis, Schemathesis, fast-check, mutmut, QUALITY PY-3, X-1 | ready after T30 | server, mcp, analyzer |
+| T32 | Edge hardening: systemd-analyze gate, Pi run, Kuksa digests/compose, QUALITY EDGE-1/2 | ready (Pi run: user) | vehicle-linux-node |
+| T33 | Analyzer: eslint type-checked, coverage, zod, App split, Rust toolchain, CSP, QUALITY WEB-1..5 | ready (CSP: user decision) | vehicle-analyzer |
+| T34 | Mobile: file splits, fvm, release signing, cleartext policy, QUALITY MOB-1/2/3/5 | blocked: user (keystore, applicationId) | vehicle-mobile |
+| T35 | ADR template fields + monorepo decision with revisit trigger, QUALITY ARCH-1/3 | blocked: user (monorepo yes/no) | vehicle-workspace, vehicle-defs |
 
 ## Card details
 

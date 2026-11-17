@@ -25,7 +25,7 @@
 
 ## Next up (in order)
 
-0. **Resume first: T25 quality research** (session of 2026-11-17 ended on low battery). `QUALITY.md` lists every deduction of the quality assessment (41 IDs); research results in `~/Desktop/vehicle-refs/quality/`; steps in QUALITY.md "Research pass". Pending user decision from that session: monorepo (13 → 4 repos, plan in QUALITY ARCH-1 research) — dry-run allowed only after "başla" + `brew install git-filter-repo` approval.
+0. **Quality roadmap ready (T25 done):** `QUALITY.md` has all 41 deductions researched, the card map T26–T35 and a "User decisions" list (monorepo: research recommends NOT now; GitHub org settings; keystore; BLE pairing method; ESP32 eFuse only on a spare board; EkfLean state 0). Ask the user for these decisions; ready without them: T30 (Python gates), T27, T33 (minus CSP), T32 (minus the Pi run).
 1. **Claude, T1:** repin every consumer to defs **v0.29.0** + `manifest.yaml` with the new tags (analyzer v0.3.0, conn v0.5.0, mobile v0.5.0, defs v0.29.0); rt-core and safety-node on the SAME tag; `vss-schema-guardian` on the regen; safety-reviewer for rt-core/safety-node (ISSUES E-31 (3): NODE_MODE prefixes, `vehicle_cl250.c` gate diff, server `mock_stream.py` heartbeat names).
 2. **Claude:** T2 server chain (`claude/d106` first) → T3 rt-core `claude/dq-mask` + W4 residuals + golden resync → T4 linux-node Baudrate (branches were built on 0.28.0: rebase onto 0.29.0).
 3. **Claude, T20 (`/signal-change`, defs next minor):** remove `mailbox/`, `gen_mailbox.py`, `platform_mailbox.h`, LAYOUT_ID; replace DTCs `SAFETY_MAILBOX_*` with a diagnostic-only SAFETY heartbeat-lost DTC + an rt-core 0x082 monitor; DBC node/message comments (D-118 item 6).
