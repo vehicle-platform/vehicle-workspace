@@ -96,6 +96,11 @@ class Worktree:
         return self.verdict == "remove"
 
 
+def in_origin_main(cwd: Path, rev: str) -> bool:
+    return subprocess.run(["git", "-C", str(cwd), "merge-base", "--is-ancestor", rev, "origin/main"],
+                          capture_output=True).returncode == 0
+
+
 def inspect(repo: Path, path: Path, branch: str) -> Worktree:
     slug = repo_slug(repo)
     pr, pr_state = pr_for(slug, branch) if branch else ("", "")
@@ -105,7 +110,9 @@ def inspect(repo: Path, path: Path, branch: str) -> Worktree:
         return Worktree(repo, path, branch or "(detached)", pr, pr_state, last, verdict, reason)
 
     if not path.exists():
-        return wt("remove", "directory is gone (prunable)")
+        # Only the stale worktree record is pruned; the branch (and its commits) is kept unless
+        # it is already contained in origin/main (checked again in prune()).
+        return wt("prune-record", "directory is gone (record only, branch kept unless merged)")
     if not branch:
         return wt("keep", "detached HEAD, check by hand")
     dirty = git(path, "status", "--porcelain", "--ignore-submodules=none", check=False)
@@ -115,17 +122,21 @@ def inspect(repo: Path, path: Path, branch: str) -> Worktree:
     has_remote = git(repo, "rev-parse", "--verify", "--quiet", remote_ref, check=False) != ""
     unpushed_range = ["HEAD", "^origin/main"] + ([f"^{remote_ref}"] if has_remote else [])
     unpushed = git(path, "rev-list", "--count", *unpushed_range, check=False)
-    head_in_main = subprocess.run(["git", "-C", str(path), "merge-base", "--is-ancestor", "HEAD", "origin/main"],
-                                  capture_output=True).returncode == 0
-    merged = head_in_main or pr_state == "MERGED"
+    head_in_main = in_origin_main(path, "HEAD")
     if unpushed not in ("", "0") and not head_in_main:
         return wt("keep", f"{unpushed} commit(s) not pushed")
-    if merged:
+    if pr_state == "MERGED" and head_in_main:
         return wt("remove", "merged, clean")
+    if pr_state == "MERGED":
+        return wt("review", "PR merged but the branch has commits that are not in origin/main")
     if pr_state == "OPEN":
         return wt("keep", "PR open")
     if pr_state == "CLOSED":
         return wt("review", "PR closed without merge")
+    if head_in_main:
+        # A worktree just created from origin/main (e.g. a subagent about to start) looks exactly
+        # like this; never auto-remove it.
+        return wt("keep", "no commits beyond origin/main and no PR (fresh or abandoned)")
     return wt("keep", "no PR yet")
 
 
@@ -156,7 +167,7 @@ def render(items: list[Worktree]) -> str:
               "|---|---|---|---|---|---|---|"]
     for w in items:
         pr = f"#{w.pr} {w.pr_state.lower()}" if w.pr else "—"
-        verdict = f"**{w.verdict}**" if w.removable else w.verdict
+        verdict = f"**{w.verdict}**" if w.removable or w.verdict == "prune-record" else w.verdict
         lines.append(f"| {repo_slug(w.repo)} | `{w.path.relative_to(w.repo) if w.path.is_relative_to(w.repo) else w.path}` "
                      f"| `{w.branch}` | {pr} | {w.last_commit or '—'} | {verdict} | {w.reason} |")
     return "\n".join(lines + [""])
@@ -164,14 +175,19 @@ def render(items: list[Worktree]) -> str:
 
 def prune(items: list[Worktree]) -> None:
     for w in items:
-        if not w.removable:
+        if w.verdict == "prune-record":
+            git(w.repo, "worktree", "prune")
+            print(f"pruned stale record {repo_slug(w.repo)}: {w.path.name} ({w.branch})")
+        elif not w.removable:
             continue
-        # --force: clean state was verified above; plain remove refuses worktrees with submodules.
-        git(w.repo, "worktree", "remove", "--force", str(w.path), check=False)
-        git(w.repo, "worktree", "prune")
-        if w.branch != "(detached)":
+        else:
+            # --force: clean state was verified above; plain remove refuses worktrees with submodules.
+            git(w.repo, "worktree", "remove", "--force", str(w.path), check=False)
+            git(w.repo, "worktree", "prune")
+            print(f"removed {repo_slug(w.repo)}: {w.path.name} ({w.branch})")
+        # Delete the local branch only when every commit on it is in origin/main.
+        if w.branch != "(detached)" and in_origin_main(w.repo, f"refs/heads/{w.branch}"):
             git(w.repo, "branch", "-D", w.branch, check=False)
-        print(f"removed {repo_slug(w.repo)}: {w.path.name} ({w.branch})")
 
 
 def main() -> int:
@@ -188,7 +204,7 @@ def main() -> int:
     report = render(items)
     REPORT.write_text(report)
     print(report)
-    if args.check and any(w.removable for w in items):
+    if args.check and any(w.removable or w.verdict == "prune-record" for w in items):
         print("Removable worktrees found: run `python3 scripts/worktrees.py --prune`.", file=sys.stderr)
         return 1
     return 0

@@ -51,6 +51,18 @@ REPO_ASSETS: dict[str, dict[str, list[str]]] = {
 }
 
 
+def ledger_entry_is_safe(repo_dir: Path, rel: str) -> bool:
+    """A stale ledger entry may only name a file this script can own: under the repo's
+    `.claude/` or one of the rendered root files, never absolute or escaping the repo."""
+    if not rel or Path(rel).is_absolute() or ".." in Path(rel).parts:
+        return False
+    target = (repo_dir / rel).resolve()
+    root = repo_dir.resolve()
+    if not target.is_relative_to(root):
+        return False
+    return target.is_relative_to(root / ".claude") or rel in ("AGENTS.md", "GEMINI.md")
+
+
 def with_marker(text: str, src: str) -> str:
     """Insert the marker after YAML frontmatter (or at the top if there is none)."""
     marker = MARKER.format(src=src)
@@ -148,6 +160,11 @@ def sync_repo(repo: str, check: bool, repo_dir: Path | None = None) -> list[str]
             dest.write_text(content)
 
     for rel in stale:
+        if not ledger_entry_is_safe(repo_dir, rel):
+            # The ledger lives in the target repo and could be edited by anyone with commit
+            # access there: never let it point the cleanup outside the files this script owns.
+            problems.append(f"{repo}: ledger entry {rel!r} refused (outside .claude/ or the rendered files)")
+            continue
         problems.append(f"{repo}: {rel} no longer mapped")
         if not check:
             (repo_dir / rel).unlink(missing_ok=True)
