@@ -64,4 +64,8 @@
 
 ## Research and plan per ID
 
-_Filled in by the research pass below._
+**Research pass: STARTED 2026-11-17, may be incomplete (the session could end).** Results land in `~/Desktop/vehicle-refs/quality/research-R1-embedded.md`, `research-R2-python.md`, `research-R3-web-mobile.md`, `research-R4-arch-ci.md` (local, not committed; the audit reports `audit-A..E` are there too). Next session (card T25):
+1. Check which of the four files exist and are complete (every ID of the group has a section with Current / Target / Steps / Acceptance / Effort / Card / Sources).
+2. Re-run only the missing groups with one sonnet research agent each (read-only, web research allowed, same section format): **R1** FW-1..3, CONN-1..5, DEFS-1..3 · **R2** PY-1..5, EDGE-1..2, X-1 (measure mypy/pyright error counts and coverage % per Python repo) · **R3** WEB-1..5, MOB-1..5 (count `any`, coverage %, largest files) · **R4** ARCH-1..4, CI-1..5, X-2, X-3 (ARCH-1: monorepo vs multirepo+automation comparison and recommendation).
+3. Copy each section below under its ID (condensed), add/adjust task cards in `TASKS.md`, list user decisions (keystore/secrets, eFuse-irreversible ESP32 security, monorepo cutover, branch rulesets) in STATUS.
+

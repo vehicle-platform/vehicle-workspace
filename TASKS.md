@@ -43,6 +43,7 @@ Then say "tags ready" and start T1.
 | T22 | One position rule (D-076, invariant 7): move the token rule + golden test vectors into vehicle-defs (generated Python), make vehicle-server, vehicle-mcp, vehicle-ml and linux-node blackbox use or test against it (audit A-15/B-7 were drifted copies) | ready (with a defs minor) | vehicle-defs, server, mcp, ml, linux-node |
 | T23 | conn: split the 1473-line `HondaCANModule.cpp` by concern (session, DTC, scan, bookkeeping); dedupe the SF length check (:1103/:1452); red zone, behaviour-preserving, host tests first | ready | vehicle-connectivity-node |
 | T24 | CI supply chain: gitleaks step in every repo, third-party actions pinned to SHAs via a synced workflow template, `persist-credentials: false`; turn on "Require review from Code Owners" for defs (CODEOWNERS added, defs#174) | ready (template), user (branch protection) | all repos |
+| T25 | Quality research pass for every deduction in `QUALITY.md` (41 IDs, 4 groups R1–R4); results in `~/Desktop/vehicle-refs/quality/research-R*.md`; fold them into QUALITY.md and cards | in progress 2026-11-17 (may be partial: see QUALITY.md "Research pass") | vehicle-workspace |
 
 ## Card details
 
