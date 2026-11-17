@@ -38,8 +38,11 @@ Then say "tags ready" and start T1.
 | T17 | D-111 indicator input layer (merged safety-node#15) → blind-spot consumer once the radar exists, with the README consumer requirements and safety-reviewer | consumer blocked: hardware (radar) | vehicle-safety-node |
 | T18 | ~~Mailbox lockstep check~~ | moot: mailbox retired by D-118 | — |
 | T19 | conn parity with D-116 (one quiet window per run of withheld FFs) | ready (rt-core#75 merged) | vehicle-connectivity-node |
-| T20 | defs next minor (`/signal-change`): remove `mailbox/`, `gen_mailbox.py`, `platform_mailbox.h`, LAYOUT_ID; SAFETY_MAILBOX_* DTCs → diagnostic-only SAFETY heartbeat-lost DTC + rt-core 0x082 monitor; DBC node/message comments (D-118 item 6) | ready after T1 | vehicle-defs, rt-core |
+| T20 | defs next minor (`/signal-change`): remove `mailbox/`, `gen_mailbox.py`, `platform_mailbox.h`, LAYOUT_ID; SAFETY_MAILBOX_* DTCs → diagnostic-only SAFETY heartbeat-lost DTC + rt-core 0x082 monitor; DBC node/message comments (D-118 item 6); plus audit E-5 (E2E wrappers check frame length), E-6 (range-checked plain pack), E-7 (EkfLean zero/NaN semantics), safety-reviewer | ready after T1 | vehicle-defs, rt-core |
 | T21 | Hardware docs for D-118: H743 + G474 pin plans (replace `docs/h755-pin-plan.md`), atlas Fig. 01/03/04/05, procurement (NUCLEO-H743ZI2 + NUCLEO-G474RE, drop H745), KiCad modules for both boards in `models/kicad-lib/_generator/modules.py` | ready | vehicle-defs, workspace |
+| T22 | One position rule (D-076, invariant 7): move the token rule + golden test vectors into vehicle-defs (generated Python), make vehicle-server, vehicle-mcp, vehicle-ml and linux-node blackbox use or test against it (audit A-15/B-7 were drifted copies) | ready (with a defs minor) | vehicle-defs, server, mcp, ml, linux-node |
+| T23 | conn: split the 1473-line `HondaCANModule.cpp` by concern (session, DTC, scan, bookkeeping); dedupe the SF length check (:1103/:1452); red zone, behaviour-preserving, host tests first | ready | vehicle-connectivity-node |
+| T24 | CI supply chain: gitleaks step in every repo, third-party actions pinned to SHAs via a synced workflow template, `persist-credentials: false`; turn on "Require review from Code Owners" for defs (CODEOWNERS added, defs#174) | ready (template), user (branch protection) | all repos |
 
 ## Card details
 

@@ -3,7 +3,7 @@
 > Keep it short (≤60 lines). Updated by the `/handoff` skill. "Recent sessions" keeps at most 5 one-line entries; drop the oldest. The task cards live in `TASKS.md` (T0–T21); this file says where we are, the cards say how.
 
 **Phase:** 0 hardware build (user, ESP32-only data-collection prototype; enclosure placement Q-034) · code without hardware largely complete up to the next user inputs: rt-core (49 class-A + 42 class-B derived signals, D-103/D-079/D-098; mailbox removed, D-118); safety-node Layer 1 v1 + platform-CAN link (D-118) + indicator input (D-111); server v0.7.0 + MQTT live (D-109); linux-node L0–L4 + MQTT uplink; analyzer v0.3.0; mobile v0.5.0; vehicle-mcp v0.2.0; hardware atlas + procurement v3.0; HARA/requirements scaffold (D-113, defs `safety/` + `requirements/`)
-**Last updated:** 2026-11-15
+**Last updated:** 2026-11-17
 
 ## Where we are
 
@@ -13,6 +13,7 @@
 - **Releases:** tags created 2026-11-15: defs **v0.28.0** and **v0.29.0** (D-108 node-health names/VSS), analyzer v0.3.0, conn v0.5.0, mobile v0.5.0. `manifest.yaml` still pins the old set (defs v0.27.0, conn v0.4.0, analyzer v0.2.0, mobile v0.4.0): T1.
 - **Merge policy changed (2026-11-15, user):** Claude merges its own green PRs, prunes worktrees and pulls mains without being asked; holds drafts, pending safety reviews and tag-gated PRs. Tags: Claude runs `gh release create` when the user says so in that message.
 - **References outside the repos:** `~/Desktop/vehicle-refs/` (SAE J2012-2002 PDF + OCR text, CL250 owner's manual JP, CL fact book; `st/` empty: st.com blocks scripted downloads, the user downloads UM2408/RM0399 in a browser; for the H743/G474 the needed ones are now RM0433, the H743ZI datasheet, RM0440, the G474RE datasheet, UM2407 Nucleo-64). Never commit them.
+- **Security audit 2026-11-17 (5 parallel audits, all fixes merged):** 0 critical. HIGH fixed: server zip bomb + missing device/operator token scope (server#72, now device = own sessions, operator/`reader` = all), workspace `check_zones.py` red-zone bypass via quoted names (workspace#216). Also fixed: MCP/ml position filters weaker than the server's (mcp#23, ml#22), MCP untrusted-text marking and result caps, linux-node plaintext MQTT/position, black-box poller, systemd sandboxing (linux-node#18, **verify on the Pi**), `worktrees.py --prune` deleting fresh worktrees/unmerged branches (workspace#216), analyzer CSV injection/SLCAN parser (analyzer#64/#65), mobile cleartext token guard + allowBackup off (mobile#38), conn RTR/DLC (conn#51), CI `permissions`, `.gitignore` secrets, defs CODEOWNERS, certifi CVE (server#73); refactors server#74, workspace#217. Invariant 1 held everywhere; no secrets or real GPS in any repo or history. **Ops notes:** server container now runs as uid 10001 (`chown` an existing `/data`, README), broker restart for `use_username_as_clientid`; git author e-mail switched to the GitHub noreply address (history not rewritten, user's choice). Reports: session scratchpad only; follow-ups T20 (E-5..E-7), T22–T24.
 - **mobile CI:** the runner's default JDK became 25 (Gradle 8.14 fails); JDK 17 pinned in `build-apk` (mobile#37).
 - **Procurement v3.0 CHECK:** §3.5 Deutsch counts fixed (defs#163); cable metres are estimates (defs#166, CONFIRM with M1–M16); add NUCLEO-H743ZI2 + NUCLEO-G474RE, drop the H745 line (T21).
 
@@ -37,8 +38,8 @@
 
 ## Recent sessions
 
+- 2026-11-17: branch cleanup (22 remote branches deleted, 6 ext/* backed up as bundles in `~/Desktop/vehicle-refs/branch-backups/`; T2/T3 work branches kept); full security audit + fixes (16 PRs merged, see "Where we are"); T22–T24 added.
 - 2026-11-15: D-117 KiCad/FreeCAD (defs#169, workspace#213 kicad-lib); D-118 H743ZI + separate G474 safety MCU, mailbox retired (defs#170/#173, workspace#214, rt-core#76, safety-node#16, 4 safety-reviewer passes), D-119 µ cap; all open PRs merged (defs#164..#173, rt-core#75, safety-node#15, server#70, linux-node#16, 11 rule-sync PRs, mobile JDK 17 fix); tags defs v0.28.0/v0.29.0, analyzer v0.3.0, conn v0.5.0, mobile v0.5.0; 16 worktrees pruned; `~/Desktop/vehicle-refs` with SAE J2012-2002.
 - 2026-11-13 (provisional run): D-108..D-116 PROVISIONAL (defs#165); T7 defs side (defs#168); T8 MQTT; D-111 indicator input; E-16 (3) + D-116 (rt-core#75); fault-source leads; cable metres.
 - 2026-11-13 (night run): server#69 D-077 packaging, analyzer#61 UI-test types, defs#163 §3.5 counts, defs#164 Q-006 draft; decision brief artifact.
 - 2026-11-12: D-107 import-path convention, rules synced, imports refactored; TASKS.md cards T0–T16; hardware atlas PR.
-- 2026-11-11: Raspi track L0–L4 + deploy, analyzer A6 shell/HAL/bundles; night run D-104..D-106 + fault catalog D-084.
