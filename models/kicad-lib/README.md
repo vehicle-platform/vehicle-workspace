@@ -9,7 +9,7 @@ Passives (TVS, 1N5822, resistor, capacitor, Zener), DIP ICs such as 74HC14/74HC1
 ## Installation
 
 1. In KiCad (Schematic Editor or Project Manager): **Preferences → Manage Symbol Libraries** → *Project Specific Libraries* tab → add each `moto-<x>.kicad_sym` with nickname `moto-<x>` (`moto-core`, `moto-anomaly`, `moto-safety`, `moto-hud`, `moto-edge-hil`).
-2. **Preferences → Manage Footprint Libraries** → *Project Specific Libraries* → add each `moto-<x>.pretty` folder with the same nickname `moto-<x>`. The symbols' `Footprint` fields (`moto-core:NUCLEO-H755ZI-Q` etc.) then resolve automatically.
+2. **Preferences → Manage Footprint Libraries** → *Project Specific Libraries* → add each `moto-<x>.pretty` folder with the same nickname `moto-<x>`. The symbols' `Footprint` fields (`moto-core:NUCLEO-H743ZI2` etc.) then resolve automatically.
 3. In the schematic **Add Symbol** (`A`) → pick `moto-<x>` → module. Passives and 74xx parts come from KiCad's standard libraries.
 4. 3D attachment: open the footprint in the Footprint Editor → **Footprint Properties → 3D Models** tab → add the STEP file → align it with the footprint's pads (pin 1 = **square pad**) → save. STEP exchange with FreeCAD goes through the KiCad StepUp workbench.
 
@@ -25,7 +25,7 @@ Check order: (1) board outer dimensions, (2) pin 1 position and pin order (silks
 
 | Module | Board (mm) | Confidence | STEP from | Note |
 |---|---|---|---|---|
-| NUCLEO-H755ZI-Q | 70.0 × 133.34 | Low | NUCLEO-H755ZI-Q STEP (st.com > CAD resources) / GrabCAD 'Nucleo-144' | Pin names as connector-pin (CN11-1..). Signal names must be filled in from the UM2408 'ST morpho' and 'ZIO' tables. Header X/Y positions are approximate: verify against ST's mechanical drawing (MB1363). |
+| NUCLEO-H743ZI2 | 70.0 × 133.34 | Low | NUCLEO-H743ZI2 STEP (st.com > CAD resources) / GrabCAD 'Nucleo-144' | rt-core MCU board (D-118; replaces the retired NUCLEO-H755ZI-Q module). Pin names as connector-pin (CN11-1..). TODO: signal names must be filled in from the UM2407 'ST morpho' and 'ZIO' tables (no pin map is guessed). Header X/Y positions are approximate: verify against ST's mechanical drawing (MB1364). |
 | ESP32-S3-DEVKITC-1 | 28.0 × 69.0 | High | Espressif ESP32-S3-DevKitC-1 STEP (GrabCAD / espressif KiCad lib) | On clone boards the width varies between 25.5-28 mm; the row spacing (22.86) is fixed. |
 | SN65HVD230-MODULE | 27.0 × 11.0 | Medium | GrabCAD 'SN65HVD230 module' | — |
 | LM2596HVS-MODULE | 43.0 × 21.0 | Medium | models/hardware-integration/cad-exports/lm2596_buck_module (existing) / GrabCAD 'LM2596 module' | Pad positions from the 'blue LM2596' clone board. HVS boards are the same size. HW-788 has a different size/pinout: a separate part if bought. |
@@ -54,6 +54,7 @@ Check order: (1) board outer dimensions, (2) pin 1 position and pin order (silks
 
 | Module | Board (mm) | Confidence | STEP from | Note |
 |---|---|---|---|---|
+| NUCLEO-G474RE | 70.0 × 82.5 | Low | st.com NUCLEO-G474RE STEP / GrabCAD 'Nucleo-64' | Safety-node MCU board on the platform CAN bus (D-118; fallback NUCLEO-G431RB). Morpho CN7/CN10 assumed identical to the NUCLEO-F446RE (PH0/PH1 renamed PF0/PF1); TODO: verify against UM2505. Arduino headers not added. |
 | HLK-LD2451-RADAR | 35.0 × 18.0 | Low | hlktech.net LD2451 3D / GrabCAD | Pin pitch and order must be verified from the datasheet (there may be a 1.25 mm connector variant). |
 | WS2812B-RING-12 | 37.0 × 37.0 | Medium | GrabCAD 'NeoPixel ring 12' | — |
 | PN532-NFC-MODULE | 43.0 × 41.0 | Medium | GrabCAD 'PN532 NFC module V3' | — |
@@ -86,7 +87,8 @@ Check order: (1) board outer dimensions, (2) pin 1 position and pin order (silks
 
 ## Known gaps
 
-- **NUCLEO-H755ZI-Q:** the pins were named as connector pins (`CN11-1` …). You need to enter the signal names (PA0, PB7 …) from the *ST morpho* and *ZIO* tables in UM2408. The header positions are also approximate: they should be corrected with ST's mechanical drawing (MB1363). Once the pins you will use are known, we can fill in this table together.
+- **NUCLEO-H743ZI2:** the pins were named as connector pins (`CN11-1` …). You need to enter the signal names (PA0, PB7 …) from the *ST morpho* and *ZIO* tables in UM2407. The header positions are also approximate: they should be corrected with ST's mechanical drawing (MB1364). Once the pins you will use are known, we can fill in this table together.
+- **NUCLEO-G474RE (`moto-safety`):** Nucleo-64 morpho CN7/CN10, copied from the NUCLEO-F446RE table (UM1724) with only PH0/PH1 renamed PF0/PF1. **TODO:** verify every pin against UM2505; the board-level footprint is approximate like the F446RE one. NUCLEO-G431RB uses the same Nucleo-64 outline.
 - **Honda DLC (4/6-pin):** the pinout is still CONFIRM in `hardware-integration §1`. The library has only the J1962 16-pin end of the adapter.
 - **Latching relay:** generic because the model has not been selected. Once the model is clear, the pads must be updated per the datasheet.
 - **Pi Camera 3 → Pi 5:** the camera is 15-pin and the Pi 5 is 22-pin CSI. An adapter cable is needed in between.

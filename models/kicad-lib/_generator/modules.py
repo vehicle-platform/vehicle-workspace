@@ -41,6 +41,13 @@ F446_CN10 = ["PC9", "PC8", "PB8", "PC6", "PB9", "PC5", "AVDD", "U5V", "GND", "NC
              "PB10", "PB15", "PB4", "PB14", "PB5", "PB13", "PB3", "AGND", "PA10", "PC4", "PA2", "NC",
              "PA3", "NC"]
 
+# NUCLEO-G474RE (Nucleo-64, same CN7/CN10 morpho layout as the F446RE, UM2505): copy of the F446 table
+# with the HSE pins named PF0/PF1 instead of PH0/PH1 (G4 has no port H).
+# TODO: verify every pin against UM2505 'ST morpho' tables; only the PH0/PH1 -> PF0/PF1 difference is
+# applied from public knowledge, the rest is assumed identical to the F446RE table above (UM1724).
+G474_CN7 = [("PF0" if n == "PH0" else "PF1" if n == "PH1" else n) for n in F446_CN7]
+G474_CN10 = list(F446_CN10)
+
 BLUEPILL_L = ["B12", "B13", "B14", "B15", "A8", "A9", "A10", "A11", "A12", "A15", "B3", "B4", "B5",
               "B6", "B7", "B8", "B9", "5V", "GND", "3V3"]
 BLUEPILL_R = ["VBAT", "C13", "C14", "C15", "A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "B0",
@@ -82,10 +89,10 @@ def mod(**kw):
 
 
 # ============================ CORE (Part 1)
-mod(lib="core", name="NUCLEO-H755ZI-Q", prefix="U", w=70.0, h=133.34, conf="L",
-    desc="STM32H755ZI Nucleo-144 (M7 rt-core + M4 safety). ST morpho CN11/CN12 + ZIO CN7..CN10.",
-    step="NUCLEO-H755ZI-Q STEP (st.com > CAD resources) / GrabCAD 'Nucleo-144'",
-    notes="Pin isimleri konnektor-pin olarak (CN11-1..). Sinyal adlari UM2408 'ST morpho' ve 'ZIO' tablolarindan doldurulmali. Header X/Y konumlari yaklasik: ST mekanik cizimiyle (MB1363) dogrula.",
+mod(lib="core", name="NUCLEO-H743ZI2", prefix="U", w=70.0, h=133.34, conf="L",
+    desc="STM32H743ZI Nucleo-144 (single Cortex-M7, rt-core, D-118). ST morpho CN11/CN12 + ZIO CN7..CN10.",
+    step="NUCLEO-H743ZI2 STEP (st.com > CAD resources) / GrabCAD 'Nucleo-144'",
+    notes="Pin isimleri konnektor-pin olarak (CN11-1..). TODO: sinyal adlari UM2407 'ST morpho' ve 'ZIO' tablolarindan doldurulmali (UM2407 kesin harita bu repoda yok, tahmin edilmedi). Header X/Y konumlari yaklasik: ST mekanik cizimiyle (MB1364) dogrula. Kart ayak izi onceki H755 modulunden devralindi (Nucleo-144 ayni 70 x 133.34 mm).",
     hdrs=[hdr("CN11", 3.81, 30.0, nucleo144_pins("CN11", 70), dir="v", rows=2, row_off=(P, 0)),
           hdr("CN12", 63.65, 30.0, nucleo144_pins("CN12", 70), dir="v", rows=2, row_off=(P, 0)),
           hdr("CN7", 17.0, 92.0, nucleo144_pins("CN7", 20), dir="v", rows=2, row_off=(P, 0)),
@@ -214,6 +221,13 @@ mod(lib="anomaly", name="AS5600-MODULE", prefix="M", w=23.0, h=23.0, conf="M",
     holes=[(3.0, 20.0, 3.0), (20.0, 20.0, 3.0)])
 
 # ============================ SAFETY (Part 3)
+mod(lib="safety", name="NUCLEO-G474RE", prefix="U", w=70.0, h=82.5, conf="L",
+    desc="STM32G474RE Nucleo-64 (safety-node MCU on the platform CAN bus, D-118; fallback NUCLEO-G431RB). ST morpho CN7/CN10 (UM2505).",
+    step="st.com NUCLEO-G474RE STEP / GrabCAD 'Nucleo-64'",
+    notes="Morpho tablosu F446RE (UM1724) ile ayni varsayildi, sadece PH0/PH1 -> PF0/PF1 degisti. TODO: UM2505 ile her pini dogrula. Arduino headerlari (CN5/6/8/9) morpho ile ayni sinyaller oldugu icin eklenmedi. NUCLEO-G431RB ayni Nucleo-64 ayak izini kullanir. X/Y yaklasik (F446RE modulunden).",
+    hdrs=[hdr("CN7", 3.3, 63.0, G474_CN7, dir="v", rows=2, row_off=(P, 0), pitch=-P),
+          hdr("CN10", 64.16, 63.0, G474_CN10, dir="v", rows=2, row_off=(P, 0), pitch=-P)])
+
 mod(lib="safety", name="HLK-LD2451-RADAR", prefix="M", w=35.0, h=18.0, conf="L",
     desc="Hi-Link HLK-LD2451 24 GHz arac algilama radari (kor nokta), UART.",
     step="hlktech.net LD2451 3D / GrabCAD",
