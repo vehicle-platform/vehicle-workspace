@@ -1,12 +1,12 @@
-(footprint "NUCLEO-H755ZI-Q"
+(footprint "NUCLEO-H743ZI2"
 	(version 20240108)
 	(generator "vehicle_platform_gen")
 	(generator_version "8.0")
 	(layer "F.Cu")
-	(descr "STM32H755ZI Nucleo-144 (M7 rt-core + M4 safety). ST morpho CN11/CN12 + ZIO CN7..CN10. | Kart: 70.0 x 133.34 mm | Guven: L")
+	(descr "STM32H743ZI Nucleo-144 (single Cortex-M7, rt-core, D-118). ST morpho CN11/CN12 + ZIO CN7..CN10. | Kart: 70.0 x 133.34 mm | Guven: L")
 	(tags "module")
 	(property "Reference" "REF**" (at -35 -68.17 0) (layer "F.SilkS") (effects (font (size 1 1) (thickness 0.15)) (justify left)))
-	(property "Value" "NUCLEO-H755ZI-Q" (at -35 68.17 0) (layer "F.Fab") (effects (font (size 1 1) (thickness 0.15)) (justify left)))
+	(property "Value" "NUCLEO-H743ZI2" (at -35 68.17 0) (layer "F.Fab") (effects (font (size 1 1) (thickness 0.15)) (justify left)))
 	(property "Footprint" "" (at 0 0 0) (layer "F.Fab") hide (effects (font (size 1.27 1.27))))
 	(property "Datasheet" "" (at 0 0 0) (layer "F.Fab") hide (effects (font (size 1.27 1.27))))
 	(attr through_hole)

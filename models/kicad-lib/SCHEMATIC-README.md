@@ -15,20 +15,20 @@ Use **one KiCad project per design** (`moto-bike-p0`, `moto-bike`, `moto-helmet`
 | Design | Sheets | Content | Section |
 |---|---|---|---|
 | **`moto-bike-p0`** (now) | 1 | Phase 0: ESP32-S3 + SN65HVD230 + MPU-6500 + NEO-M8N + power chain + DLC | §3 |
-| **`moto-bike`** (W1→W5) | S1 Power · S2 M7 (CAN, logging, GPS, park) · S3 Anomaly (Board B) · S4 M4 safety (Board C1) + M7 chassis IMU (Board C2) · S5 Pi 5 | H755 architecture (D-072) | §4 |
+| **`moto-bike`** (W1→W5) | S1 Power · S2 rt-core H743 (CAN, logging, GPS, park) · S3 Anomaly (Board B) · S4 G474 safety (Board C1) + rt-core chassis IMU (Board C2) · S5 Pi 5 | H743 + G474 architecture (D-118) | §4 |
 | **`moto-helmet`** (W3) | 1 | Helmet ESP32-S3 HUD + audio (D-073) | §5 |
 | **`moto-hil`** (W6) | 1 | HIL bench (not on the vehicle) | §6 |
 
 ### Sheet → reference figures (`moto-bike`)
 
-The figures in `vehicle-defs/docs/img/hardware/` are the reference for each sheet; `vehicle-defs/docs/hardware-integration.md` §0 indexes them. Sheets are mapped by content, following the sheet definitions above (S3 is the Board B anomaly sheet, S4 holds the M4 board C1 and the M7 chassis IMU board C2).
+The figures in `vehicle-defs/docs/img/hardware/` are the reference for each sheet; `vehicle-defs/docs/hardware-integration.md` §0 indexes them. Sheets are mapped by content, following the sheet definitions above (S3 is the Board B anomaly sheet, S4 holds the G474 board C1 and the M7 chassis IMU board C2).
 
 | Sheet | Reference figures | Files (`vehicle-defs/docs/img/hardware/`) |
 |---|---|---|
 | S1 Power (Board A) | Fig. 02 power chain | `02-power-chain.svg` |
-| S2 M7 (CAN, logging, GPS, park) | Fig. 04 H755 pin map, Fig. 05 CAN topology, Fig. 03 Main Box | `04-h755-pin-map.svg`, `05-can-topology.svg`, `03-main-box-layout.svg` |
+| S2 rt-core H743 (CAN, logging, GPS, park) | Fig. 04 pin plans, Fig. 05 CAN topology, Fig. 03 Main Box | `04-pin-plans.svg`, `05-can-topology.svg`, `03-main-box-layout.svg` |
 | S3 Anomaly (Board B) | Fig. 03 Main Box (Board B placement), Fig. 13 harness rules | `03-main-box-layout.svg`, `13-harness.svg` |
-| S4 M4 safety (C1) + M7 chassis IMU (C2) | Fig. 04 pin map (M4 side), Fig. 07 IMU boxes, Fig. 09 immobilizer, Fig. 10 LED ring and dead-man | `04-h755-pin-map.svg`, `07-imu-boxes.svg`, `09-immobilizer.svg`, `10-led-ring-deadman.svg` |
+| S4 G474 safety (C1) + rt-core chassis IMU (C2) | Fig. 04 pin plans (G474 side), Fig. 07 IMU boxes, Fig. 09 immobilizer, Fig. 10 LED ring and dead-man | `04-pin-plans.svg`, `07-imu-boxes.svg`, `09-immobilizer.svg`, `10-led-ring-deadman.svg` |
 | S5 Raspberry Pi 5 | Fig. 11 Pi 5 box | `11-pi5-box.svg` |
 
 **Sheets:** KiCad has no sheet-count limit, so each subsystem gets its own hierarchical sheet (S1–S5). Run **ERC** (Inspect → Electrical Rules Checker) on every sheet before calling it done.
@@ -43,12 +43,12 @@ Net names must be written **exactly** as in the table. **KiCad difference:** a l
 |---|---|---|
 | Power | `+12V_IGN` (raw after ignition) · `+12V_PROT` (after fuse, diode, TVS and LC) · `+5V` · `+5V_PI` · `+3V3` · `+3V3_C1` · `+3V3_C2` (C1/C2 LDO branches, D-082) · `+4V0_GSM` (later) · `GND` · `AGND` | Ground goes to the battery negative, not to the chassis. `AGND` connects to `GND` at a single point (S1) |
 | Vehicle CAN | `VCAN_H` · `VCAN_L` | M7 FDCAN1. **No termination resistor** |
-| Platform CAN | `PCAN_H` · `PCAN_L` | M7 FDCAN2, bike ESP32, Pi 5, HIL. 120 Ω only at the two physical ends of the bus |
+| Platform CAN | `PCAN_H` · `PCAN_L` | H743 FDCAN2, G474 FDCAN1 (own SN65HVD230, D-118), bike ESP32, Pi 5, HIL. 120 Ω only at the two physical ends of the bus |
 | Measurement (M7) | `V_BAT_SENSE` · `I_BAT_SENSE` · `SPARK_IN` · `WHEEL_F` · `WHEEL_R` · `NTC_1..n` · `GPS_PPS` | `GPS_PPS`: NEO-M8N timepulse → M7 timer input capture (sub-ms timestamp alignment, Part 2A) |
 | Bus (M7) | `I2C_M7_SDA/SCL` · `SPI_M7_SCK/MOSI/MISO` + `CS_*` · `UART_GPS_TX/RX` · `UART_GSM_TX/RX` | Pins TBD (§7) |
-| Bus (M4) | `SPI_M4_SCK/MOSI/MISO/CS_IMU` · `UART_RAD_L_TX/RX` · `UART_RAD_R_TX/RX` · `I2C_M4_SDA/SCL` (if PN532 I2C is chosen) | GPIO port belonging to M4, not shared with M7 (D-072 item 4a) |
-| Output (M4) | `LED_RING_L_DIN` · `LED_RING_R_DIN` · `MIRROR_LED_L` · `MIRROR_LED_R` · `DEADMAN_KICK` · `IMMO_SET` · `IMMO_RESET` | D-072 items 3 and 5 |
-| Input (M4) | `IND_L` · `IND_R` | Left and right turn-signal supply, opto-isolated (D-075 item 4, Q-033 provisional answer (a)) |
+| Bus (G474) | `SPI_SAFETY_SCK/MOSI/MISO/CS_IMU` · `UART_RAD_L_TX/RX` · `UART_RAD_R_TX/RX` · `I2C_SAFETY_SDA/SCL` (if PN532 I2C is chosen) | Own MCU (STM32G474, D-118): nothing is shared with rt-core except the platform CAN bus |
+| Output (G474) | `LED_RING_L_DIN` · `LED_RING_R_DIN` · `MIRROR_LED_L` · `MIRROR_LED_R` · `DEADMAN_KICK` · `IMMO_SET` · `IMMO_RESET` | D-072 items 3 and 5 |
+| Input (G474) | `IND_L` · `IND_R` | Left and right turn-signal supply, opto-isolated (D-075 item 4, Q-033 provisional answer (a)) |
 | Tap (M7, read-only) | `TAP_CLUTCH` · `TAP_BRAKE` · `TAP_FAN` | Isolated with PC817. **Not connected before the Q-031 (c) decision** |
 | I2S (Pi 5) | `I2S_SCK` · `I2S_WS` · `I2S_SD` | Engine microphone INMP441 → Pi 5 (D-044) |
 
@@ -87,7 +87,7 @@ LM2596HVS OUT+ (set to 5.0 V) ─ +5V ─ ESP32-S3 5V pin            (IN-/OUT- �
 
 ---
 
-## 4. Target schematic — `moto-bike` (H755, D-072)
+## 4. Target schematic — `moto-bike` (H743 + G474, D-118)
 
 ### S1 — Power (Board A)
 
@@ -103,28 +103,28 @@ LM2596HVS OUT+ (set to 5.0 V) ─ +5V ─ ESP32-S3 5V pin            (IN-/OUT- �
 
 | Option | What | Pro / con |
 |---|---|---|
-| (a) Nucleo's 3V3 output | On-board regulator | No extra part. But how much current it can supply to external sensors must be **CONFIRM**ed from UM2408. If a short circuit occurs on a long sensor cable, the MCU supply collapses too |
+| (a) Nucleo's 3V3 output | On-board regulator | No extra part. But how much current it can supply to external sensors must be **CONFIRM**ed from UM2407. If a short circuit occurs on a long sensor cable, the MCU supply collapses too |
 | (b) Separate 3.3 V LDO on Board A (`+5V` input) | Separate rail for external sensors | The MCU supply is isolated from a sensor short. The LDO and PTCs are in the procurement list (Part 1, v2.6, only if (b) is chosen) |
 
 **Proposal:** (b). Also put a series PTC or a low-value resistor on the `+3V3` end of every sensor cable that leaves the enclosure. The current budget (number of sensors × typical current) must be calculated during the decision.
 
-**`AGND` ↔ `GND` tie:** two separate nets in KiCad. So that `AGND` does not float, it is connected to `GND` at the H755 analogue reference point with a **single** 0 Ω resistor (net-tie / star connection). It is not tied anywhere else. Whether the Nucleo board's AGND pin is already connected to GND on the board must be **CONFIRM**ed from UM2408. If it is, that is the star point and no external 0 Ω is fitted.
+**`AGND` ↔ `GND` tie:** two separate nets in KiCad. So that `AGND` does not float, it is connected to `GND` at the H743 analogue reference point with a **single** 0 Ω resistor (net-tie / star connection). It is not tied anywhere else. Whether the Nucleo board's AGND pin is already connected to GND on the board must be **CONFIRM**ed from UM2407. If it is, that is the star point and no external 0 Ω is fitted.
 
 **Harness EMI (not in the schematic, in the BOM and assembly):** clip-on ferrite cores (5–7 mm) on the CAN, SPI (ADXL345), camera and 12 V cables, just outside the PG7 cable glands of the main enclosure and the Pi enclosure. These are not schematic elements. Write a note (text) on the schematic sheet and add them to the BOM manually as mechanical items (§8).
 
-### S2 — M7 rt-core: CAN, logging, GPS, park mode (Board A)
+### S2 — H743 rt-core: CAN, logging, GPS, park mode (Board A)
 
 | Source | → | Target | Note |
 |---|---|---|---|
-| H755 FDCAN1 TX/RX (pin TBD) | → | SN65HVD230 #1 CTX/CRX | `VCAN_H/L`, no termination |
-| H755 FDCAN2 TX/RX (pin TBD) | → | SN65HVD230 #2 CTX/CRX | `PCAN_H/L`, 120 Ω at the ends |
-| H755 SPI / SDMMC (TBD) | → | microSD | D-072 item 2: SDMMC on M7. If the SPI module in the library does not fit SDMMC, a separate decision is needed (**TBD**) |
-| H755 `UART_GPS_TX/RX` (TBD) | ↔ | NEO-M8N RX/TX | GPS on M7 (D-072 item 2) |
-| NEO-M8N PPS | → | H755 timer input capture (`GPS_PPS`, TBD) | Part 2A |
+| H743 FDCAN1 TX/RX (pin TBD) | → | SN65HVD230 #1 CTX/CRX | `VCAN_H/L`, no termination |
+| H743 FDCAN2 TX/RX (pin TBD) | → | SN65HVD230 #2 CTX/CRX | `PCAN_H/L`, 120 Ω at the ends |
+| H743 SPI / SDMMC (TBD) | → | microSD | D-072 item 2: SDMMC on M7. If the SPI module in the library does not fit SDMMC, a separate decision is needed (**TBD**) |
+| H743 `UART_GPS_TX/RX` (TBD) | ↔ | NEO-M8N RX/TX | GPS on M7 (D-072 item 2) |
+| NEO-M8N PPS | → | H743 timer input capture (`GPS_PPS`, TBD) | Part 2A |
 | MPU-6590 (M7 chassis IMU) | ↔ | `I2C_M7_*` | 0x68, on Board C2, in its own enclosure and cable (see S4) |
 | `INA226 #1` | ↔ | `I2C_M7_*` | 0x40 |
-| Bike ESP32-S3 (conn) | ↔ | its own SN65HVD230 → `PCAN_H/L` | Separate enclosure (DT-0508). Leaves the vehicle bus with the `no-tester` env once the H755 arrives |
-| *(optional)* WS2812B strip (gear light) | ← M7 GPIO (TBD) | Belongs to M7, procurement list Part 3A. A **separate** buffer is needed for the 5 V data level: the 74AHCT125 on C1 belongs to M4 and is not shared (D-072 item 4a) |
+| Bike ESP32-S3 (conn) | ↔ | its own SN65HVD230 → `PCAN_H/L` | Separate enclosure (DT-0508). Leaves the vehicle bus with the `no-tester` env once the H743 arrives |
+| *(optional)* WS2812B strip (gear light) | ← M7 GPIO (TBD) | Belongs to M7, procurement list Part 3A. A **separate** buffer is needed for the 5 V data level: the 74AHCT125 on C1 belongs to G474 and is not shared (D-072 item 4a) |
 | **SIM800L (later, park mode)** | ↔ | `UART_GSM_TX/RX` (TBD) | Park mode belongs to M7 (D-072 item 2). Details below |
 
 **SIM800L supply warning:** VCC must be in the **3.4–4.4 V** range and must handle a peak current of about **2 A**. It is **not connected directly** to `+5V` or `+3V3`: 5 V damages the module and at 3.3 V the module drops out. A separate `+4V0_GSM` branch is needed: its own buck regulator (≥ 2 A, set to ~4.0 V) and a large capacitor at the input (≥ 470 µF). This regulator and capacitor are in the procurement list (Part 3A, Later, only with the GSM module). UART level compatibility (whether 3.3 V can be applied to the module's RX input) must be **CONFIRM**ed from the SIM800L datasheet.
@@ -133,12 +133,12 @@ LM2596HVS OUT+ (set to 5.0 V) ─ +5V ─ ESP32-S3 5V pin            (IN-/OUT- �
 
 | Module | Bus / signal | Note |
 |---|---|---|
-| ADXL345 ×2 | `SPI_M7_*`, separate `CS_ADXL_ENG` and `CS_ADXL_ARM` | LiYCY 4×0.22; shield connected to GND only on the H755 side |
+| ADXL345 ×2 | `SPI_M7_*`, separate `CS_ADXL_ENG` and `CS_ADXL_ARM` | LiYCY 4×0.22; shield connected to GND only on the H743 side |
 | MAX31856 | `SPI_M7_*` + `CS_EGT`, DRDY/FLT → GPIO | T+/T− K-type probe |
 | MLX90614 | `I2C_M7_*` | 0x5A |
 | BME280 | `I2C_M7_*` | 0x76 (SDO=GND) |
 | ACS758-200B | VOUT → divider → `I_BAT_SENSE` (ADC) | Divider below |
-| PC817 4 channel | IN1..3 ← 12 V taps, OUT → GPIO (`TAP_*`) | **Not connected before Q-031 (c).** 4th channel spare; not used for M4's `IND_L/R` inputs (see S4) |
+| PC817 4 channel | IN1..3 ← 12 V taps, OUT → GPIO (`TAP_*`) | **Not connected before Q-031 (c).** 4th channel spare; not used for G474's `IND_L/R` inputs (see S4) |
 | LJ12A3 ×2 | BLK_OUT → level circuit → `WHEEL_F/R` (timer input) | Sensor powered from `+12V_PROT` |
 | Spark clip | 1N4148 + 3.3 V Zener + 74HC14 → `SPARK_IN` | 74HC14 from KiCad's `74xx` library |
 | NTC ×3–5 | 10 kΩ 0.1% + 100 nF divider → ADC (`NTC_n`) | Twisted Signal+AGND pair |
@@ -157,27 +157,28 @@ LM2596HVS OUT+ (set to 5.0 V) ─ +5V ─ ESP32-S3 5V pin            (IN-/OUT- �
 | `SPARK_IN` | Inductive pulse | 1N4148 + 3.3 V Zener + 74HC14 (Part 2B) | — |
 | MPXV7002DP (later) | 0.5–4.5 V | Same ×0.667 divider as the ACS758 | — |
 
-### S4 — M4 safety board (Board C1) and M7 chassis IMU (Board C2)
+### S4 — G474 safety board (Board C1) and M7 chassis IMU (Board C2)
 
-D-082 split the single Board C in two. Every peripheral and GPIO port belonging to M4 is not shared with M7 (D-072 item 4a). Draw C1 and C2 in **separate frames** in the schematic.
+D-082 split the single Board C in two. The safety MCU is a separate STM32G474 (NUCLEO-G474RE, D-118), so no peripheral or port is shared with rt-core; the two meet only on the platform CAN bus. Draw C1 and C2 in **separate frames** in the schematic.
 
-**Supply and separation (D-082 item 2):** each of C1-IO and C2 is supplied from `+12V_PROT` through **its own fuse**; C1-IMU's LDO (`+3V3_C1`) comes from the C1-IO branch and C2's (`+3V3_C2`) from its own branch. They have their own connectors and their own cables. C1's 5 V (LED buffer, radars, ring) comes from the buck on Board A. A fault in C2 cannot take down an M4 function. A fault in C1 takes down all M4 functions together and must appear as a dark ring / UNAVAILABLE.
+**Supply and separation (D-082 item 2):** each of C1-IO and C2 is supplied from `+12V_PROT` through **its own fuse**; C1-IMU's LDO (`+3V3_C1`) comes from the C1-IO branch and C2's (`+3V3_C2`) from its own branch. They have their own connectors and their own cables. C1's 5 V (LED buffer, radars, ring) comes from the buck on Board A. A fault in C2 cannot take down an G474 function. A fault in C1 takes down all G474 functions together and must appear as a dark ring / UNAVAILABLE.
 
-**Board C1 (`4×6 cm`, M4 safety board):**
+**Board C1 (`4×6 cm`, G474 safety board):**
 
 | Module | Connection | Note |
 |---|---|---|
-| MPU-6500 (M4 IMU) | `SPI_M4_*` | Independent of the M7 IMU (D-042, D-075 item 6 (3)). Powered from the `+3V3_C1` LDO but talks to Nucleo-powered pins: **33–100 Ω series resistor on each of the `SPI_M4_SCK/MOSI/MISO/CS_IMU` lines** (against back-powering). If the C1 LDO fails, WHO_AM_I/self-test error → UNAVAILABLE. Cable **6 or 8 core** shielded LiYCY (4×0.22 is not enough) |
+| G474 FDCAN1 TX/RX (pin TBD, CubeMX) | → | its own SN65HVD230 #3 CTX/CRX | `PCAN_H/L`, mid-bus unless physically last (D-118 item 3); never on the vehicle bus |
+| MPU-6500 (G474 IMU) | `SPI_SAFETY_*` | Independent of the M7 IMU (D-042, D-075 item 6 (3)). Powered from the `+3V3_C1` LDO but talks to Nucleo-powered pins: **33–100 Ω series resistor on each of the `SPI_SAFETY_SCK/MOSI/MISO/CS_IMU` lines** (against back-powering). If the C1 LDO fails, WHO_AM_I/self-test error → UNAVAILABLE. Cable **6 or 8 core** shielded LiYCY (4×0.22 is not enough) |
 | HLK-LD2451 ×2 | `UART_RAD_L_*`, `UART_RAD_R_*` (header) | Supply and UART level **CONFIRM** from the datasheet |
-| WS2812B ring ×2 | `LED_RING_L/R_DIN` ← 74AHCT125 (3.3→5 V) ← M4 GPIO | 330 Ω series to DIN; 5 V supply through the dead-man (below) |
-| **Mirror blind-spot LEDs (left/right)** | `MIRROR_LED_L/R` ← M4 GPIO → low-side logic-level N-MOSFET → LED + series resistor | MOSFET in the procurement list (Part 3A); its model and the resistor value are **TBD** based on the current of the selected LED. The "side clear" state is never shown with a static output (D-072 item 5) |
-| Dead-man: 74HC123 + P-MOSFET | `DEADMAN_KICK` ← M4 GPIO; the P-MOSFET cuts the ring supply | If M4 hangs, GREEN does not freeze (D-072 item 5). **Mandatory** unless the moving alive-pixel method is chosen. Triggered with a GPIO edge after every completed decision step in the M4 main loop (never a timer, PWM or DMA). **Pull-down resistor on the trigger input:** a pin floating during reset cannot trigger the circuit |
-| **Turn-signal inputs** | `IND_L`, `IND_R`: signal supply → PC817 → M4 GPIO | D-075 item 4: a separate opto-isolated M4 input for each side. Two single PC817s (DIP-4, Part 3A); M7's `TAP_*` module is not shared. **Input:** series resistor sized for ≥ 16 V, reverse-parallel diode across the LED. **Output:** pull-up resistor chosen according to the PC817's minimum CTR. A broken cable, a dead opto or a stuck input reads as "no signal" and can only raise the warning; it can never suppress PRESENT/APPROACHING. The tap point and how it connects to the harness are **CONFIRM** (the cable is not cut) |
-| PN532 | `I2C_M4_*` (0x24) or SPI | Interface choice TBD |
-| Latching relay drivers | `IMMO_SET`/`IMMO_RESET` ← driver (NPN/MOSFET + flyback diode) | **Starter relay coil only**. Default unlocked, hidden bypass switch in parallel (invariant 6). **Pull-down resistor on the gate/base:** the drivers stay off while M4 pins float; pulse-only drive. The relay keeps its position when C1 or the M4 supply is lost; M4 never sends a SET pulse at boot; a hidden bypass is needed for an M4 that dies while locked (D-082 item 6, **awaiting user approval**) |
-| PIN input | M4 GPIO (TBD) | D-072 item 3; its hardware has not been selected yet |
+| WS2812B ring ×2 | `LED_RING_L/R_DIN` ← 74AHCT125 (3.3→5 V) ← G474 GPIO | 330 Ω series to DIN; 5 V supply through the dead-man (below) |
+| **Mirror blind-spot LEDs (left/right)** | `MIRROR_LED_L/R` ← G474 GPIO → low-side logic-level N-MOSFET → LED + series resistor | MOSFET in the procurement list (Part 3A); its model and the resistor value are **TBD** based on the current of the selected LED. The "side clear" state is never shown with a static output (D-072 item 5) |
+| Dead-man: 74HC123 + P-MOSFET | `DEADMAN_KICK` ← G474 GPIO; the P-MOSFET cuts the ring supply | If G474 hangs, GREEN does not freeze (D-072 item 5). **Mandatory** unless the moving alive-pixel method is chosen. Triggered with a GPIO edge after every completed decision step in the G474 main loop (never a timer, PWM or DMA). **Pull-down resistor on the trigger input:** a pin floating during reset cannot trigger the circuit |
+| **Turn-signal inputs** | `IND_L`, `IND_R`: signal supply → PC817 → G474 GPIO | D-075 item 4: a separate opto-isolated G474 input for each side. Two single PC817s (DIP-4, Part 3A); M7's `TAP_*` module is not shared. **Input:** series resistor sized for ≥ 16 V, reverse-parallel diode across the LED. **Output:** pull-up resistor chosen according to the PC817's minimum CTR. A broken cable, a dead opto or a stuck input reads as "no signal" and can only raise the warning; it can never suppress PRESENT/APPROACHING. The tap point and how it connects to the harness are **CONFIRM** (the cable is not cut) |
+| PN532 | `I2C_SAFETY_*` (0x24) or SPI | Interface choice TBD |
+| Latching relay drivers | `IMMO_SET`/`IMMO_RESET` ← driver (NPN/MOSFET + flyback diode) | **Starter relay coil only**. Default unlocked, hidden bypass switch in parallel (invariant 6). **Pull-down resistor on the gate/base:** the drivers stay off while G474 pins float; pulse-only drive. The relay keeps its position when C1 or the G474 supply is lost; G474 never sends a SET pulse at boot; a hidden bypass is needed for an G474 that dies while locked (D-082 item 6, **awaiting user approval**) |
+| PIN input | G474 GPIO (TBD) | D-072 item 3; its hardware has not been selected yet |
 
-**C1 split in two (2026-10-24, user approval, D-082 item 2):** the MPU-6500 row of the table above goes to the **C1-IMU** board (`3×7 cm`, cut to ~`30×40 mm`, in the small IP65/IP67 enclosure on the chassis; it carries only the MPU-6500, its LDO and the SPI series resistors). All the other rows go to the **C1-IO** board (`4×6 cm`, in the main enclosure, never on Board B, with its own fused branch and its own connector to the M4 pins). C1-IMU's LDO is supplied from the C1-IO branch through the C1-IMU cable (6/8 core shielded). Draw two separate frames in the schematic: `C1-IO` and `C1-IMU`. If C1-IMU or its cable fails, only the M4 IMU is lost (cornering UNAVAILABLE, shown on the ring); if C1-IO fails, its functions are lost together (dark ring / UNAVAILABLE).
+**C1 split in two (2026-10-24, user approval, D-082 item 2):** the MPU-6500 row of the table above goes to the **C1-IMU** board (`3×7 cm`, cut to ~`30×40 mm`, in the small IP65/IP67 enclosure on the chassis; it carries only the MPU-6500, its LDO and the SPI series resistors). All the other rows go to the **C1-IO** board (`4×6 cm`, in the main enclosure, never on Board B, with its own fused branch and its own connector to the G474 pins). C1-IMU's LDO is supplied from the C1-IO branch through the C1-IMU cable (6/8 core shielded). Draw two separate frames in the schematic: `C1-IO` and `C1-IMU`. If C1-IMU or its cable fails, only the G474 IMU is lost (cornering UNAVAILABLE, shown on the ring); if C1-IO fails, its functions are lost together (dark ring / UNAVAILABLE).
 
 **Board C2 (`3×7 cm`, cut to ~`30×40 mm`, M7 chassis IMU carrier):**
 
@@ -257,12 +258,12 @@ Not on the vehicle. The bench has its own CAN bus and **120 Ω termination at bo
 
 ---
 
-## 7. H755 pin map — open decision
+## 7. H743 + G474 pin maps — open decision
 
-Which H755 pin goes to which function has not been written as a decision yet. Order:
+Which H743 / G474 pin goes to which function has not been written as a decision yet. The proposals are `vehicle-defs/docs/h743-pin-plan.md` and `g474-pin-plan.md` (v0.1). Order:
 1. Build S1–S5 with global labels; leave the MCU side empty.
-2. Produce the pin map in STM32CubeMX. **For M7:** FDCAN1/2, SDMMC (or SPI), I2C, SPI (ADXL ×2, MAX31856), UART (GPS, GSM), ADC (V_BAT, I_BAT, NTCs), timer capture (`GPS_PPS`, `SPARK_IN`, `WHEEL_F/R`), `TAP_*` GPIOs. **For M4, on separate GPIO ports:** SPI (IMU), UART ×2 (radars), ring DIN ×2 (timer/DMA), `MIRROR_LED_L/R`, `DEADMAN_KICK`, `IND_L/R`, `IMMO_SET/RESET`, PN532, PIN input.
-3. Add the map to `DECISIONS.md` as an item, then connect only the used pins on the NUCLEO-H755ZI-Q units (CN7–CN12).
+2. Produce the pin map in STM32CubeMX. **For M7:** FDCAN1/2, SDMMC (or SPI), I2C, SPI (ADXL ×2, MAX31856), UART (GPS, GSM), ADC (V_BAT, I_BAT, NTCs), timer capture (`GPS_PPS`, `SPARK_IN`, `WHEEL_F/R`), `TAP_*` GPIOs. **For the G474 (separate NUCLEO-G474RE, own FDCAN1 on the platform bus):** SPI (IMU), UART ×2 (radars), ring DIN ×2 (timer/DMA), `MIRROR_LED_L/R`, `DEADMAN_KICK`, `IND_L/R`, `IMMO_SET/RESET`, PN532, PIN input.
+3. Add the map to `DECISIONS.md` as an item, then connect only the used pins on the NUCLEO-H743ZI2 (CN7–CN12) and NUCLEO-G474RE (CN7/CN10).
 
 ---
 
@@ -273,7 +274,7 @@ Every connector is placed in the schematic as a **part**. That way it enters the
 | Transition | In the schematic | In the BOM |
 |---|---|---|
 | Board A ↔ Board B (inside the main enclosure) | One JST-XH header part on each board (search "XH" in KiCad's `Connector_JST` library or use a 2.5 mm pin header). Same net names on the mating ends. Board B's "Scale 1B expansion port" should be a separate connector | Headers enter automatically. Female housings and terminals (JST-XH 560-piece set) are added manually |
-| Main enclosure ↔ C1-IMU and ↔ Board C2 (separate enclosures); C1-IO ↔ M4 pins inside the main enclosure through its own connector | A **separate** connector part and a separate cable for each board (D-082 item 2). Type **CONFIRM** (Deutsch DT proposed). C1's SPI cable is 6/8 core shielded | Connector kit and cable added manually |
+| Main enclosure ↔ C1-IMU and ↔ Board C2 (separate enclosures); C1-IO ↔ G474 pins inside the main enclosure through its own connector | A **separate** connector part and a separate cable for each board (D-082 item 2). Type **CONFIRM** (Deutsch DT proposed). C1's SPI cable is 6/8 core shielded | Connector kit and cable added manually |
 | NUCLEO ↔ Board A/B (2nd storey) | Long-pin (stacking) header part, CN7–CN10 signals | Automatic |
 | Chassis sensors outside the enclosure | **Deutsch DT** (2–6 pin) part on the enclosure side. If it is not in the library, use a generic connector with the same pin count as a placeholder for now and write "Deutsch DT04-xP" in the `MPN` attribute | DT kit and crimp tool added manually |
 | Power and CAN cable entries | 3.81 mm (pluggable) / 5.0 mm screw terminal part | Automatic |
@@ -289,12 +290,12 @@ Every connector is placed in the schematic as a **part**. That way it enters the
 - [ ] There is no 120 Ω anywhere on the `VCAN` line (including the resistor on the SN65HVD230 board). There are exactly two on the `PCAN` and `HCAN` lines.
 - [ ] No I2C address conflict: on `I2C_M7`, INA226 0x40, MPU-6590 0x68, MLX90614 0x5A, BME280 0x76, blow-by BMP280 0x77, AS5600 0x36, the VL53L1Xs separated by XSHUT.
 - [ ] No 5 V output signal goes directly into a 3.3 V pin: ACS758, MPXV7002DP, MCP2515 SO and INT, LJ12A3 (if it has an internal pull-up).
-- [ ] M4 signals (`SPI_M4`, `UART_RAD`, `IND_L/R`, `MIRROR_LED`, ring, dead-man, relay) are not on a GPIO port shared with M7 (D-072 item 4a).
+- [ ] G474 signals (`SPI_SAFETY`, `UART_RAD`, `IND_L/R`, `MIRROR_LED`, ring, dead-man, relay) stay on the NUCLEO-G474RE; the only link to rt-core is the platform CAN bus (D-118 item 3), no direct wire to the H743.
 - [ ] The `TAP_*` lines are not connected until the Q-031 (c) decision is made; they exist only as labels.
 - [ ] SIM800L is not connected to `+5V`/`+3V3`; it is on the `+4V0_GSM` branch.
-- [ ] On every sensor cable leaving the enclosure, the LiYCY shield is connected to GND at one end only (in the H755 enclosure).
-- [ ] C1 and C2 are supplied from separate fuses + separate LDO branches; there is no M4 signal on the C2 line.
-- [ ] There are 33–100 Ω series resistors on the `SPI_M4_*` lines; there are pull-downs on the 74HC123 trigger input and on the relay drivers' gate/base; there are reverse diodes on the `IND_L/R` inputs.
+- [ ] On every sensor cable leaving the enclosure, the LiYCY shield is connected to GND at one end only (in the H743 enclosure).
+- [ ] C1 and C2 are supplied from separate fuses + separate LDO branches; there is no G474 signal on the C2 line.
+- [ ] There are 33–100 Ω series resistors on the `SPI_SAFETY_*` lines; there are pull-downs on the 74HC123 trigger input and on the relay drivers' gate/base; there are reverse diodes on the `IND_L/R` inputs.
 - [ ] The electrolytic on `+12V_PROT` is ≥ 50 V.
 - [ ] Export the BOM from KiCad (**File > Export > BOM**, or **Tools > Generate BOM**) and compare it with `hardware-procurement-list.md` v2.8. The previous version's BOM gaps (L1, 3.3 V LDO, `+4V0_GSM` buck, mirror LED MOSFETs, MCP2515 level shifter, helmet LDO) entered the list with v2.6; the ones whose value is still **TBD**: L1, MOSFET model and LED resistor, LDO current budget.
 - [ ] Enter every **CONFIRM/TBD** label in the schematic into the open-items table in `hardware-integration.md` §10 (items 10 and 11 collect the items of this guide).
