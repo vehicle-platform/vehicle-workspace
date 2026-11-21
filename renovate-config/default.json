@@ -1,0 +1,10 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Shared platform preset (QUALITY CI-3). T24 scope: GitHub Actions digest pins only; T25 widens enabledManagers (uv, npm, cargo, pub, git-submodules, platformio).",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigestsToSemver"],
+  "enabledManagers": ["github-actions"],
+  "minimumReleaseAge": "3 days",
+  "schedule": ["before 6am on monday"],
+  "prConcurrentLimit": 5,
+  "automerge": false
+}
