@@ -2,13 +2,14 @@
 
 > Keep it short (≤60 lines). Updated by the `/handoff` skill. "Recent sessions" keeps at most 5 one-line entries; drop the oldest. The task cards live in `TASKS.md` (T0–T21); this file says where we are, the cards say how.
 
-**Phase:** 0 hardware build (user, ESP32-only data-collection prototype; enclosure placement Q-034) · code without hardware largely complete up to the next user inputs: rt-core (49 class-A + 42 class-B derived signals, D-103/D-079/D-098; mailbox removed, D-118); safety-node Layer 1 v1 + platform-CAN link (D-118) + indicator input (D-111); server main: D-104/D-105/D-106, nrc78, `GET /faults` (D-109 MQTT live); linux-node L0–L4 + MQTT uplink; analyzer v0.3.0; mobile v0.5.0; vehicle-mcp v0.2.0; hardware atlas + procurement v3.0; HARA/requirements scaffold (D-113, defs `safety/` + `requirements/`)
-**Last updated:** 2026-11-22
+**Phase:** 0 hardware build (user, ESP32-only data-collection prototype; enclosure placement Q-034) · code without hardware largely complete up to the next user inputs: rt-core (49 class-A + 42 class-B derived signals, D-103/D-079/D-098; mailbox removed, D-118); safety-node Layer 1 v1 + platform-CAN link (D-118) + indicator input (D-111); server main: D-104/D-105/D-106, nrc78, `GET /faults` (D-109 MQTT live); linux-node L0–L4 + MQTT uplink; analyzer v0.3.0; mobile v0.5.0; vehicle-mcp v0.2.0; rider assistant "Usta" (D-121: server `/chat` + local LLM, Flutter phone/web/macOS client, intercom voice, handlebar PTT over BLE); hardware atlas + procurement v3.0; HARA/requirements scaffold (D-113, defs `safety/` + `requirements/`)
+**Last updated:** 2026-11-24
 
 ## Where we are
 
-- **12 platform repos** + `vehicle-workspace`, public (D-033), MIT. Decisions D-001..D-119 (D-108..D-116, D-119 and the D-118 addendum (e) are PROVISIONAL); open questions up to Q-038.
-- **All consumers pin defs v0.30.0** (2026-11-22, tag 37476de); `manifest.yaml` pins it (workspace#231).
+- **12 platform repos** + `vehicle-workspace`, public (D-033), MIT. Decisions D-001..D-121 (D-108..D-116, D-119..D-121 and the D-118 addendum (e) are PROVISIONAL); open questions up to Q-038.
+- **All consumers pin defs v0.31.0** (2026-11-24, tag 9f4f007, BLE `riderInput` block); `manifest.yaml` pins it (workspace#233).
+- **Rider assistant done in code (D-121, 2026-11-24 night run, all merged):** defs#185 (D-121) + #186 (v0.31.0 riderInput); server#87 `POST /chat` (tool choice → vehicle-mcp → local LLM phrasing → number guard → template; off unless `VEHICLE_CHAT_ENABLED=1`; `/app` serves the Flutter web build) + #88 (Docker: `chat` extra + vehicle-mcp v0.2.0); linux-node#29 (`vehicle-llama.service` loopback-only, CPUQuota 150 %, llama.cpp v1.0.0 build script, `fetch-model.sh` with verified SHA-256 for qwen2.5-1.5b / gemma3-1b / gemma3-4b, `vehicle-linux-node-llm-bench`); mobile#43 ("Usta" tab, per-user host list, web/macOS, own graphite+teal look) + #44 (tr-TR STT/TTS, Android HFP/SCO intercom routing, VOICE_COMMAND button, hold-to-talk from the handlebar, `advise_stop` read-out); conn#60 (PTT debounce/longPress core, `RIDER_PTT_GPIO` default -1 = off). Nothing tested on real hardware yet.
 - **v0.30.0 released and adopted:** mailbox codegen gone, rt-core `features/safety_hb` monitors 0x082 for the diagnostic-only DTC SAFETY_HEARTBEAT_LOST, E2E WRONG_LENGTH, one position rule in every consumer (T20, T22; safety-reviewer APPROVE on every firmware PR).
 - **Org settings (D-120, provisional):** rulesets on every public repo (PR required, required checks `ci-ok`/`gitleaks`/`pin-check`, no force-push/deletion, `v*` tags immutable), secret scanning + push protection. Private vehicle-server/vehicle-ml: not available on the free plan.
 - **D-118 hardware docs done (T21):** `docs/h743-pin-plan.md`, `docs/g474-pin-plan.md` v0.1 (from ST open pin data; every header/solder-bridge/DMA/BOOT0 line marked VERIFY for T6), procurement v3.1, atlas figures, KiCad modules NUCLEO-H743ZI2 + NUCLEO-G474RE. The user still has to buy both boards.
@@ -18,6 +19,8 @@
 
 ## Next up (in order)
 
+0. **User, rider assistant on hardware:** `sudo pmset -a disablesleep 0` (night run); on the Pi: `sh deploy/install.sh --with-llama`, `deploy/llama/fetch-model.sh qwen2.5-1.5b` (and the gemmas), enable `vehicle-llama`, run `vehicle-linux-node-llm-bench`, then Claude records the model choice in DECISIONS; set `VEHICLE_CHAT_ENABLED=1` on vehicle-server; pair the intercom with the phone, pick vehicle-mobile as the voice-command app, test Usta by voice; choose the PTT GPIO (`-D RIDER_PTT_GPIO=<n>`, pin plan/Q-034). First real `docker build` of vehicle-server (never built since #88); pin the commented `llama` compose image by digest.
+
 1. **User:** install the Renovate GitHub App (github.com/apps/renovate → vehicle-platform → All repositories; close its "Configure Renovate" PRs, the config is already in each repo). Decide vehicle-server/vehicle-ml: public (D-033) or a paid plan.
 2. **User, hardware:** buy NUCLEO-H743ZI2 + NUCLEO-G474RE; CubeMX `.ioc` per board → T6 checks the VERIFY lines of the pin plans; open the KiCad libraries once; Pi run for T7/T32 (`vehicle-linux-node/deploy/README.md`); Q-034 measurements; CL250 service manual.
 3. **Claude, small leftovers:** analyzer (REST clients to zod, >600-line files, CSV newline cell), server 4xx bodies vs OpenAPI, rt-core `uds_client_core.c` split (red zone), FW-3 vector compaction, Scorecard.
@@ -25,11 +28,11 @@
 
 ## Blockers / pending decisions
 
-- Q-038 (platform backoff cap 30 s under D-118) before T13. Q-028 (LLM) blocks the rider `/chat` (D-115). Q-036, Q-035, Q-032, Q-031/Q-001 wait for hardware; Q-022/Q-023 (5)-(6) stay open by D-100; Q-009 blocks the hil-bench host. The G474 FDCAN board port (red zone) needs its own safety-reviewer pass.
+- Q-038 (platform backoff cap 30 s under D-118) before T13. D-121 leftovers: no live high-severity fault source for the app (the critical announcer item (b) waits); the recogniser silence timeout ends a silent held PTT early; number guard ignores numbers written as words. Q-036, Q-035, Q-032, Q-031/Q-001 wait for hardware; Q-022/Q-023 (5)-(6) stay open by D-100; Q-009 blocks the hil-bench host. The G474 FDCAN board port (red zone) needs its own safety-reviewer pass.
 
 ## Recent sessions
+- 2026-11-24 (night run): D-121 rider assistant (Q-024, Q-028, Q-032 audio resolved): defs#185/#186 + v0.31.0 tag and repin of 8 repos + manifest, server#87/#88, linux-node#29, mobile#43/#44, conn#60; user authorised Claude to merge, prune, delete branches and tag.
 - 2026-11-22: user said "hepsini hallet": safety-node#20, defs#181, server T30 merged; defs v0.30.0 tagged; T20/T22 consumers; ci-ok + CI-5; rulesets + secret scanning (D-120); T31 (12 bugs fixed).
 - 2026-11-21: T27 rest (rt-core#84–#86), T36 (defs#180, safety-node#20 open), conn D-116 items 2/3 (conn#56/#57), T24 in 10 repos (defs#181 open).
 - 2026-11-19/20 (autonomous run): T1 repin (8 repos + manifest), T21 + follow-up docs, T9, T2, T4/T7, T19, T23, T3, T20 defs v0.30.0 (2 safety-reviewer rounds), T22 defs, T27, T30 (3 repos), T32, T33; ~40 PRs merged; network/rate-limit interruptions resumed.
 - 2026-11-17: branch cleanup (22 remote branches deleted, 6 ext/* backed up as bundles in `~/Desktop/vehicle-refs/branch-backups/`; T2/T3 work branches kept); full security audit + fixes (16 PRs merged, see "Where we are"); T22–T24 added.
-- 2026-11-15: D-117 KiCad/FreeCAD (defs#169, workspace#213 kicad-lib); D-118 H743ZI + separate G474 safety MCU, mailbox retired (defs#170/#173, workspace#214, rt-core#76, safety-node#16, 4 safety-reviewer passes), D-119 µ cap; all open PRs merged (defs#164..#173, rt-core#75, safety-node#15, server#70, linux-node#16, 11 rule-sync PRs, mobile JDK 17 fix); tags defs v0.28.0/v0.29.0, analyzer v0.3.0, conn v0.5.0, mobile v0.5.0; 16 worktrees pruned; `~/Desktop/vehicle-refs` with SAE J2012-2002.
