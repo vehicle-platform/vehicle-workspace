@@ -33,10 +33,11 @@ You are an AI coding tool (Codex, Gemini, DeepSeek, Cursor, Aider, Copilot, …)
 ## 4. Workflow
 
 1. Branch: `ext/<tool>-<topic>` (e.g. `ext/gemini-mobile-dashboard`), in the repo you change. Never `main`, never a `claude/` branch. One topic per branch.
-2. Commits: Conventional Commits in English (`feat(mobile): ...`) with the trailer line `AI-Agent: <tool>/<model>` (e.g. `AI-Agent: gemini-cli/gemini-2.5-pro`). Claude finds your work with `git log --grep '^AI-Agent:'`.
-3. Before each commit: run the repo's checks (table below) and `python3 scripts/check_zones.py <repo>`. Red → revert those paths. Commit and push only when the user asks.
-4. PR (when the user asks): title in Conventional Commits form; description = summary, checks run with their result, the zone result, `needs-claude-review` if any path is yellow, and the log file name.
-5. Write code that reads like the surrounding code: same naming, comment density, test style. Add or update tests for what you change.
+2. Language: every artifact is English only, never bilingual (D-125): code, comments, docs, test results, fixtures, prompts, commits, PR texts. No Turkish text in the repos except the i18n translation resource files; user-facing text defaults to English.
+3. Commits: Conventional Commits in English (`feat(mobile): ...`) with the trailer line `AI-Agent: <tool>/<model>` (e.g. `AI-Agent: gemini-cli/gemini-2.5-pro`). Claude finds your work with `git log --grep '^AI-Agent:'`.
+4. Before each commit: run the repo's checks (table below) and `python3 scripts/check_zones.py <repo>`. Red → revert those paths. Commit and push only when the user asks.
+5. PR (when the user asks): title in Conventional Commits form; description = summary, checks run with their result, the zone result, `needs-claude-review` if any path is yellow, and the log file name.
+6. Write code that reads like the surrounding code: same naming, comment density, test style. Add or update tests for what you change.
 
 | Repo | Checks (run from the repo root) |
 |---|---|
