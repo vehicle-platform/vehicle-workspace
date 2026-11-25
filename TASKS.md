@@ -65,6 +65,12 @@ Then say "tags ready" and start T1.
 | T48 | D-129 alert rules in defs (schema + codegen Python/Dart) | ready | vehicle-defs |
 | T49 | D-129 evaluator on vehicle-server live stream + `/alerts/stream` + `anomaly` notifications; mobile banner + P1 voice | after T48 | vehicle-server, vehicle-mobile |
 | T50 | After-run eval vs T41 baseline, `docs/test-results/` write-up, STATUS handoff | last | defs, workspace |
+| T51 | D-130 redesign PR 2 (assistant logbook transcript, data cards, chips, Logbook/Garage/Ride screens, AlertBanner) | after mobile#50 | vehicle-mobile |
+| T52 | Router/phraser model split benchmark: tiny router (Qwen2.5-0.5B, Gemma 3 1B, Llama 3.2 1B) vs phraser (Qwen2.5-1.5B/3B, Gemma 3 4B, Qwen3 1.7B), measured with the T41 harness on the Mac (Pi when reachable) | after T42 | vehicle-server, linux-node, defs `docs/test-results/` |
+| T53 | GBNF grammar + few-shot examples in the stable prefix for tool choice; multilingual embedding intent router (small embedding model via llama-server `/embedding`) before the LLM | after T42 | vehicle-server |
+| T54 | Answer cache for repeated questions per ride; llama-server KV slot save/restore per conversation; speculative decoding with a draft model (`-md`) | after T44 | vehicle-server, linux-node |
+| T55 | Eval set growth (follow-ups after T44, symptoms after v0.32.0 repin) + a CI regression gate with a recorded fake LLM | after T44 | vehicle-server |
+| T56 | Repin defs v0.32.0/v0.33.0 in server (+ `/faults` serves `complaints` and `complaints_i18n`), mobile (alert rules Dart), manifest | after the tags | server, mobile, workspace |
 | T36 | Heartbeat golden wire vectors | **done 2026-11-21** (defs#180, safety-node#20); HIL scenario blocked: Q-009 | defs, safety-node |
 
 ## Card details
@@ -74,6 +80,7 @@ Then say "tags ready" and start T1.
 Measured 2026-11-25 on the Mac (local Qwen2.5-1.5B, 5 synthetic rides): answers 2-14 s, two LLM calls per question (tool choice + phrasing); vehicle-mcp is spawned per request (~0.4 s spawn + initialize + list); the 10 tool specs are ~6.3k characters (~1.6k tokens) in the router prompt of a 4k-context model; failures seen: catalog listed as if faults were active, "duration as speed" unit swap, overheating/idle/symptom questions unsupported. Local run: `local/run-llama.sh` + `local/run-server.sh` (git-ignored `local/`, data in `local/server-data`, logins in `local/secrets/`).
 - Order: T40 + T48 in parallel with T41; T42 after server#98; T43 in parallel (mcp repo); T44 → T45 → T46 in vehicle-server (same files, never stacked); T47 after the server API; T49 after T48; T50 last.
 - Every optimisation lands with a before/after number from the T41 harness (same question set, same model, same machine).
+- Continuous run (2026-11-26, user: "keep developing, one next task after another, until I say stop; if there is nothing else, work on optimising this LLM infrastructure"; "record these and do them"; "you will also do the releases"; "don't stop until I say, I'll leave it open while I sleep"): after T50 continue with T51-T56, then further measured LLM/MCP optimisation. Claude creates the release tags too.
 - Resume rule: a new session reads STATUS.md, this block and `gh pr list` for open `claude/*` PRs, then continues with the first card not marked done in the table.
 
 ### T1 — Repin defs v0.28.0 (after T0)
