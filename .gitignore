@@ -11,7 +11,9 @@ docs-presentation/references/*.pdf
 # The user's local thesis-presentation drafts and study notes (personal, not platform docs)
 /docs-presentation/
 /learning/
-# Local APK builds (also matched by /vehicle-*/; listed so it stays ignored if that rule changes)
+# Machine-local artifacts: APK/web builds, Pi OS images, test-only logins (see local/README.md).
+# Never commit: secrets/ holds tokens and passwords, images are large. /vehicle-apk/ was its old APK home.
+/local/
 /vehicle-apk/
 __pycache__/
 # Manufacturer studio photos used as CAD references: copyrighted, never commit (D-033)
