@@ -54,23 +54,23 @@ Then say "tags ready" and start T1.
 | T33 | Analyzer quality (WEB-1..4) | **done 2026-11-20** minus CSP (analyzer#67–#71; lint ratchet 302 warnings, coverage floors, zod streams, App.tsx 633→250). Open: CSP (user), REST clients to zod, sessionClient/UdsPanel >600 lines, cargo-deny | vehicle-analyzer |
 | T34 | Mobile: file splits, fvm, release signing, cleartext policy, QUALITY MOB-1/2/3/5 | blocked: user (keystore, applicationId) | vehicle-mobile |
 | T35 | ADR template fields + monorepo decision with revisit trigger, QUALITY ARCH-1/3 | blocked: user (monorepo yes/no) | vehicle-workspace, vehicle-defs |
-| T40 | Assistant run (2026-11-25, user: "start every optimisation that makes the LLM and the MCP layer work properly and connect them; don't stop, resume when tokens renew"): see the T40-T50 block under Card details. Defs v0.32.0 complaints (defs#197) + tag + repin server/mcp/manifest | ready (tag: user if auto mode refuses) | defs, server, mcp, workspace |
-| T41 | Chat eval harness + baseline run (tool-choice accuracy, guard pass, latency p50/p95, local model) | ready | vehicle-server, defs `docs/test-results/` |
-| T42 | MCP/LLM efficiency: MCP session pool, compact router menu, stable cached prefix, per-ride tool cache, template-first, llama `-np 1`/`cache_prompt`, Anthropic `cache_control` | after server#98 | vehicle-server, vehicle-linux-node |
-| T43 | vehicle-mcp: labelled compact results, small-model tool descriptions, `get_data_card`, `check_symptom` (D-127) | `check_symptom` after T40 | vehicle-mcp |
-| T44 | Conversations + memory (D-128 items 1-3, 6): store, API, carried state, follow-up resolution, budgets, user memory, FTS search | after T42 | vehicle-server |
+| T40 | Assistant run (2026-11-25, user: "start every optimisation that makes the LLM and the MCP layer work properly and connect them; don't stop, resume when tokens renew"): see the T40-T50 block under Card details. Defs v0.32.0 complaints (defs#197) + tag + repin server/mcp/manifest | **done 2026-11-26** (defs#197 → v0.32.0, defs#199/#200 → v0.33.0; server#100 repin + `/faults` complaints; workspace#242 manifest) | defs, server, mcp, workspace |
+| T41 | Chat eval harness + baseline run (tool-choice accuracy, guard pass, latency p50/p95, local model) | **done 2026-11-26** (server#99 `vehicle-server chat-eval`, 44 questions per locale; baseline defs#201) | vehicle-server, defs `docs/test-results/` |
+| T42 | MCP/LLM efficiency: MCP session pool, compact router menu, stable cached prefix, per-ride tool cache, template-first, llama `-np 1`/`cache_prompt`, Anthropic `cache_control` | **done 2026-11-26** (server#101: router, template-first answers + output filter, MCP session pool, per-user tool cache, compact prompt, Anthropic cache_control; tool accuracy 45 % → 100 % en / 43 % → 100 % tr, forbidden patterns 19/14 → 0, p95 21-29 s → ~2 s; same-author question set, held-out set open) | vehicle-server, vehicle-linux-node |
+| T43 | vehicle-mcp: labelled compact results, small-model tool descriptions, `get_data_card`, `check_symptom` (D-127) | **done 2026-11-26** (mcp#30 specs −49 %, labelled results, `get_data_card`, `check_symptom`; mcp#31 multilingual IDF matcher; data-only unconfirmed matches in progress, D-127 addendum defs#202) | vehicle-mcp |
+| T44 | Conversations + memory (D-128 items 1-3, 6): store, API, carried state, follow-up resolution, budgets, user memory, FTS search | in progress (server, includes symptom fallback before unsupported) | vehicle-server |
 | T45 | No-dead-end ladder + follow-up chips (D-128 item 5) | after T43, T44 | vehicle-server |
 | T46 | Streaming answers (`/chat` SSE) | after T44 | vehicle-server |
 | T47 | Mobile: chat list, temporary chat, chips, memory settings, streaming (functional only; look waits for Q-039) | after T44-T46 | vehicle-mobile |
-| T48 | D-129 alert rules in defs (schema + codegen Python/Dart) | ready | vehicle-defs |
+| T48 | D-129 alert rules in defs (schema + codegen Python/Dart) | **done 2026-11-26** (defs#199, 5 PROVISIONAL rules, Python + Dart) | vehicle-defs |
 | T49 | D-129 evaluator on vehicle-server live stream + `/alerts/stream` + `anomaly` notifications; mobile banner + P1 voice | after T48 | vehicle-server, vehicle-mobile |
 | T50 | After-run eval vs T41 baseline, `docs/test-results/` write-up, STATUS handoff | last | defs, workspace |
-| T51 | D-130 redesign PR 2 (assistant logbook transcript, data cards, chips, Logbook/Garage/Ride screens, AlertBanner) | after mobile#50 | vehicle-mobile |
+| T51 | D-130 redesign PR 2 (assistant logbook transcript, data cards, chips, Logbook/Garage/Ride screens, AlertBanner) | PR 1/2 **merged** (mobile#50, #51); PR 3 (logbook column wall, data-card internals) in progress | vehicle-mobile |
 | T52 | Router/phraser model split benchmark: tiny router (Qwen2.5-0.5B, Gemma 3 1B, Llama 3.2 1B) vs phraser (Qwen2.5-1.5B/3B, Gemma 3 4B, Qwen3 1.7B), measured with the T41 harness on the Mac (Pi when reachable) | after T42 | vehicle-server, linux-node, defs `docs/test-results/` |
 | T53 | GBNF grammar + few-shot examples in the stable prefix for tool choice; multilingual embedding intent router (small embedding model via llama-server `/embedding`) before the LLM | after T42 | vehicle-server |
 | T54 | Answer cache for repeated questions per ride; llama-server KV slot save/restore per conversation; speculative decoding with a draft model (`-md`) | after T44 | vehicle-server, linux-node |
 | T55 | Eval set growth (follow-ups after T44, symptoms after v0.32.0 repin) + a CI regression gate with a recorded fake LLM | after T44 | vehicle-server |
-| T56 | Repin defs v0.32.0/v0.33.0 in server (+ `/faults` serves `complaints` and `complaints_i18n`), mobile (alert rules Dart), manifest | after the tags | server, mobile, workspace |
+| T56 | Repin defs v0.32.0/v0.33.0 in server (+ `/faults` serves `complaints` and `complaints_i18n`), mobile (alert rules Dart), manifest | server + manifest **done 2026-11-26** (server#100, workspace#242); mobile repin goes with T49 | server, mobile, workspace |
 | T36 | Heartbeat golden wire vectors | **done 2026-11-21** (defs#180, safety-node#20); HIL scenario blocked: Q-009 | defs, safety-node |
 
 ## Card details
