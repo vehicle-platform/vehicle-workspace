@@ -54,9 +54,27 @@ Then say "tags ready" and start T1.
 | T33 | Analyzer quality (WEB-1..4) | **done 2026-11-20** minus CSP (analyzer#67–#71; lint ratchet 302 warnings, coverage floors, zod streams, App.tsx 633→250). Open: CSP (user), REST clients to zod, sessionClient/UdsPanel >600 lines, cargo-deny | vehicle-analyzer |
 | T34 | Mobile: file splits, fvm, release signing, cleartext policy, QUALITY MOB-1/2/3/5 | blocked: user (keystore, applicationId) | vehicle-mobile |
 | T35 | ADR template fields + monorepo decision with revisit trigger, QUALITY ARCH-1/3 | blocked: user (monorepo yes/no) | vehicle-workspace, vehicle-defs |
+| T40 | Assistant run (2026-11-25, user: "start every optimisation that makes the LLM and the MCP layer work properly and connect them; don't stop, resume when tokens renew"): see the T40-T50 block under Card details. Defs v0.32.0 complaints (defs#197) + tag + repin server/mcp/manifest | ready (tag: user if auto mode refuses) | defs, server, mcp, workspace |
+| T41 | Chat eval harness + baseline run (tool-choice accuracy, guard pass, latency p50/p95, local model) | ready | vehicle-server, defs `docs/test-results/` |
+| T42 | MCP/LLM efficiency: MCP session pool, compact router menu, stable cached prefix, per-ride tool cache, template-first, llama `-np 1`/`cache_prompt`, Anthropic `cache_control` | after server#98 | vehicle-server, vehicle-linux-node |
+| T43 | vehicle-mcp: labelled compact results, small-model tool descriptions, `get_data_card`, `check_symptom` (D-127) | `check_symptom` after T40 | vehicle-mcp |
+| T44 | Conversations + memory (D-128 items 1-3, 6): store, API, carried state, follow-up resolution, budgets, user memory, FTS search | after T42 | vehicle-server |
+| T45 | No-dead-end ladder + follow-up chips (D-128 item 5) | after T43, T44 | vehicle-server |
+| T46 | Streaming answers (`/chat` SSE) | after T44 | vehicle-server |
+| T47 | Mobile: chat list, temporary chat, chips, memory settings, streaming (functional only; look waits for Q-039) | after T44-T46 | vehicle-mobile |
+| T48 | D-129 alert rules in defs (schema + codegen Python/Dart) | ready | vehicle-defs |
+| T49 | D-129 evaluator on vehicle-server live stream + `/alerts/stream` + `anomaly` notifications; mobile banner + P1 voice | after T48 | vehicle-server, vehicle-mobile |
+| T50 | After-run eval vs T41 baseline, `docs/test-results/` write-up, STATUS handoff | last | defs, workspace |
 | T36 | Heartbeat golden wire vectors | **done 2026-11-21** (defs#180, safety-node#20); HIL scenario blocked: Q-009 | defs, safety-node |
 
 ## Card details
+
+### T40-T50 — Assistant LLM + MCP run (D-127, D-128, D-129)
+
+Measured 2026-11-25 on the Mac (local Qwen2.5-1.5B, 5 synthetic rides): answers 2-14 s, two LLM calls per question (tool choice + phrasing); vehicle-mcp is spawned per request (~0.4 s spawn + initialize + list); the 10 tool specs are ~6.3k characters (~1.6k tokens) in the router prompt of a 4k-context model; failures seen: catalog listed as if faults were active, "duration as speed" unit swap, overheating/idle/symptom questions unsupported. Local run: `local/run-llama.sh` + `local/run-server.sh` (git-ignored `local/`, data in `local/server-data`, logins in `local/secrets/`).
+- Order: T40 + T48 in parallel with T41; T42 after server#98; T43 in parallel (mcp repo); T44 → T45 → T46 in vehicle-server (same files, never stacked); T47 after the server API; T49 after T48; T50 last.
+- Every optimisation lands with a before/after number from the T41 harness (same question set, same model, same machine).
+- Resume rule: a new session reads STATUS.md, this block and `gh pr list` for open `claude/*` PRs, then continues with the first card not marked done in the table.
 
 ### T1 — Repin defs v0.28.0 (after T0)
 - **Scope:** `manifest.yaml` pins (defs v0.28.0, analyzer v0.3.0, conn v0.5.0, mobile v0.5.0); each consumer's `external/vehicle-defs` submodule to v0.28.0, one PR per repo, merge main between dependents.
