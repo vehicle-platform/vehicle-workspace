@@ -18,13 +18,17 @@
 
 ## Next up (in order)
 
-1. **Gemini review:** when run 1 / run 2 PRs appear → `/external-review` (zones, `architecture-guard`, merge, close logs).
-2. **T57 explain mode, server side (Claude):** "why / is it normal" intent + follow-ups → compact `explain_context` (≤ 500 tokens for the local model), template explanation on the 1.5B model, LLM prose on ≥ 4B/cloud, cited web research through the provider's own search with consent; defs + server expose per-signal reference values with status/source.
-3. **T58 Ride LLM stage 0:** fold Gemini's held-out set + red-team set into chat-eval, CI gate (guard failures = 0), bake-off results (Gemini G2-4 harness) → `docs/test-results/`.
-4. **RAG into `/chat`:** knowledge questions route to `search_knowledge` with citations (after Gemini G2-2 quality pass). Then T59 GBNF tool choice, T61 knowledge-graph tools.
-5. **Tuning:** ALR-005 (coolant rate) fires on most demo rides → defs threshold; tr symptom phrasing on the 1.5B model → templates (T45/T55).
-6. **User:** finish the Android Studio setup wizard + an arm64 AVD (Claude then installs the APK, server at `http://10.0.2.2:8000`); T66 DJI Osmo Action 4 CV prototype later; real Phase-0 rides for threshold validation; Pi power-on for edge tests.
-7. Older items stay in `TASKS.md` (T5, T6, T10-T14, T16, T17, T26, T28, T29, T34, T35) and the hardware list.
+Roadmap agreed 2026-11-26: the software is ahead of the hardware and everything is validated on synthetic data only, so the priority is the hardware critical path (T6 → T13 → G1 capture/T16 → first rides → T14) and checking existing work before the boards arrive; T62-T64 wait for real data.
+
+1. **T6 (running):** `.ioc` for both boards via the CubeMX CLI + pin diff script (`local/cubemx/`); then T67 Renode boot test.
+2. **Gemini run 3 review:** when its PRs appear → `/external-review` (zones, `architecture-guard`, refactor, merge, prune, close the log).
+3. **T57 explain mode, server side** (template on the 1.5B model, prose on ≥ 4B/cloud, per-signal reference values with status/source).
+4. **T58 stage 0:** held-out + red-team set in chat-eval, CI gate (guard failures = 0), bake-off results → `docs/test-results/`. Then RAG into `/chat` with citations, T59 GBNF (+ llama.cpp prompt/KV cache reuse, T72).
+5. **Small, in parallel:** T68 ride event marking (weak labels), T69 multi-node SIL design note, T70 CubeMX CLI reference, T71 CI pre-checks on `ext/` branches.
+6. **Before the boards arrive:** settle Q-008 (time sync) and review sleep / parked current (T73).
+7. **When the boards arrive:** T26 on-target verification, T16 listen-only capture, T73 parked-current measurement, first labelled rides.
+8. **After real data:** threshold tuning (ALR-005 fires on most demo rides), T14, then T62-T64.
+9. **User:** Android Studio AVD; T66 camera later; Pi power-on. Older items stay in `TASKS.md` (T5, T10-T13, T16, T17, T26, T28, T29, T34, T35).
 
 ## Blockers / pending decisions
 
