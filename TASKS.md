@@ -71,6 +71,16 @@ Then say "tags ready" and start T1.
 | T54 | Answer cache for repeated questions per ride; llama-server KV slot save/restore per conversation; speculative decoding with a draft model (`-md`) | after T44 | vehicle-server, linux-node |
 | T55 | Eval set growth (follow-ups after T44, symptoms after v0.32.0 repin) + a CI regression gate with a recorded fake LLM | after T44 | vehicle-server |
 | T56 | Repin defs v0.32.0/v0.33.0 in server (+ `/faults` serves `complaints` and `complaints_i18n`), mobile (alert rules Dart), manifest | server + manifest **done 2026-11-26** (server#100, workspace#242); mobile repin goes with T49 | server, mobile, workspace |
+| T57 | D-131 explain mode, server side: "why/is it normal" intent + follow-ups, compact `explain_context` (≤ 500 tokens for the local model), template explanation on the small model, LLM prose on ≥ 4B/cloud, cited web research via the provider's own search with consent; defs + server expose per-signal reference values with status/source for `explain_context.references` | after T44 | defs, server, mcp, mobile |
+| T58 | Ride LLM stage 0 (D-132): eval hardening (≥ 300 generated + ~100 frozen human en/tr cases, red-team "safe to ride" set, bootstrap CIs, CI gate guard failures = 0) + base-model bake-off Qwen2.5-1.5B / Qwen3-1.7B / Qwen3-4B on the Mac and the Pi | ready | server, ml, defs test-results |
+| T59 | Ride LLM stage 1: grammar-constrained (GBNF) tool choice in llama.cpp | after T58 | server |
+| T60 | Ride LLM stage 2: hybrid retrieval (SQLite FTS5 + sqlite-vec, multilingual-e5-small, RRF) over catalog phrases and repo docs with citations; local-only indexer for the rider's own manuals (git-ignored, CI check against committed PDFs/quotes) | after T58 | mcp, server |
+| T61 | Ride LLM stage 3: knowledge-graph tables + tools (signal ↔ subsystem ↔ fault ↔ symptom ↔ check) over defs | after T58 | defs, mcp |
+| T62 | Ride LLM stage 4: synthetic data pipeline with verifiers (templates + open-weight teacher by default; Q-040 decides any frontier role); contamination control vs the eval set | after T58; Q-040 | ml |
+| T63 | Ride LLM stage 5: LoRA SFT (MLX on the Mac) → GGUF + adapter, quantisation comparison F16/Q8/Q5/Q4 on the harness, Pi latency | after T62 | ml, linux-node |
+| T64 | Ride LLM stage 6: preference tuning (KTO/DPO) against invention and unsafe claims | after T63 | ml |
+| T65 | ML ↔ LLM tools (D-132 item 1a): `get_anomalies`, subsystem drill-down, rider feedback → structured weak labels (consented) | after the D-083 stage 1 models exist | ml, mcp, server |
+| T66 | CV prototype with the user's DJI Osmo Action 4: (1) USB webcam mode on the Mac/Pi 5 — list formats (`v4l2-ctl --list-formats-ext`; third-party sources say 1080p30 MJPG), measure glass-to-glass latency with an on-screen stopwatch, USB power draw and heat over 30 min; (2) dataset protocol: 4K stabilised ride recordings synced to telemetry by a visible clap/flash marker, stored git-ignored under `local/` (never committed, D-033); (3) lane-keeping classic CV developed offline on the recordings; production camera stays Pi Camera Module 3 (procurement 3B) | user: "later, let's try it" | linux-node |
 | T36 | Heartbeat golden wire vectors | **done 2026-11-21** (defs#180, safety-node#20); HIL scenario blocked: Q-009 | defs, safety-node |
 
 ## Card details
