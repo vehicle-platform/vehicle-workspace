@@ -118,9 +118,10 @@ Measured 2026-11-25 on the Mac (local Qwen2.5-1.5B, 5 synthetic rides): answers 
 - **Next (user, Fusion):** draw S1 (Fig. 2), S2/S4 (Fig. 4, 7, 9, 10), S5 (Fig. 11) with the figure as the reference; fill M1–M16 on the bike.
 
 ### T6 — Pin plan to decision
-- **Input from the user:** the CubeMX `.ioc` for STM32H745ZITx with the NUCLEO-H745ZI-Q selector, or a screenshot of the conflicts view, plus the UM2408 header check.
-- **Scope:** diff the `.ioc` against `h755-pin-plan.md` v0.1, resolve conflicts (pin, AF, DMA request, runtime context), write the DECISIONS item draft and update Fig. 4, SCHEMATIC §7, hardware-integration §10 item 10.
-- **Verify:** script check that no pin is assigned twice and none is board-reserved (the v0.1 check), user approval before the D-xxx is recorded.
+- **Boards (D-118):** NUCLEO-H743ZI2 (rt-core, STM32H743ZIT6) and NUCLEO-G474RE (safety-node, STM32G474RET6). Plans: `vehicle-defs/docs/h743-pin-plan.md` and `g474-pin-plan.md` (the old `h755-pin-plan.md` is retired).
+- **Claude:** generate one `.ioc` per board with the CubeMX CLI (headless script mode, board loaded with `nomode`, pins, peripheral modes, DMA, toolchain CMake), export the pinout CSV and run the diff script (every planned pin and AF present, no pin assigned twice, no board-reserved pin reused). Work files live in git-ignored `local/cubemx/`. Where the CLI cannot set something, the `.ioc` text is edited and reloaded so CubeMX validates it.
+- **User:** open each `.ioc` in the CubeMX GUI and confirm the pinout/conflict view and the Clock tab (no clock tree is invented by Claude; board defaults stay until the user sets it), plus the UM2407/UM2505 header and solder-bridge check. Firmware packages (STM32Cube_FW_H7, STM32Cube_FW_G4) come from Help > Manage embedded software packages if the CLI cannot install them.
+- **Then:** user approval before the D-xxx is recorded; update Fig. 4, SCHEMATIC §7 and hardware-integration §10 item 10. The `.ioc` and the generated code may be committed to rt-core / safety-node before the boards arrive, marked "unverified on hardware" (user's wish); red zone, so `safety-reviewer` first for safety-node.
 
 ### T15 — Analyzer test types in CI
 - **Scope:** add `npx tsc -p tests/tsconfig.json --noEmit` as a non-blocking CI step (the three `src/` errors it reports come from vite defines and Tauri types; either give the tests tsconfig the `vite-env.d.ts` types or filter to `tests/`).
