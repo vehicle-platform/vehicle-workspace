@@ -13,7 +13,7 @@ prs:
   - https://github.com/vehicle-platform/vehicle-defs/pull/207
   - https://github.com/vehicle-platform/vehicle-server/pull/105
 zone: yellow
-review: pending
+review: done 2026-11-26 (vehicle-ml#32, vehicle-defs#207, vehicle-server#105 fixed and merged; held-out leakage and router bug fixed)
 ---
 
 # long-run-3 (bake-off run, held-out eval in chat-eval, Turkish routing coverage)
@@ -103,4 +103,12 @@ Execute `external-ai/tasks/2026-11-26-gemini-long-run-3.md` from **G3-0** throug
 5. **Other open PRs from this run (GREEN):** `vehicle-ml#32` (G3-1 harness metrics) and `vehicle-server#105` (G3-3 external suite, synthetic guard gate, TR routing coverage).
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+Fixes pushed to each `ext/gemini-*` PR branch from a `claude/*-review` worktree; every PR merged after green CI. Gemini's commits kept.
+
+- **G3-1 `vehicle-ml#32`** (merged `7659dff`): `6d49667` held-out args scored after removing one leading `did.` prefix (frozen spec untouched); "peak" RSS was sampled only at phase boundaries (every row 1116.9 MiB) and is now sampled every 250 ms; tokens/s gives `None` when the window-start `/metrics` scrape fails (it reported the cumulative total as a rate); red-team keys renamed `expectation_ok`/`expectation_accuracy` (items may allow a tool call); one `refusal_expected` helper; raw items keep tool arguments so later runs can be re-scored offline. 270 tests, 90.41 %.
+- **G3-2 `vehicle-defs#207`** (yellow, merged `ba954ce`): `ebcca3c` hypotheses reworded as observations ("not verified"), Caveats section (optimistic dev set, 1 of 3 models, Q8_0 vs Q4_K_M, `did.` correction, RSS limit, `redteam-6`, single run/host), token path placeholder; `5e5cb0b` summary.json back under 20 KB. The run's raw items had no arguments, so no offline re-score: corrected held-out tool accuracy is only bounded (≤ 49 % en, ≤ 47 % tr); the real value comes from the next live run.
+- **G3-3 `vehicle-server#105`** (merged `d9d2577`): `b9414da` scorer `did.` rule, external spec fails loudly (exit 1). `e27fb2c` **leakage removed**: six Turkish keywords (`konjektor`, `radyator`, `kelebek`, `debriyaj`, `stop ed/et`) came from held-out items and six more were untested; the 15 new dev phrasings were close paraphrases of held-out frames and were rewritten. **Router bug**: short keywords matched mid-word (`hiz`→`hizlanirken`, `sure`→`surekli`, `ses`→`sessions`, `devre`→`devre disi`); now whole-word matching, shared with `followup.py`. **redteam-6**: unrouted text fell into the pre-LLM symptom step; new `chat/guard.py` refuses safety-off and ECU-write requests before any tool. Held-out router-only 46→47/73 en, 52→50/73 tr (the tr drop is the removed leaked keywords). 2365 tests, 94 %.
+
+Rule change: the recurring faults (eval-set tuning/leakage, values not from defs, proposals as facts, unhappy path, duplicated code, personal data on results pages) are hard rules in `AGENTS.base.md` §3 (workspace#256) and in the run 4 brief.
+
+Open: Qwen3 downloads + three-model run (run 4 G4-1); Turkish guard recall is moderate (e.g. "flash new software onto the ECU" in Turkish is not refused) → T57/T58; server chat-eval cannot score `explain_context`/`search_knowledge` items yet.
