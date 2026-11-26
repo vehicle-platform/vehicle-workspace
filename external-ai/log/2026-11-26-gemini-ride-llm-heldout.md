@@ -6,7 +6,7 @@ repos: [vehicle-workspace, vehicle-ml]
 branches: [vehicle-workspace:ext/gemini-ride-llm-heldout-log, vehicle-ml:ext/gemini-ride-llm-heldout]
 prs: [vehicle-ml#30]
 zone: green
-review: pending
+review: done 2026-11-26 (vehicle-ml#30 fixed and merged)
 ---
 
 # Ride LLM stage 0: held-out eval set + template dataset scaffold
@@ -65,4 +65,8 @@ Complete Ride LLM stage 0 tasks G1-0 through G1-4 (D-132): open the session log,
 - **Locale JSON format compatibility:** `heldout/locales/{en,tr}.json` uses `{"questions": {...}, "forbidden": {...}}` to match `vehicle-server/src/vehicle_server/chat/eval/spec.py` directly. If you later wire `vehicle-server chat-eval` to accept an external held-out directory, both `spec.json` and `locales/{en,tr}.json` are drop-in compatible.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+- `vehicle-ml#30` (branch `claude/heldout-review`, pushed to `ext/gemini-ride-llm-heldout`):
+  - `457e24e` pin vehicle-defs v0.33.0.
+  - `e37910e` template ranges are grounded in `vehicle_defs`; the v0.31 fallback is dropped.
+  - `4d5f78e` held-out forbid patterns are refusal-aware; ECU and safety refusal classes added.
+- CI green; merged as `0eecba4`.

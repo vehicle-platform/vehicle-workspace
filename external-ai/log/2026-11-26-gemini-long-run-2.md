@@ -17,7 +17,7 @@ prs:
   - https://github.com/vehicle-platform/vehicle-ml/pull/31
   - https://github.com/vehicle-platform/vehicle-defs/pull/206
 zone: yellow
-review: pending
+review: done 2026-11-26 (all five PRs fixed and merged)
 ---
 
 # long-run-2 (assistant i18n, RAG quality, chat list UI, model bake-off, validation plan)
@@ -101,4 +101,12 @@ All tasks G2-0 through G2-6 completed on separate branches with PRs opened (none
 - Note: untracked run-1 outputs (`vehicle-ml/src/vehicle_ml/ride_llm/data/out/{answer,route}.jsonl`) exist on disk in the local checkout (git-ignored on PR #30's branch, not on `main`); they were excluded from `vehicle-ml#31`.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+Fixes were pushed to each `ext/gemini-*` PR branch from a `claude/*-review` worktree; every PR merged after green CI.
+
+- **G2-1 `vehicle-server#104`** (merged `4a82942`): `46f495e` one locale loader (`i18n.py`) with a typed `Locale` and per-key English fallback; chat keyword, number-word, follow-up and chip tables and system prompts moved to `chat/locales/{en,tr}.json`; `AlertService` publishes per-locale payloads; `/ws/live` takes `?locale=` (unknown code closes with 1008). `8a78a87` key parity, fallback and per-locale alert tests (`tests/test_i18n.py`). `b6ac780` README/CLAUDE.md locale rule and client notes; stale "short Turkish" `/chat` row fixed. 2326 tests passed. Notification rows stored before the change keep their stored text; rows with a `template_key` render per locale.
+- **G2-2 `vehicle-mcp#35`** (yellow, merged `b93d3ae`): `6a55a66` relevance is decided on vector/BM25 signals, not on RRF scores (RRF ranks are not comparable across queries). `33385fe` catalog holdout split so the cutoffs are not tuned on the eval set, tuning-grid note, README.
+- **G2-3 `vehicle-mobile#55`** (merged `fe43d04`, after #104): `64c6a9f` shared authed JSON transport for the conversations and provider clients; `72051b5` inbox texts requested in the UI locale; alert banner slot renamed; `b4e0eb0` chat export temp file deleted after sharing; `5501199` both temporary-chat toggles clear the chat, late replies are dropped, failures surface, `ConversationsController` extracted.
+- **G2-4 `vehicle-ml#31`** (merged `cd6e913`, after #30): `81e46dd` top-level `ride_llm` shim removed (use the package entry point); `7ca4b99` Qwen3 thinking disabled per model, harness hardened. `Qwen3-1.7B-Q8_0` (the only quant in the official repo) is accepted for D-132 stage 0; a local `Q4_K_M` requantization stays optional.
+- **G2-5 `vehicle-defs#206`** (yellow, merged `652a490`): `096d6de` validation-plan targets marked as proposed; ISO 26262-12 cited for the motorcycle-specific part.
+
+Follow-ups (not blocking): `vehicle-mobile` `alert_controller.dart` does not pass `?locale=` to `/alerts/stream`, so live alerts now arrive in the server default `en`; `chat_client.dart` defaults `locale` to `tr` instead of the UI locale.
