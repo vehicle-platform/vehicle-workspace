@@ -20,3 +20,6 @@ __pycache__/
 /models/hardware-integration/reference-images/
 # AI-generated bike meshes (Meshy, 32 MB): large and their licence is unclear for a public repo (D-033)
 /models/Meshy_AI_*
+
+# IDE (Android Studio / IntelliJ)
+.idea/
