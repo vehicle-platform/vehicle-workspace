@@ -1,10 +1,15 @@
-# Gemini long run 4 — 2026-11-27 (parked-current note, 3-model bake-off, prompt-cache measurement, ride event marks)
+# Gemini long run 4 — 2026-11-27 (parked-current note, 3-model bake-off, prompt-cache measurement, ride event marks, SIL inventory, RAG eval, analyzer tests)
 
 Written by Claude for Gemini CLI. Run 3 is under Claude review (vehicle-ml#32, vehicle-defs#207,
 vehicle-server#105). Run the tasks in order without asking between them. One branch and one PR per
 task; commit after every logical step (Conventional Commits, `AI-Agent: gemini-cli/<model>` trailer),
 push after every commit. If a task is blocked, write why in the log's *For Claude* section and go on
 to the next one. **Never merge a PR. Never force-push.**
+
+**Overnight run (about 6 hours).** Order: G4-0, G4-A, G4-1, G4-2, G4-3, G4-4, G4-6, G4-7, G4-8, and G4-5
+**last**. Do not stop between tasks and do not wait for an answer. If one task makes no progress for
+about 90 minutes, write why in *For Claude*, push what is done and go on. Update and push the log
+after every task, so the log is current if the run stops.
 
 **Start gates (check, do not wait idle):** G4-1 and G4-2 start only when `gh pr view 32 -R
 vehicle-platform/vehicle-ml --json state` and `gh pr view 207 -R vehicle-platform/vehicle-defs --json
@@ -21,6 +26,9 @@ state` both say `MERGED`; G4-3 and G4-4 only when `gh pr view 105 -R vehicle-pla
 | G4-2 | vehicle-defs `docs/test-results/ride-llm-bakeoff/` | `ext/gemini-bakeoff-3models-results` | **yellow** (`needs-claude-review`) |
 | G4-3 | vehicle-server `src/vehicle_server/chat/` (prompt assembly, llm client), `tests/` | `ext/gemini-prompt-cache` | green |
 | G4-4 | vehicle-server (marks API + storage) and vehicle-mobile (UI) | `ext/gemini-ride-marks` (one per repo) | green (server: do not touch `*ota*`, `*gps*`, `*position*`, `*mdf4*`) |
+| G4-6 | vehicle-defs `docs/ideas/sil-inventory.md` | `ext/gemini-sil-inventory` | green |
+| G4-7 | vehicle-mcp `src/vehicle_mcp/knowledge/` eval data + `tests/` | `ext/gemini-rag-eval` | **yellow** (`needs-claude-review`) |
+| G4-8 | vehicle-analyzer tests (not `src/services/webSerialCan*`, `src/services/udsComposer*`, `src-tauri/*`; `src/defs/*` is yellow) | `ext/gemini-analyzer-tests` | green |
 
 **Red everywhere, never touch:** `external/*`, `gen/*`, `.github/*`, `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`,
 `.claude/*`, `vehicle-defs/docs/DECISIONS.md`, `vehicle-defs/docs/ARCHITECTURE.md`, every other path in
@@ -125,6 +133,43 @@ decision in review):
   (drop duplicates by `id`); the ride detail in the Logbook lists the marks with delete. Strings in
   the ARB files (en default, tr). Widget tests for the button, picker, queue and delete.
 - One PR per repo; merge order server first (state it in both PR bodies).
+
+### G4-6 SIL inventory (vehicle-defs `docs/ideas/`, roadmap card T69 input)
+
+Facts only, no design: Claude writes the multi-node SIL design from this. Write
+`docs/ideas/sil-inventory.md`:
+
+1. Per repo (rt-core `host/` port and host tests, safety-node host tests, connectivity-node host
+   tests, hil-bench, vehicle-server mock live stack, linux-node): what builds and runs on the Mac or
+   Linux today, with the exact command, what it simulates (bus, sensors, time), and its inputs and
+   outputs. Run each command once and record pass/fail and duration.
+2. Platform-bus frames: which of the frames in the defs `platform.dbc` each host build can send or
+   receive today (names from the generated defs, never typed by hand).
+3. Gaps for one virtual bus carrying rt-core + safety-node + server: missing host ports, missing
+   E2E/heartbeat handling on host, time-source differences. Each gap as a fact with a file/line
+   reference. Options only where obvious, marked **proposed**.
+
+### G4-7 RAG retrieval eval with a proper split (vehicle-mcp, yellow, before "RAG into /chat")
+
+`search_knowledge` (hybrid FTS5 + vector, RRF) has a small eval (`knowledge/eval_retrieval.py`).
+Grow it so that a quality number can be trusted:
+
+1. Write at least 60 new questions per locale (en, tr) over the indexed catalog and docs, each with
+   the expected source chunk ids. Author them yourself from the sources; do not reuse the
+   vehicle-ml held-out or server chat-eval texts.
+2. Split all items (old + new) into `tune` and `test` with a fixed seed, documented in the eval
+   README. Report recall@1/@5 and MRR per locale on `test` only.
+3. Do not change retrieval code, weights or cutoffs in this task: measure only. Write any idea for
+   improvement under *For Claude*.
+
+### G4-8 Analyzer test coverage (vehicle-analyzer, green)
+
+1. Run the test suite with coverage and list the least-covered modules outside the red paths.
+2. Add unit tests for them (decoders, filters, stores, components) in the repo's existing test
+   style, until line coverage of each touched module is at least 80 % or the module is listed in
+   *For Claude* with the reason.
+3. Tests only. If a test finds a bug, fix it in its own commit with that test and list it in the PR
+   body and in *For Claude*. Do not raise or lower the coverage gate in CI (`.github/` is red).
 
 ### G4-5 Close the log
 
