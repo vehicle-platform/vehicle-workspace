@@ -7,15 +7,25 @@ repos:
   - vehicle-server
   - vehicle-ml
   - vehicle-mcp
+  - vehicle-defs
+  - vehicle-linux-node
 branches:
   - vehicle-workspace:ext/gemini-long-run-8-log
   - vehicle-server:ext/gemini-marks-device-time
   - vehicle-ml:ext/gemini-marks-labels
   - vehicle-mcp:ext/gemini-rag-tr-tune
+  - vehicle-defs:ext/gemini-rag-tr-results
+  - vehicle-mcp:ext/gemini-label-echo
+  - vehicle-server:ext/gemini-label-echo
+  - vehicle-linux-node:ext/gemini-kuksa-macos-draft
 prs:
   - https://github.com/vehicle-platform/vehicle-server/pull/118
   - https://github.com/vehicle-platform/vehicle-ml/pull/37
   - https://github.com/vehicle-platform/vehicle-mcp/pull/43
+  - https://github.com/vehicle-platform/vehicle-defs/pull/227
+  - https://github.com/vehicle-platform/vehicle-mcp/pull/45
+  - https://github.com/vehicle-platform/vehicle-server/pull/121
+  - https://github.com/vehicle-platform/vehicle-linux-node/pull/39
 zone: yellow
 review: pending
 ---
@@ -41,6 +51,19 @@ Execute `external-ai/tasks/2026-11-28-gemini-long-run-8.md` end to end (G8-0 thr
 ### G8-3a — RAG retrieval parameters and e5 prefix toggle (`vehicle-mcp`, `ext/gemini-rag-tr-tune`, YELLOW, `needs-claude-review`)
 - PR: https://github.com/vehicle-platform/vehicle-mcp/pull/43
 - `vehicle-mcp/src/vehicle_mcp/knowledge/{settings,embedder,store,search,eval_retrieval,indexer}.py`, `tests/test_knowledge.py`: exposed `RetrievalSettings` (`rrf_k`, `fts_weight`, `vector_weight`, `fts_pool`, `vector_pool_min`, `lexical_top_n`, `min_similarity`, `use_prefixes`) via env vars (`VEHICLE_MCP_RAG_*`) and `vehicle-mcp-index build/eval` CLI flags. Confirmed `OnnxE5Embedder` already sends `query: ` and `passage: ` (`embedder.py:31-32,147-151`). Defaults reproduce baseline identically (pinned by tests).
+
+### G8-3b — RAG Turkish tune pass results (`vehicle-defs`, `ext/gemini-rag-tr-results`, YELLOW, `needs-claude-review`)
+- PR: https://github.com/vehicle-platform/vehicle-defs/pull/227
+- `vehicle-defs/docs/test-results/rag/2026-11-28-tr-tune/{README.md,dev-grid.json,test-once.json,unconfirmed-rank1-tr-tune.json}`: ran 21-setting dev (`tune`, n = 76) grid then 1 test-split run (n = 36) for best dev pick (`fts_weight=2.0`, `vector_weight=1.0`, `rrf_k=60`, `lexical_top_n=2`, `use_prefixes=True`). Test TR R@1/R@5 unchanged (`0.194` / `0.417`), MRR `+0.004` (`0.279 -> 0.283`). Diagnosed `faults/unconfirmed` rank-1 dominance on 27/76 TR `tune` queries (12 catalog FTS+vector via single `ref="unconfirmed"` pool; 15 English-only `docs/ideas` queries, 10 vector-only + 5 FTS+vector via same-language cosine bias). Proposed: keep defaults; structural fix is Claude's.
+
+### G8-4 — Label echo audit and fixes (`vehicle-mcp` YELLOW + `vehicle-server` GREEN)
+- PRs: https://github.com/vehicle-platform/vehicle-mcp/pull/45 (`needs-claude-review`), https://github.com/vehicle-platform/vehicle-server/pull/121
+- `vehicle-mcp/src/vehicle_mcp/{matching,tools,knowledge/sources,knowledge/search}.py`, `tests/test_rider_labels.py`: reused `matching.human_label` via `humanise_identifiers` across symptom conditions, root cause/rider_text/action, unknown query/topic reasons, related conditions, headingless doc filenames, citation titles/sections, and missing-subsystem fault titles.
+- `vehicle-server/src/vehicle_server/chat/{answers,templates,locales/en.json,locales/tr.json}`, `tests/test_label_echo.py`, `tests/test_conversations.py`: reused existing locale maps (`answers.labels`, `rider.signals`, `rider.inputs`) with generic localized fallback words (`Signal`/`Sinyal`, `Catalog entry`/`Katalog kaydı`, `Reference`/`Kaynak`), fixed `_stats`, `_card`, `_compare`, `_data_only_text`, `_symptom`, `_fault_entry`, `_faults`, `_generic`, and added rider-safe renderers for `explain_context` and `search_knowledge`.
+
+### G8-6 — Kuksa on macOS without CAN hardware draft (`vehicle-linux-node`, `ext/gemini-kuksa-macos-draft`, YELLOW, `needs-claude-review`, T74 item 2)
+- PR: https://github.com/vehicle-platform/vehicle-linux-node/pull/39
+- `vehicle-linux-node/docs/upstream-kuksa-macos-replay.md`: proposed upstream draft based on PR #35 (`README.md`, `docker-compose.yml`, `docker-compose.replay.yml`, `config/dbc_feeder.ini`, `replay.py`) with pinned multi-arch digests, `tmpfs: [/tmp:exec]`, colima `network_mode: host` note, **CONFIRM** markers, zero vehicle-specific CAN IDs/DIDs, and 4 open questions for the user.
 
 ## Result
 In progress.
