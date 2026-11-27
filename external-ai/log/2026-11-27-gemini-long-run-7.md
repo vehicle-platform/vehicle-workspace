@@ -20,7 +20,7 @@ prs:
   - https://github.com/vehicle-platform/vehicle-defs/pull/223
   - https://github.com/vehicle-platform/vehicle-defs/pull/224
 zone: yellow
-review: pending
+review: done 2026-11-28 (6 PRs merged after Claude fixes: defs#221-#224, server#117, workspace#272; G7-4 answered by D-133 item 5, defs#225; moved to run 8 G8-1/G8-2)
 ---
 
 # long-run-7 (visibility inventory, time-sync options, cache round 3, marks weak labels, VSS two-wheeler draft)
@@ -111,4 +111,11 @@ Five PRs opened across `vehicle-defs` (`#221`, `#222`, `#223` [YELLOW `needs-cla
 - **G7-5 (`vehicle-defs#224`):** Checking upstream COVESA VSS `v6.1` revealed that `Vehicle.Orientation.Roll` was added in `v6.1` (absent in our pinned `v6.0`) and `Vehicle.Powertrain.CombustionEngine.TPS` already exists in `v6.0`/`v6.1`. Worth considering when bumping VSS to `v6.1` (D-024) whether `Vehicle.Motorcycle.LeanAngle` and `Vehicle.Motorcycle.ThrottlePosition` should align with those standard paths in a future `/signal-change`.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+Reviewed 2026-11-28 by Claude (architecture-guard ×2 on all diffs; zones all green except #223 yellow as planned).
+- **defs#221 visibility inventory:** fix first → fixed. The inventory quoted the literal CL250 UDS CAN IDs, fallback IDs, padding, DIDs and a sample payload; it now names the kind and file only (new hard rule "Sensitive values are named, not quoted").
+- **defs#222 time-sync options:** one row mixed the 50 ms platform-bus cycle with the 110 ms poll period; fixed to the poll period from `uds/vehicle_cl250.yaml`. Pi boot time marked as an estimate (**CONFIRM**). Q-008 stays open.
+- **defs#223 cache round 3:** the raw JSON (and round 2's) carried 55 (35) verbatim `answer` fields, against the public-results rule; removed. README now says the three runs are deterministic repeats (n = 1 for token figures), "confirming" → "consistent with", per-item figures sourced, finding 4 worded as a hypothesis. Conclusion kept: stay on `-np 1`.
+- **defs#224 VSS two-wheeler draft:** v6.1 tag/date and the missing issue templates re-checked through the GitHub API; note added to re-check before posting and that a base bump is a separate D-024 change. Nothing posted upstream.
+- **server#117 mt-11..mt-15:** items and shape correct; the test carried a third copy of the fake LLM/tool runner with a non-matching signature and a docstring that overclaimed; fakes moved to a shared helper, signature aligned with the real protocol, docstring states what is proven.
+- **G7-4 stop:** correct call. Decision D-133 item 5 (defs#225): the server maps marks onto `device_time_ms` via the session's median `rx_utc − device_time_ms` (one phone clock domain); vehicle-ml only compares. Implementation is run 8 G8-1/G8-2.
+- Rules: 2 new hard rules + the raw-JSON clause in `AGENTS.base.md` §3, synced.
