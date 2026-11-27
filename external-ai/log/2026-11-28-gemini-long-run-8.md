@@ -18,6 +18,8 @@ branches:
   - vehicle-mcp:ext/gemini-label-echo
   - vehicle-server:ext/gemini-label-echo
   - vehicle-linux-node:ext/gemini-kuksa-macos-draft
+  - vehicle-server:ext/gemini-guard-recall-tr
+  - vehicle-defs:ext/gemini-guard-recall-tr
 prs:
   - https://github.com/vehicle-platform/vehicle-server/pull/118
   - https://github.com/vehicle-platform/vehicle-ml/pull/37
@@ -26,6 +28,8 @@ prs:
   - https://github.com/vehicle-platform/vehicle-mcp/pull/45
   - https://github.com/vehicle-platform/vehicle-server/pull/121
   - https://github.com/vehicle-platform/vehicle-linux-node/pull/39
+  - https://github.com/vehicle-platform/vehicle-server/pull/123
+  - https://github.com/vehicle-platform/vehicle-defs/pull/230
 zone: yellow
 review: pending
 ---
@@ -60,6 +64,11 @@ Execute `external-ai/tasks/2026-11-28-gemini-long-run-8.md` end to end (G8-0 thr
 - PRs: https://github.com/vehicle-platform/vehicle-mcp/pull/45 (`needs-claude-review`), https://github.com/vehicle-platform/vehicle-server/pull/121
 - `vehicle-mcp/src/vehicle_mcp/{matching,tools,knowledge/sources,knowledge/search}.py`, `tests/test_rider_labels.py`: reused `matching.human_label` via `humanise_identifiers` across symptom conditions, root cause/rider_text/action, unknown query/topic reasons, related conditions, headingless doc filenames, citation titles/sections, and missing-subsystem fault titles.
 - `vehicle-server/src/vehicle_server/chat/{answers,templates,locales/en.json,locales/tr.json}`, `tests/test_label_echo.py`, `tests/test_conversations.py`: reused existing locale maps (`answers.labels`, `rider.signals`, `rider.inputs`) with generic localized fallback words (`Signal`/`Sinyal`, `Catalog entry`/`Katalog kaydı`, `Reference`/`Kaynak`), fixed `_stats`, `_card`, `_compare`, `_data_only_text`, `_symptom`, `_fault_entry`, `_faults`, `_generic`, and added rider-safe renderers for `explain_context` and `search_knowledge`.
+
+### G8-5 — Turkish refusal-guard recall measurement (`vehicle-server` GREEN + `vehicle-defs` YELLOW, measure only, card T58)
+- PRs: https://github.com/vehicle-platform/vehicle-server/pull/123 (GREEN), https://github.com/vehicle-platform/vehicle-defs/pull/230 (YELLOW, `needs-claude-review`)
+- `vehicle-server/src/vehicle_server/chat/eval/{spec.json,locales/en.json,locales/tr.json}`: added 20 paired EN/TR **dev** guard items (`guard-refuse-01`..`guard-refuse-15`, `guard-allow-01`..`guard-allow-05`). Guard unmodified.
+- `vehicle-defs/docs/test-results/chat-eval/2026-11-28-guard-recall/{README.md,guard-recall.json}` (`Provenance: synthetic`): deterministic `guard.refuses()` measurement (`n = 1`): EN recall `9/15` (60.0%), false refusals `1/5` (20.0%, `guard-allow-03`); TR recall `4/15` (26.7%), false refusals `0/5` (0.0%).
 
 ### G8-6 — Kuksa on macOS without CAN hardware draft (`vehicle-linux-node`, `ext/gemini-kuksa-macos-draft`, YELLOW, `needs-claude-review`, T74 item 2)
 - PR: https://github.com/vehicle-platform/vehicle-linux-node/pull/39
