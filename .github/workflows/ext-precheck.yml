@@ -1,0 +1,45 @@
+# Reusable pre-checks for ext/** branches of non-Claude AI tools (T71, D-071): edit zones,
+# AI-Agent commit trailer, session log. Called by .github/workflows/ext-precheck.yml in every
+# platform repo and by ext-precheck-self.yml here. Logic lives in scripts/ext_precheck.py.
+name: ext-precheck
+
+on:
+  workflow_call:
+    inputs:
+      repo:
+        description: "Caller repo name, e.g. vehicle-server"
+        required: true
+        type: string
+      workspace_ref:
+        description: "vehicle-workspace ref that provides the scripts"
+        required: false
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  precheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout caller repo (full history)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          path: caller
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout vehicle-workspace (public, read-only)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          repository: vehicle-platform/vehicle-workspace
+          ref: ${{ inputs.workspace_ref }}
+          path: ws
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Zones, trailer, session log
+        env:
+          REPO: ${{ inputs.repo }}
+        run: |
+          python3 ws/scripts/ext_precheck.py --repo "$REPO" --caller-dir caller --workspace-dir ws

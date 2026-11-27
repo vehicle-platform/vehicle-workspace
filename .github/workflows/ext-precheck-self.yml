@@ -1,0 +1,20 @@
+# Pre-checks for ext/** branches of vehicle-workspace itself (T71). Uses its own scripts.
+name: ext-precheck-self
+
+on:
+  push:
+    branches: ["ext/**"]
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  precheck:
+    if: startsWith(github.head_ref || github.ref_name, 'ext/')
+    uses: ./.github/workflows/ext-precheck.yml
+    with:
+      repo: vehicle-workspace
+      # Scripts always come from main: an ext/ branch must not change the check that judges it.
+      workspace_ref: main
