@@ -12,9 +12,11 @@ repos:
 branches:
   - vehicle-workspace:ext/gemini-long-run-5-log
   - vehicle-defs:ext/gemini-cubemx-cli
+  - vehicle-defs:ext/gemini-diagrams
 prs:
   - https://github.com/vehicle-platform/vehicle-defs/pull/214
-zone: green
+  - https://github.com/vehicle-platform/vehicle-defs/pull/215
+zone: yellow
 review: pending
 ---
 
@@ -26,15 +28,18 @@ Execute `external-ai/tasks/2026-11-27-gemini-long-run-5.md` end to end (G5-0, G5
 ## Changes
 - `vehicle-workspace/external-ai/log/2026-11-27-gemini-long-run-5.md`: opened session log (G5-0).
 - `vehicle-defs/docs/ideas/cubemx-cli.md` (`ext/gemini-cubemx-cli`, PR `vehicle-defs#214`): added facts-only STM32CubeMX `-q` CLI reference note from `local/cubemx/` scripts and logs (G5-A, T70).
+- `vehicle-defs/docs/diagrams/*` (`ext/gemini-diagrams`, PR `vehicle-defs#215`, `needs-claude-review`): added 7 thesis Mermaid diagrams (`01-system-context.md` through `07-raspi-dataflow.md`) plus `docs/diagrams/README.md`, each with caption and source traceability (G5-1).
 
 ## Result
-In progress (G5-0 and G5-A complete).
+In progress (G5-0, G5-A, G5-1 complete).
 
 ## Checks
 - `python3 scripts/check_zones.py . --base origin/main` (G5-0): GREEN.
 - `python3 local/cubemx/check_pins.py rt-core`: pass (`rt-core: 45 pins with a signal in CSV, 37 planned, 0 mismatches`).
 - `python3 local/cubemx/check_pins.py safety-node`: pass (`safety-node: 34 pins with a signal in CSV, 25 planned, 0 mismatches`).
 - `python3 scripts/check_zones.py vehicle-defs --base origin/main` (G5-A): GREEN (`docs/ideas/cubemx-cli.md`).
+- `python3 scripts/check_zones.py vehicle-defs --base origin/main` (G5-1): YELLOW (`docs/diagrams/*`, `needs-claude-review`).
+- `npx -y @mermaid-js/mermaid-cli` (G5-1): timed out after 120 s (no local `mmdc` binary installed; skipped and noted in PR).
 
 ## Unsure about
 None yet.
