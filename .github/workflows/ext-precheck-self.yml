@@ -16,4 +16,5 @@ jobs:
     uses: ./.github/workflows/ext-precheck.yml
     with:
       repo: vehicle-workspace
-      workspace_ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      # Scripts always come from main: an ext/ branch must not change the check that judges it.
+      workspace_ref: main
