@@ -20,6 +20,7 @@ branches:
   - vehicle-linux-node:ext/gemini-kuksa-macos-draft
   - vehicle-server:ext/gemini-guard-recall-tr
   - vehicle-defs:ext/gemini-guard-recall-tr
+  - vehicle-defs:ext/gemini-traceability
 prs:
   - https://github.com/vehicle-platform/vehicle-server/pull/118
   - https://github.com/vehicle-platform/vehicle-ml/pull/37
@@ -30,6 +31,7 @@ prs:
   - https://github.com/vehicle-platform/vehicle-linux-node/pull/39
   - https://github.com/vehicle-platform/vehicle-server/pull/123
   - https://github.com/vehicle-platform/vehicle-defs/pull/230
+  - https://github.com/vehicle-platform/vehicle-defs/pull/231
 zone: yellow
 review: pending
 ---
@@ -73,6 +75,10 @@ Execute `external-ai/tasks/2026-11-28-gemini-long-run-8.md` end to end (G8-0 thr
 ### G8-6 — Kuksa on macOS without CAN hardware draft (`vehicle-linux-node`, `ext/gemini-kuksa-macos-draft`, YELLOW, `needs-claude-review`, T74 item 2)
 - PR: https://github.com/vehicle-platform/vehicle-linux-node/pull/39
 - `vehicle-linux-node/docs/upstream-kuksa-macos-replay.md`: proposed upstream draft based on PR #35 (`README.md`, `docker-compose.yml`, `docker-compose.replay.yml`, `config/dbc_feeder.ini`, `replay.py`) with pinned multi-arch digests, `tmpfs: [/tmp:exec]`, colima `network_mode: host` note, **CONFIRM** markers, zero vehicle-specific CAN IDs/DIDs, and 4 open questions for the user.
+
+### G8-8 — Requirements-to-tests traceability matrix (`vehicle-defs`, `ext/gemini-traceability`, GREEN, proposed, thesis Ç8 / D-113)
+- PR: https://github.com/vehicle-platform/vehicle-defs/pull/231
+- `vehicle-defs/docs/ideas/traceability-matrix.md`: proposed traceability matrix linking 91 requirements (invariants 1-8, `requirements/*.yaml`, `safety/hara.yaml`, requirement-bearing D-xxx decisions, `e2e-profile.md`, `hardware-integration.md` §6/§8, `phase0-data-collection-plan.md` §3, `ARCHITECTURE.md`) to verified `main`-branch modules and asserting tests across all 12 repos (`50` tested, `12` partial, `22` untested, `7` needs hardware; totals reconcile), plus 15 ranked proposed test ideas for the top untested rows and 5 stale/missing `requirements/*.yaml` test links noted for Claude.
 
 ## Result
 In progress.
