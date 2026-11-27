@@ -1,4 +1,4 @@
-# Gemini long run 8 — 2026-11-28 (marks time axis, marks weak labels, RAG Turkish tune pass, label echo audit, guard recall, Kuksa macOS draft)
+# Gemini long run 8 — 2026-11-28 (marks time axis, marks weak labels, RAG Turkish tune pass, label echo audit, guard recall, Kuksa macOS draft, cache round 4, traceability matrix)
 
 Written by Claude for Gemini CLI. Runs 1-7 are reviewed and merged. Start from an up-to-date `main` in
 every repo (`git switch main && git pull --ff-only && git submodule update --init`). Run the tasks in
@@ -9,7 +9,14 @@ progress for about 90 minutes, write why in *For Claude*, push what is done and 
 PR. Never force-push. Never publish anything outside the vehicle-platform org** (no upstream issues,
 no comments on other projects, no forum posts).
 
-Order: G8-0, G8-1, G8-2, G8-3, G8-4, G8-5, G8-6, and G8-9 **last**.
+Order: G8-0, G8-1, G8-2, G8-3, G8-4, G8-5, G8-6, G8-7, G8-8, and G8-9 **last**. This is an overnight
+run: G8-7 and G8-8 are long on purpose; keep going until they are done.
+
+Dependencies: G8-1 needs **D-133 item 5** in `vehicle-defs/docs/DECISIONS.md` (PR defs#225); if your
+pulled `main` does not have it yet, read it with `git -C vehicle-defs show origin/claude/review-run7:docs/DECISIONS.md`.
+G8-5 and G8-7 edit `chat/eval/` and need vehicle-server#117 (mt-11..mt-15) on `main`: check
+`git -C vehicle-server log origin/main --oneline | grep -i mt-11`; if it is missing, do the next task
+first and come back.
 
 | Task | Repo / path | Branch (from an up-to-date `main`) | Zone |
 |---|---|---|---|
@@ -21,6 +28,9 @@ Order: G8-0, G8-1, G8-2, G8-3, G8-4, G8-5, G8-6, and G8-9 **last**.
 | G8-4 | vehicle-mcp + vehicle-server answer templates and label maps | `ext/gemini-label-echo` (one per repo) | yellow (mcp) / green (server) |
 | G8-5 | vehicle-server `src/vehicle_server/chat/eval/` (dev items only), results under vehicle-defs `docs/test-results/chat-eval/` | `ext/gemini-guard-recall-tr` | green |
 | G8-6 | vehicle-linux-node `docs/` (new draft only) | `ext/gemini-kuksa-macos-draft` | yellow (`needs-claude-review`) |
+| G8-7a | vehicle-server `src/vehicle_server/chat/` (behind a setting, default off), `tests/` | `ext/gemini-chat-history-messages` | green |
+| G8-7b | vehicle-defs `docs/test-results/chat-eval/` (results page only) | `ext/gemini-cache-round4` | **yellow** (`needs-claude-review`) |
+| G8-8 | vehicle-defs `docs/ideas/traceability-matrix.md` | `ext/gemini-traceability` | green |
 
 **Red everywhere, never touch:** `external/*`, `gen/*`, `.github/*`, `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`,
 `.claude/*`, `vehicle-defs/docs/DECISIONS.md`, `vehicle-defs/docs/ARCHITECTURE.md`, every path in
@@ -157,6 +167,42 @@ follow them on a clean Mac. Every command must be one the repo already runs or d
 anything you could not run yourself **CONFIRM**. No vehicle-specific CAN IDs or DIDs in the draft (use
 the repo's synthetic example dump, or describe it in words). End with the open questions for the user
 (where to submit, which account).
+
+### G8-7 Prompt-cache round 4: append-only history messages (card T72, long)
+
+Round 3 (`docs/test-results/chat-eval/2026-11-27-multiturn-cache-round3/`) left one hypothesis: Turn 2-4
+prompts are 81-85 % uncached because history and the tool result sit inside one changing `user`
+message. Test it.
+- **G8-7a (vehicle-server):** add a setting (env var in the style of the existing `VEHICLE_CHAT_*`
+  settings, default **off** = today's behaviour, byte-identical prompts; pin that with a test) that
+  sends the phrasing call's recent turns as append-only `user`/`assistant` message pairs, oldest first,
+  with the changing parts (current question, tool result) in the **last** `user` message only. Every
+  rule of the current prompt stays: rider notes never reach the LLM on any path (run 6 lesson 1),
+  untrusted text stays quoted, the token budget and the output filter apply unchanged. Tests: setting
+  off = identical messages to `main`; setting on = the earlier messages are a byte-identical prefix of
+  the next turn's messages for the same conversation; notes absent in both modes; budget truncation
+  drops the oldest pair first.
+- **G8-7b (vehicle-defs results page `2026-11-28-multiturn-cache-round4/`):** the same protocol as
+  round 3 (restart `llama-server` before every run and locale, `--only mt-01,...,mt-15`, 3 runs per arm
+  and locale) with Arm A = setting off and Arm C = setting on, both `-np 1 -c 4096` via
+  `local/run-llama.sh`. Report the same tables as round 3 plus tool accuracy and forbidden hits per arm
+  (the new layout must not lose quality: say so with the numbers either way). Apply run 7 lessons 2-4
+  (no `answer` fields in raw JSON, n = 1 for deterministic token counts, every figure sourced). Do not
+  edit anything under `local/`. The default switch is Claude's decision.
+
+### G8-8 Requirements → tests traceability matrix (vehicle-defs `docs/ideas/traceability-matrix.md`, long)
+
+For the thesis: one table that links each platform requirement to the code and tests that cover it.
+1. Sources of requirements: the platform invariants (`PLATFORM-RULES.md` 1-8), the decisions marked as
+   requirements in `docs/DECISIONS.md` (search by D-number; do not read the whole file at once), and the
+   requirement tables indexed in `docs/README.md` (read only the indexed line ranges). Give every row
+   its source (file + section or D-number).
+2. For each requirement: the implementing module(s) per repo and the test(s) that check it (file +
+   test name), found by grep on `main` in all repos. Classify coverage as **tested** (a test asserts
+   the behaviour), **partial** (a test touches it but does not assert the requirement), **untested**, or
+   **needs hardware** (T26/HIL). Never mark a row tested without naming the asserting test.
+3. A summary per repo (counts per class; totals reconcile), then the 15 most important **untested**
+   rows as proposed test ideas (one line each). Everything proposed; no code changes in this task.
 
 ### G8-9 Close the log
 
