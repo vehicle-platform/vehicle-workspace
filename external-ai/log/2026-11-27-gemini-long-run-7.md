@@ -13,7 +13,6 @@ branches:
   - vehicle-defs:ext/gemini-time-sync
   - vehicle-server:ext/gemini-mt-llm-turns
   - vehicle-defs:ext/gemini-cache-round3
-  - vehicle-ml:ext/gemini-marks-labels
   - vehicle-defs:ext/gemini-vss-two-wheeler
 prs:
   - https://github.com/vehicle-platform/vehicle-defs/pull/221
@@ -54,7 +53,9 @@ Execute `external-ai/tasks/2026-11-27-gemini-long-run-7.md` end to end (G7-0, G7
 - **Measured summary:** cross-run replay eliminated (identical cached counts across runs 1-3: `en` A `6856/19882` `34.5%` vs. B `7199/19882` `36.2%`, `tr` A `4531/20110` `22.5%` vs. B `4790/20110` `23.8%`); Turn-4 LLM phrasing now measured (`15` pooled timed Turn-4 turns per arm/locale, identical `15.5%` `en` / `18.5%` `tr` in both arms, `0` extra cached tokens from `-np 2`); consistent TTFT/wall-time improvement from Arm B **not shown** (Arm A faster in `en`: p50 `1242.8` vs `1289.7 ms`, wall `59.9–60.7 s` vs `61.3–62.5 s`; Arm B slightly faster in `tr`: p50 `1393.5` vs `1421.8 ms`, wall `75.2–77.6 s` vs `78.7–84.1 s`).
 
 ## Result
-(In progress.)
+- **G7-4 (`vehicle-ml` ride marks weak-label reader) — STOPPED per brief instruction (no PR opened):**
+  - Read `vehicle-ml/src/vehicle_ml/windows.py`, `dataset.py`, `data/store.py`, `evaluate.py`, and `vehicle-server/src/vehicle_server/{marks.py,marks_export.py,series.py,parquet.py}`.
+  - The code does **not** define an unambiguous mapping between `Mark.offset_s` and `Window.start_ms`/`end_ms` (details and concrete options recorded under *For Claude*). Stopped without guessing, reverted the empty branch in `vehicle-ml`, and continued to G7-5.
 
 ## Checks
 - **G7-0 (`vehicle-workspace`, `ext/gemini-long-run-7-log`):** `python3 scripts/check_zones.py . --base origin/main` -> **GREEN**.
@@ -80,7 +81,14 @@ Execute `external-ai/tasks/2026-11-27-gemini-long-run-7.md` end to end (G7-0, G7
 (None yet.)
 
 ## For Claude
-(None yet.)
+- **G7-4 (`vehicle-ml` marks weak labels, card T65, D-133 item 4) — Time-axis ambiguity (task stopped per brief instruction instead of guessing):**
+  - **What `Window.start_ms`/`end_ms` use:** `vehicle-ml/src/vehicle_ml/windows.py:17,81-93,118-121` (`make_windows`) and `dataset.py:42,164-200` (`_session_windows`) place `Window.start_ms` and `Window.end_ms` on the **raw `device_time_ms`** axis of the session's base Parquet kind (`for start in range(int(times[0]), last_start + 1, stride_ms)`). It does **not** subtract a session `t0_ms`, does not unwrap 32-bit `device_time_ms` wraparound, drops `rx_utc` as metadata (`dataset.py:42`), and never attaches `created_utc` or `t0_ms` to `Window`. While `vehicle-ml/tests/{synthetic.py,physics_synthetic.py}` happen to start synthetic `device_time_ms` at `0`, `vehicle-server/src/vehicle_server/parquet.py:57,100` stores raw MCU monotonic `millis()` (e.g. `vehicle-server/tests/make_fixtures.py:272` starts at `5_000` ms, and real hardware boots before recording starts — which is why `vehicle-server/src/vehicle_server/series.py:11-13` explicitly shifts `t_ms = sample_time - t0`). Furthermore, `make_windows` can drop early windows (`gap`, `missing:<channel>`, `rate`), so `min(w.start_ms)` over kept `Window` objects is not guaranteed to equal the session's first `device_time_ms`.
+  - **What `Mark.offset_s` uses:** `vehicle-server/src/vehicle_server/marks_export.py:158` computes `offset_s = round((mark.t_utc - start_ms) / 1000.0, 3)` where `start_ms` is the session's UTC `created_utc` from `marks.ride_window_ms` (`vehicle-server/src/vehicle_server/marks.py:173-188`), and `vehicle-mobile/lib/services/session_recorder.dart:436` stamps `created_utc` when recording starts — not `first_packet_utc` (`session_recorder.dart:100`) and not raw `device_time_ms`.
+  - **Why guessing would silently break real rides:** Assuming `mark_ms = offset_s * 1000` fails whenever `device_time_ms` does not start at `0`; assuming `t0_ms = min(w.start_ms)` silently shifts every mark whenever early windows were dropped and still ignores `first_packet_utc - created_utc` (and Q-008 clock skew).
+  - **Decision needed from Claude before implementing `vehicle-ml/src/vehicle_ml/marks.py`:**
+    1. Should `label_windows` take an explicit per-session origin mapping (e.g. `session_origin_ms: Mapping[str, int]` from `SessionStore` raw Parquet `min(device_time_ms)`, or shifted by `first_packet_utc - created_utc`), or
+    2. Should `vehicle-ml` (`make_windows` / `Window`) adopt a session-relative `t_ms = device_time_ms - t0` axis (or carry `session_t0_ms` on `Window`) matching `vehicle-server/src/vehicle_server/series.py:11-13`, or
+    3. Should `vehicle-server marks export` also emit `device_time_t0_ms` / `first_packet_offset_s` (or anchor `ride_window_ms` on `first_packet_utc` when present)?
 
 ## Claude review
 (Filled by Claude's /external-review: findings, fixes, PRs.)
