@@ -18,6 +18,7 @@ branches:
 prs:
   - https://github.com/vehicle-platform/vehicle-defs/pull/221
   - https://github.com/vehicle-platform/vehicle-defs/pull/222
+  - https://github.com/vehicle-platform/vehicle-server/pull/117
 zone: yellow
 review: pending
 ---
@@ -40,6 +41,11 @@ Execute `external-ai/tasks/2026-11-27-gemini-long-run-7.md` end to end (G7-0, G7
 - PR: https://github.com/vehicle-platform/vehicle-defs/pull/222
 - `docs/ideas/time-sync-options.md`: per-node clock/timestamp audit (`rt-core`, `safety-node`, `connectivity-node`, `linux-node`, `vehicle-mobile`, `vehicle-server`) with code and `hardware-architecture.md` §5b.8 citations; verified `dbc/platform.dbc` has no time-sync frame today (only 16-bit 1 s heartbeat uptime counters); compared four **proposed** options (a) `rt-core` CAN master, (b) GNSS + 1PPS into `rt-core`, (c) Pi 5 `chrony`/NTP + `rt-core`, (d) per-node monotonic + post-ride offset; consumer accuracy table and invariant 1/3/7 constraints. Q-008 remains open.
 
+### G7-3a — Multi-turn dev conversations `mt-11`..`mt-15` (`vehicle-server`, `ext/gemini-mt-llm-turns`, GREEN, card T72)
+- PR: https://github.com/vehicle-platform/vehicle-server/pull/117 (commit `d4f283b`)
+- `src/vehicle_server/chat/eval/{spec.json,locales/en.json,locales/tr.json}`: appended 5 new 4-turn dev conversations (`mt-11`..`mt-15`, 20 turns per locale) using deterministic `compare_sessions` follow-ups and confirmed displayable `check_symptom` complaints (`ENG-001`, `IGN-003`, `CLU-001`, `LUB-004`, `FDR-003`, `SUS-004`) so turns 2-4 exercise LLM phrasing (`uses_llm == True` on 2-3 turns per conversation, 5 LLM turns on turn 4). No existing items or held-out files touched.
+- `tests/test_chat_eval.py`: added `test_mt11_to_mt15_exercise_llm_phrasing_on_at_least_two_turns` verifying all 5 conversations in both `en` and `tr` with `ChatService` + counting fake LLM + fake `ToolRunner`.
+
 ## Result
 (In progress.)
 
@@ -52,6 +58,12 @@ Execute `external-ai/tasks/2026-11-27-gemini-long-run-7.md` end to end (G7-0, G7
   - Verified `faults/alert_rules.yaml` `sustain_s` (5-60 s), `uds/vehicle_cl250.yaml` `VEHICLE_SPEED` (`poll_period_ms: 110`, `stale_after_ms: 300`), and `dbc/platform.dbc` messages.
   - Hygiene scan: clean.
   - `python3 scripts/check_zones.py vehicle-defs --base origin/main`: **GREEN**.
+- **G7-3a (`vehicle-server`, `ext/gemini-mt-llm-turns`):**
+  - `uv run ruff check .`: passed.
+  - `uv run ruff format --check .`: passed (188 files).
+  - `uv run mypy`: passed (104 source files).
+  - `HYPOTHESIS_PROFILE=ci uv run pytest -q --cov --cov-report=term-missing`: 2484/2484 pre-existing tests passed (94% coverage); after fixing fake runner schema in the new test, `uv run pytest -q -m "not fuzz" --cov --cov-report=term-missing` passed (**2383 passed**, 103 fuzz deselected, 94% coverage).
+  - `python3 scripts/check_zones.py vehicle-server --base origin/main`: **GREEN**.
 
 ## Unsure about
 (None yet.)
