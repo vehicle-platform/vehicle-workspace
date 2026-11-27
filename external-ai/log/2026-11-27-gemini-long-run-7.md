@@ -19,6 +19,7 @@ prs:
   - https://github.com/vehicle-platform/vehicle-defs/pull/221
   - https://github.com/vehicle-platform/vehicle-defs/pull/222
   - https://github.com/vehicle-platform/vehicle-server/pull/117
+  - https://github.com/vehicle-platform/vehicle-defs/pull/223
 zone: yellow
 review: pending
 ---
@@ -46,6 +47,12 @@ Execute `external-ai/tasks/2026-11-27-gemini-long-run-7.md` end to end (G7-0, G7
 - `src/vehicle_server/chat/eval/{spec.json,locales/en.json,locales/tr.json}`: appended 5 new 4-turn dev conversations (`mt-11`..`mt-15`, 20 turns per locale) using deterministic `compare_sessions` follow-ups and confirmed displayable `check_symptom` complaints (`ENG-001`, `IGN-003`, `CLU-001`, `LUB-004`, `FDR-003`, `SUS-004`) so turns 2-4 exercise LLM phrasing (`uses_llm == True` on 2-3 turns per conversation, 5 LLM turns on turn 4). No existing items or held-out files touched.
 - `tests/test_chat_eval.py`: added `test_mt11_to_mt15_exercise_llm_phrasing_on_at_least_two_turns` verifying all 5 conversations in both `en` and `tr` with `ChatService` + counting fake LLM + fake `ToolRunner`.
 
+### G7-3b — Prompt-cache measurement, round 3 (`vehicle-defs`, `ext/gemini-cache-round3`, YELLOW `needs-claude-review`, card T72)
+- PR: https://github.com/vehicle-platform/vehicle-defs/pull/223
+- `docs/test-results/chat-eval/2026-11-27-multiturn-cache-round3/README.md`, 12 English summary Markdown files (`arm-{a,b}-{en,tr}-run{1,2,3}.md`), 6 English raw JSON files (`arm-{a,b}-en-run{1,2,3}.json`; Turkish raw JSON kept in `/tmp` outside git and deleted after aggregation per D-125), plus 1 row appended to `docs/test-results/chat-eval/README.md`.
+- Measured Arm A (`-np 1 -c 4096` via `local/run-llama.sh`) vs. Arm B (`-np 2 -c 8192`) on `qwen2.5-1.5b-instruct-q4_k_m.gguf` (`llama-server` `b1b770d`) against `vehicle-server` `ext/gemini-mt-llm-turns` (`d4f283b`) and `vehicle-mcp` `71b1af6`, **restarting `llama-server` fresh before every single run and locale** (12 cold starts, `mt-01`..`mt-15`, 55 turns/run, 0 request errors).
+- **Measured summary:** cross-run replay eliminated (identical cached counts across runs 1-3: `en` A `6856/19882` `34.5%` vs. B `7199/19882` `36.2%`, `tr` A `4531/20110` `22.5%` vs. B `4790/20110` `23.8%`); Turn-4 LLM phrasing now measured (`15` pooled timed Turn-4 turns per arm/locale, identical `15.5%` `en` / `18.5%` `tr` in both arms, `0` extra cached tokens from `-np 2`); consistent TTFT/wall-time improvement from Arm B **not shown** (Arm A faster in `en`: p50 `1242.8` vs `1289.7 ms`, wall `59.9–60.7 s` vs `61.3–62.5 s`; Arm B slightly faster in `tr`: p50 `1393.5` vs `1421.8 ms`, wall `75.2–77.6 s` vs `78.7–84.1 s`).
+
 ## Result
 (In progress.)
 
@@ -64,6 +71,10 @@ Execute `external-ai/tasks/2026-11-27-gemini-long-run-7.md` end to end (G7-0, G7
   - `uv run mypy`: passed (104 source files).
   - `HYPOTHESIS_PROFILE=ci uv run pytest -q --cov --cov-report=term-missing`: 2484/2484 pre-existing tests passed (94% coverage); after fixing fake runner schema in the new test, `uv run pytest -q -m "not fuzz" --cov --cov-report=term-missing` passed (**2383 passed**, 103 fuzz deselected, 94% coverage).
   - `python3 scripts/check_zones.py vehicle-server --base origin/main`: **GREEN**.
+- **G7-3b (`vehicle-defs`, `ext/gemini-cache-round3`):**
+  - 12 cold-restarted `vehicle-server chat-eval` runs (`en`/`tr` x 3 runs x Arms A/B, `mt-01`..`mt-15`): 12/12 exited 0, 0 request errors, 20/20 tool accuracy on `mt-11`..`mt-15` in both locales.
+  - Hygiene scan (no `/Users/`, usernames, Bearer tokens, or Turkish raw JSONs): clean.
+  - `python3 scripts/check_zones.py vehicle-defs --base origin/main`: **YELLOW** (`needs-claude-review`).
 
 ## Unsure about
 (None yet.)
