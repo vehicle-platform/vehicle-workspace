@@ -29,7 +29,7 @@ prs:
   - https://github.com/vehicle-platform/vehicle-server/pull/111
   - https://github.com/vehicle-platform/vehicle-analyzer/pull/85
 zone: yellow
-review: pending
+review: done 2026-11-27 (8 PRs fixed by Claude and merged: defs#214 #215, mobile#60 #61, mcp#39, server#110 #111, analyzer#85; 5 new hard rules in AGENTS.base.md §3)
 ---
 
 # long-run-5 (CubeMX CLI note, diagrams, ride-mark follow-ups, multi-turn cache measurement, READMEs, analyzer tests)
@@ -131,4 +131,16 @@ Command: `uv run vehicle-server chat-eval --base-url http://127.0.0.1:8000 --tok
    - Overall coverage is now 86.66% statements / 79.42% branches / 84.98% functions / 88.77% lines (thresholds in `vite.config.ts` remain at 83 / 76 / 81 / 85; Claude may ratchet if desired).
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+Fixes pushed to each `ext/gemini-*` PR branch from a `claude/*-review` worktree; every PR merged after green CI; Gemini's commits kept. Zones respected (no red path). Every PR again needed fixes: three of them for data-loss or wrong-number bugs, two for documentation that was deleted or reworded.
+
+- **G5-A `vehicle-defs#214`** (merged `@M214@`): accurate for what was known when written, but superseded the same day. `d7e8d7c`: headless FW package install (H7 via `swmgr` with the licence answered on stdin after the user's explicit consent, G4 by unpacking base + patch), the USART3/LPUART1 `set mode` KO explained (Nucleo BSP COMMON reserves the VCP UARTs; dropping the BSP fixes it), remaining benign load messages, toolchain and `LibraryCopy=1`.
+- **G5-1 `vehicle-defs#215`** (yellow, merged `8bcea43`): every diagram checked against code, DBC and DECISIONS. Two fact errors + one omission → `66bc4bd`: diagram 1 drew the bike ESP32's temporary-tester role on the platform bus (it is the vehicle bus, D-023); diagram 3 had rt-core sending 0x19 (it never sends 0x19 or OBD 0x09, the discovery scan is conn's probe); diagram 4 lacked the post-ride replay. CAN IDs, cycle times, receivers, alert/marks/assistant/Pi flows were correct. Mermaid rendering not verified locally.
+- **G5-2 `vehicle-mobile#60`** (merged `2f12b3b`): the auto-close timer ran in the Other/More views before the note field had focus and restarted on focus loss, so a chosen kind and a typed note were dropped silently. Partly Claude's brief gap ("pause while focused" was incomplete). `1e0710e`: a chosen "Other" is submitted on timeout, the timer pauses while focused or while text is present, autofocus, the duplicate kind list removed (enum order = picker order, wire names unchanged), string concatenation replaced by an ARB placeholder, l10n regenerated, 8 tests (726 pass).
+- **G5-3 `vehicle-mcp#39`** (yellow, merged `4f3d9b2`): per-kind counts covered only the first 200 listed marks while `mark_count` covered all; `offset_s` duplicated the `offset` quantity; a missing ride start gave silent `None` offsets; unknown kinds merged into `other`; the unavailable path looked like "zero marks". `7de2790` fixes all five, 6 new tests (injection note, unsafe kind, malformed entries, > 200 marks), cov 94.16 %. Assistant routing is G6-2.
+- **G5-4 `vehicle-server#110`** (merged `@M110@`): after a failed turn the later turns ran without their context (a failed turn 1 started fresh conversations scored as follow-ups); a failing cleanup `DELETE` could mask the real error; the cache math was a second copy of `aggregate`'s plus an unbounded `cache_to_prompt`. `1c9bf3b`: stop at the first failed turn (`prior_turn_failed:<id>`), `_forget` logs instead of raising, one `_timing_summary` shared by the totals and per-turn rows. The measurement itself is accepted as measured, but n is tiny (11-14 LLM-timed turns of 35, none on turn 4): no conclusion either way; round 2 is G6-1 (`-np 2`, three repetitions).
+- **G5-5 `vehicle-mobile#61`** (merged `8d1c63b`): the "update" deleted ~240 lines of still-valid docs (voice/intercom, web/macOS builds, upload, history, bring-up, most security notes). `0494068` restores them folded into the new structure, each fact checked; four statements dropped as no longer true (live fault feed now exists, Turkish announcer templates, Settings URL/token, hard-coded Turkish strings). **`vehicle-server#111`** (merged `e39fc24`): `0d1b102` fixes the held-out spec path (`vehicle-ml/src/vehicle_ml/ride_llm/eval/heldout/`) and restores the rule "commit the results JSON only for the English run" (reworded into a different rule).
+- **G5-6 `vehicle-analyzer#85`** (merged `@M85@`): tests assert real behaviour; `b0974c9` + `224ad91` ratchet the coverage floor to 86/79/84/88 (services and defs floors too).
+
+Rule change: five hard rules added to `AGENTS.base.md` §3 (doc updates never delete still-true content and never reword rules; never discard a user's choice or text; totals over the full data, each value once, warnings instead of silent nulls, unknown = own bucket; a scripted multi-step run stops at the first failure; diagram facts checked per arrow). The same lessons are spelled out in the run-6 brief.
+
+Open: `get_ride_marks` in the assistant router and the marks label export (G6-2, G6-3); T72 round 2 (G6-1); SyncPanel has no drag-drop (G5-6 note, no change needed).
