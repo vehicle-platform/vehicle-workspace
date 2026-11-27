@@ -30,7 +30,7 @@ prs:
   - https://github.com/vehicle-platform/vehicle-mcp/pull/37
   - https://github.com/vehicle-platform/vehicle-analyzer/pull/83
 zone: yellow
-review: pending
+review: done 2026-11-27 (all 9 PRs fixed or accepted and merged; D-133 recorded; RAG test-split contamination and mobile queue races fixed)
 ---
 
 # long-run-4 (parked-current note, 3-model bake-off, prompt-cache measurement, ride event marks, SIL inventory, RAG eval, analyzer tests)
@@ -141,4 +141,15 @@ All tasks in `external-ai/tasks/2026-11-27-gemini-long-run-4.md` completed with 
    - `vehicle-analyzer#83` (tests-only coverage PR, 73.96% -> 85.00% lines).
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+Fixes pushed to each `ext/gemini-*` PR branch from a `claude/*-review` worktree; every PR merged after green CI. Gemini's commits kept. Clearly better than runs 1-3: proposals marked as proposed, sources cited, the two idea notes accepted almost as written.
+
+- **G4-A `vehicle-defs#209`** and **G4-6 `vehicle-defs#210`**: facts spot-checked against the code and DECISIONS (latching relay, < 1 mA target, `sim_safety`, `HAVE_SOCKETCAN`, `SAFETY_APP_PASS_MAX_MS`): correct. Only fix: title before the status line.
+- **G4-2 `vehicle-defs#211`** (merged `2cba137`): every table cell cross-checked with summary.json and raw out/ (0 mismatches). `d5cb27e`: "not comparable with 2026-11-26" caveat (server moved `4a82942` → `d9d2577`, dev set 57 → 72; tok/s halved, cause not verified), RSS caveat, template-hit cause: Turkish `labels.stop` ("have the bike inspected") matches the Turkish dev `advice` forbidden pattern after a guard fallback (verified); qwen3-4b held-out `snake_case` hits from `search_knowledge`/`explain_context` templates (not verified).
+- **G4-3 `vehicle-server#107`** (merged `025afa7`): the claimed cache benefit was not in its own numbers (identical cached share before/after; single-turn dev suite) → stated as a hypothesis. `ff510bb`: one `LlmTimings` validator instead of two, prefix-stability and trimming tests.
+- **G4-4 `vehicle-server#108`** (merged `984fff4`): race-free idempotent insert (`INSERT OR IGNORE`), single-source kind/id pattern. **`vehicle-mobile#58`** (merged `e85adf6`): `1c32b3c` queue mutations serialized (a tap during a flush could be lost or sent twice), exponential backoff retry (was none), 422/409 surfaced instead of "Marked"; `01fb7bc` flaky fixed-delay test made deterministic. Model recorded as **D-133** (vehicle-defs#212, provisional).
+- **G4-7 `vehicle-mcp#37`** (yellow, merged `5d37149`): **test split contaminated** — old tune/holdout items (used to choose `min_similarity`/`lexical_top_n`) were moved into `test`; `7cbf282` keeps old items in their split, splits only the new items (seed 20261127), restores the JSON format, README. Test (n = 36): en R@1 0.583 / R@5 0.917 / MRR 0.734, tr 0.194 / 0.417 / 0.279. All labels of the new items read and checked; one near-copy rephrased.
+- **G4-8 `vehicle-analyzer#83`** (merged `3f51fdb`): tests did not type-check (`tsc -p ui-tests`), one passed for the wrong reason (`item.v` vs `value`) → `59fdc32`; `9253106` coverage run with 2 workers, coverage floor ratcheted to 83/76/81/85.
+
+Rule change: concurrency/retry safety, never moving existing eval items between splits, measured claims must match the run's own numbers, and running every CI step locally (incl. test type-checks) are added to `AGENTS.base.md` §3.
+
+Open: Turkish `labels.stop` vs the `advice` forbidden pattern (T57/T58); Turkish→English doc retrieval and the `faults/unconfirmed` chunk ranking first (tune-only task); multi-turn measurement of the prompt reorder; analyzer modules still < 80 % (canvas, file import, live sources).
