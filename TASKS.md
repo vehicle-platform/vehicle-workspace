@@ -15,6 +15,19 @@ gh release create v0.5.0  -R vehicle-platform/vehicle-mobile --target main --tit
 
 Then say "tags ready" and start T1.
 
+## Night run 2026-11-28 (Claude) — resume here
+
+Order (hardware critical path first; Gemini run 8 runs in parallel from `external-ai/tasks/2026-11-28-gemini-long-run-8.md`). Mark each line done with its PRs; a new session resumes at the first open line.
+
+1. Close Gemini run 7: merge defs#221-#225, server#117, the workspace review PR; roots back to main, prune, rules sync per repo (STATUS item 0).
+2. **T77** pre-power-on hardening of the CubeMX images (rt-core first, then safety-node; draft PRs, `safety-reviewer` before merge).
+3. **T67** Renode boot test in CI (after T77).
+4. **T71** CI pre-checks on `ext/` branches (`.github/` is red: Claude only).
+5. **T58 follow-ups:** the Turkish `labels.stop` vs dev `advice` forbidden-pattern clash; record the base-model choice as a PROVISIONAL decision from the bake-off numbers.
+6. **T57** explain mode, server side.
+7. **T70** CubeMX CLI reference (fold the local install notes in).
+8. After Gemini run 8 lands: `/external-review`, then the guard patterns from G8-5 and the RAG default from G8-3 (Claude changes both).
+
 ## Cards
 
 | # | Task | Status | Repo(s) |
@@ -91,6 +104,7 @@ Then say "tags ready" and start T1.
 | T74 | Upstream contributions (Kuksa / COVESA), drafts only until the user approves each submission (publishing is outward-facing): (1) COVESA VSS issue proposing a generic two-wheeler branch from our `Vehicle.Motorcycle` overlay — lean angle + quality/state, side stand, friction and mass estimates — after checking the current VSS release for existing equivalents and the CONTRIBUTING rules; platform-specific signals (node health, validity flags) and CL250 DIDs/CAN IDs stay out; (2) Kuksa docs/example: running databroker + kuksa-can-provider replay on macOS without CAN hardware (colima, `--dumpfile`, host-network note), verified in vehicle-linux-node#35; (3) a generic motorcycle example config for kuksa-can-provider (example DBC + mapping, no reverse-engineered OEM IDs). Thesis value: documented standard gap + proposal | ready (drafts); submission needs the user | linux-node, defs, workspace |
 | T75 | Edge deployment manager comparison on the Raspberry Pi 5 (D-136): Docker Compose (today), Eclipse Kanto (container-management + update-manager), Podman with systemd Quadlets, and k3s as a heavier reference; run the same Kuksa databroker + kuksa-can-provider pair under each and report idle/peak RAM and CPU, startup time, the update flow (desired state, rollback, how it fits our signed OTA packages), and maintenance status (last release, commit activity, security fixes; Kanto's last release is v1.0.0 from 2024-06). Output: `docs/test-results/edge-deployment/` (measured) + a recommendation; the switch decision follows the report | blocked: hardware (Pi on the desk) | linux-node, defs |
 | T76 | Repository visibility split (D-135): inventory what in the public repos is vehicle-specific or commercially sensitive (reverse-engineered CL250 CAN IDs and DIDs in `vehicle-defs/dbc/cl250.dbc` and `uds/vehicle_cl250.yaml`, the legacy `HondaCl250_Telemetry`, anything model- or customer-specific), design the split (a private per-vehicle pack consumed by the public codegen; the public repo keeps the generic catalog and a synthetic example vehicle), keep CI light in private repos (Free plan: 2,000 Actions minutes/month, no rulesets on private repos), then move with the user's approval. Note: content already public stays in clones and forks; history rewriting only on the user's explicit decision | next; moving needs the user | defs, all consumers, workspace |
+| T77 | Pre-power-on hardening of the CubeMX images (rt-core#95, safety-node#29 follow-up, STATUS item 1): FDCAN 500 kbit/s bit timing derived from defs plus a boot-time check and bus monitoring (listen-only) first on the vehicle bus; IWDG started early; a safe `Error_Handler` (no busy loop with outputs live); G474 option bytes documented (not programmed by code); H743 DMA buffers out of DTCM + MPU regions; SD init non-fatal; no heap (`_sbrk` fails, static FreeRTOS allocation). Invariant 8: `safety-reviewer` before merge | ready | rt-core, safety-node |
 | T36 | Heartbeat golden wire vectors | **done 2026-11-21** (defs#180, safety-node#20); HIL scenario blocked: Q-009 | defs, safety-node |
 
 ## Card details
