@@ -24,7 +24,7 @@ prs:
   - https://github.com/vehicle-platform/vehicle-analyzer/pull/87
   - https://github.com/vehicle-platform/vehicle-mcp/pull/41
 zone: yellow
-review: pending
+review: done 2026-11-27 (all 6 PRs merge after Claude fixes: defs#218/#219, server#113/#114, mcp#41, analyzer#87; follow-up server#115)
 ---
 
 # long-run-6 (cache measurement round 2, marks in the assistant, marks label export, multi-node SIL note, analyzer tests, rider-facing labels)
@@ -133,4 +133,13 @@ Execute `external-ai/tasks/2026-11-27-gemini-long-run-6.md` end to end (G6-0 thr
   - `undated_ride_reason` in `get_ride_summary` (`tests/test_tools.py:492` explicitly pins `"created_utc"`) is kept in `EXEMPT_FIELDS` as an API-schema diagnostic string.
 
 ## Claude review
-(Filled by Claude's /external-review: findings, fixes, PRs.)
+Zones: no red path. G6-1 and G6-6 yellow as declared (the brief wrongly listed `docs/test-results/` as green; `zones.json` is right). Reviews: architecture-guard on the code PRs, a fact-check of the SIL note against the DBC and host HAL code. Claude's commits are on top of each ext branch.
+
+- **G6-1 (defs#219):** numbers check out. Fixed: "all 12 runs" → 6 paired runs; caption that the pooled per-turn rows mix the cold run with replay-dominated runs; `tr` Run 1 is not cold; outcome for T72 (keep `-np 1`; round 3 needs a restart or `--cache-ram 0` between runs and LLM-phrased later turns). The `cache_prompt` finding was real: fixed in **server#115** (the explicit `local` preset also skipped `check_llm_url`).
+- **G6-2 (server#113):** the rider note was quoted in the answer, stored, and fed back as a recent turn into the next LLM prompt (verbatim on cloud): `recent_pairs` now returns a placeholder for `policy.UNTRUSTED_TEXT_TOOLS`. Kind counts fell back to counting a truncated list and could disagree with the total; now they always add up (remainder = neutral bucket). Note sanitiser now drops Unicode format characters (bidi, zero-width) and swaps inner `"`. "Only the first 5" takes N from the constant.
+- **G6-3 (server#114):** a missing `index.sqlite` or `ride_marks` table gave a silent empty export; now a warning. Marks in overlapping session windows (one line per window) and exports without `--owner` (mark ids are unique per owner only) are warned and documented.
+- **G6-4 (defs#218):** 7 fixes: safety-node pass overruns were written as observed (only rt-core step gaps were); ALR-001 sustain is 10 s, not 60 s; the example scenario could not raise the alert (15 s, no engine-running step); the SIL bridge cannot be combined with the mock live source (`api.py`); D-118 item 6 attribution; an unsourced "~3 s incremental" build; invented identifiers in the example YAML (now a proposed new schema with defs names).
+- **G6-5 (analyzer#87):** good. Worker test asserts the message kind instead of skipping its checks and unstubs `self`; Claude ratcheted the global coverage floors (91/82/90/94).
+- **G6-6 (mcp#41):** good. D-107 fix (`from vehicle_mcp.matching`, not `..`), aliases instead of wrapper functions. Humanised chunk titles give the same FTS5 tokens (unicode61 splits on `_`), so ranking is unchanged. Tool-name hints removed from `reason` texts are accepted (rider-facing). Doc chunks with identifiers (defs `docs/*.md`) stay as they are: a display-layer policy, not needed now.
+
+Rule changes: three hard rules added to `AGENTS.base.md` §3 (totals reconcile; untrusted text stays quoted on every path; examples in docs must work), rendered with `scripts/sync_claude.py`.
