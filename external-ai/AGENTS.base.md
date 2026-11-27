@@ -59,6 +59,7 @@ You are an AI coding tool (Codex, Gemini, DeepSeek, Cursor, Aider, Copilot, …)
 4. Before each commit: run the repo's checks (table below) and `python3 scripts/check_zones.py <repo>`. Red → revert those paths. Commit and push only when the user asks.
 5. PR (when the user asks): title in Conventional Commits form; description = summary, checks run with their result, the zone result, `needs-claude-review` if any path is yellow, and the log file name.
 6. Write code that reads like the surrounding code: same naming, comment density, test style. Add or update tests for what you change.
+7. `ext/**` branches are pre-checked in CI (`ext-precheck`, `scripts/ext_precheck.py`): red-zone paths, the `AI-Agent:` trailer on every commit and a session log listing the branch; a yellow zone needs the `needs-claude-review` PR label.
 
 | Repo | Checks (run from the repo root) |
 |---|---|
