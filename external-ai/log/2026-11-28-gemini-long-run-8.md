@@ -21,6 +21,7 @@ branches:
   - vehicle-server:ext/gemini-guard-recall-tr
   - vehicle-defs:ext/gemini-guard-recall-tr
   - vehicle-defs:ext/gemini-traceability
+  - vehicle-server:ext/gemini-chat-history-messages
 prs:
   - https://github.com/vehicle-platform/vehicle-server/pull/118
   - https://github.com/vehicle-platform/vehicle-ml/pull/37
@@ -32,6 +33,7 @@ prs:
   - https://github.com/vehicle-platform/vehicle-server/pull/123
   - https://github.com/vehicle-platform/vehicle-defs/pull/230
   - https://github.com/vehicle-platform/vehicle-defs/pull/231
+  - https://github.com/vehicle-platform/vehicle-server/pull/124
 zone: yellow
 review: pending
 ---
@@ -75,6 +77,10 @@ Execute `external-ai/tasks/2026-11-28-gemini-long-run-8.md` end to end (G8-0 thr
 ### G8-6 — Kuksa on macOS without CAN hardware draft (`vehicle-linux-node`, `ext/gemini-kuksa-macos-draft`, YELLOW, `needs-claude-review`, T74 item 2)
 - PR: https://github.com/vehicle-platform/vehicle-linux-node/pull/39
 - `vehicle-linux-node/docs/upstream-kuksa-macos-replay.md`: proposed upstream draft based on PR #35 (`README.md`, `docker-compose.yml`, `docker-compose.replay.yml`, `config/dbc_feeder.ini`, `replay.py`) with pinned multi-arch digests, `tmpfs: [/tmp:exec]`, colima `network_mode: host` note, **CONFIRM** markers, zero vehicle-specific CAN IDs/DIDs, and 4 open questions for the user.
+
+### G8-7a — Append-only phrasing history messages (`vehicle-server`, `ext/gemini-chat-history-messages`, GREEN, card T72)
+- PR: https://github.com/vehicle-platform/vehicle-server/pull/124
+- `vehicle-server/src/vehicle_server/{config.py,chat/budget.py,chat/service.py,chat/wiring.py}`, `README.md`, `tests/test_chat_history_messages.py`: added `VEHICLE_CHAT_HISTORY_MESSAGES` (default off = byte-identical to `main`) and `budget.assemble_messages()` sending recent turns as oldest-first `user`/`assistant` message pairs with changing state/question/tool result in the final `user` message only. Verified byte-identical default off, byte-identical multi-turn prefix on, rider mark notes withheld in both modes, oldest-pair-first truncation, invalid env rejection, and `AnthropicProvider` role alternation.
 
 ### G8-8 — Requirements-to-tests traceability matrix (`vehicle-defs`, `ext/gemini-traceability`, GREEN, proposed, thesis Ç8 / D-113)
 - PR: https://github.com/vehicle-platform/vehicle-defs/pull/231
